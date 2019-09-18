@@ -1,0 +1,30 @@
+{
+  "name": "@summa-tx/relay-sol",
+  "version": "1.0.0",
+  "description": "Bitcoin Relay",
+  "main": "index.js",
+  "scripts": {
+    "compile": "truffle compile",
+    "coverage": "npx solidity-coverage",
+    "lint": "solium -d contracts/ && eslint ./test",
+    "lint:fix": "solium --fix -d contracts/ && eslint --fix ./test",
+    "test": "truffle test"
+  },
+  "author": "James Prestwich",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@summa-tx/bitcoin-spv-sol": "^2.1.0",
+    "dotenv": "^8.1.0"
+  },
+  "devDependencies": {
+    "bn.js": "^5.0.0",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^13.2.0",
+    "eslint-plugin-import": "^2.18.0",
+    "eth-gas-reporter": "^0.2.4",
+    "solidity-coverage": "^0.6.3",
+    "solium": "^1.2.4",
+    "truffle-hdwallet-provider": "^1.0.17",
+    "truffle-plugin-verify": "^0.3.2"
+  }
+}
