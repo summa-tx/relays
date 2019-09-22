@@ -27,7 +27,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-const appName = "summa-cosmos-relay"
+const appName = "relay"
 
 var (
 	// DefaultCLIHome is default home directories for the application CLI
