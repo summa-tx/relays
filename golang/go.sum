@@ -173,6 +173,7 @@ github.com/summa-tx/bitcoin-spv/golang v0.0.0-20190918190112-a7c5660022bf h1:tdj
 github.com/summa-tx/bitcoin-spv/golang v0.0.0-20190918191218-559c9dda767c h1:Sq49DXoaUOpAF8lHsQFz2tFPwBI4o/wjPgNHBe11io0=
 github.com/summa-tx/bitcoin-spv/golang v1.0.0 h1:zz3p7SQGOtMMqh5BwcUPUXsCACT3+E1Gjpxcqi80Yac=
 github.com/summa-tx/bitcoin-spv/golang v1.0.0/go.mod h1:S0xvnR5vlpgFy2iaHEgcpVJYeJ9ohoMlE2yagtwoe9Y=
+github.com/summa-tx/relays v0.0.0-20190918181406-3f7ee83f6828 h1:QusoX/pzugVlaLfDytFABL1iOU5hqata2o4u1BBHyRA=
 github.com/syndtr/goleveldb v0.0.0-20180708030551-c4c61651e9e3 h1:sAlSBRDl4psFR3ysKXRSE8ss6Mt90+ma1zRTroTNBJA=
 github.com/syndtr/goleveldb v0.0.0-20180708030551-c4c61651e9e3/go.mod h1:Z4AUp2Km+PwemOoO/VB5AOx9XSsIItzFjoJlOSiYmn0=
 github.com/syndtr/goleveldb v1.0.1-0.20190318030020-c3a204f8e965 h1:1oFLiOyVl+W7bnBzGhf7BbIv9loSFQcieWWYIjLqcAw=
