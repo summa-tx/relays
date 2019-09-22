@@ -1,4 +1,4 @@
-package relay
+package keeper
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
