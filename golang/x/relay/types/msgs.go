@@ -11,18 +11,26 @@ const RouterKey = ModuleName // this was defined in your key.go file
 
 // MsgSetLink defines a SetLink message
 type MsgSetLink struct {
-	Header string `json:"header"`
+	Address string `json:"signer"`
+	Header  string `json:"header"`
 }
 
 // NewMsgSetLink is a constructor function for MsgSetLink
-func NewMsgSetLink(header string, owner sdk.AccAddress) MsgSetLink {
+func NewMsgSetLink(address, header string, owner sdk.AccAddress) MsgSetLink {
 	return MsgSetLink{
-		Header: header,
+		address,
+		header,
 	}
 }
 
-// Route should return the name of the module
-func (msg MsgSetLink) Route() string { return RouterKey }
+// GetSigners defines whose signature is required
+func (msg MsgSetLink) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(msg.Address)
+	if err != nil {
+		return []sdk.AccAddress{}
+	}
+	return []sdk.AccAddress{addr}
+}
 
 // Type should return the action
 func (msg MsgSetLink) Type() string { return "set_link" }
@@ -41,7 +49,5 @@ func (msg MsgSetLink) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
-// GetSigners defines whose signature is required
-func (msg MsgSetLink) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{}
-}
+// Route should return the name of the module
+func (msg MsgSetLink) Route() string { return RouterKey }

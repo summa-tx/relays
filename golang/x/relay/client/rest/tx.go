@@ -39,7 +39,7 @@ func setLinkHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		// create the message
-		msg := types.NewMsgSetLink(req.Header, addr)
+		msg := types.NewMsgSetLink(req.Sender, req.Header, addr)
 		err = msg.ValidateBasic()
 
 		if err != nil {

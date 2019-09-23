@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"encoding/hex"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
@@ -21,9 +23,14 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec) Keeper {
 }
 
 func (k Keeper) setLink(ctx sdk.Context, header []byte) {
+	println(hex.EncodeToString(header))
 	digest := btcspv.Hash256(header)
+	println(hex.EncodeToString(digest))
 	parent := btcspv.ExtractPrevBlockHashLE(header)
+	println(hex.EncodeToString(parent))
+	println(k.storeKey)
 	store := ctx.KVStore(k.storeKey)
+	println("store got")
 	store.Set(digest[:], parent[:])
 }
 
@@ -35,6 +42,9 @@ func (k Keeper) SetLink(ctx sdk.Context, header []byte) {
 
 // GetLink gets headers links
 func (k Keeper) GetLink(ctx sdk.Context, digest [32]byte) []byte {
+	println(hex.EncodeToString(digest[:]))
+	println(k.storeKey)
 	store := ctx.KVStore(k.storeKey)
+	println(1)
 	return store.Get(digest[:])
 }

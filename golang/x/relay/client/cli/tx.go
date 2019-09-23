@@ -32,15 +32,15 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 // GetCmdSetLink is the CLI command for sending a SetLink transaction
 func GetCmdSetLink(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "setlink [name]",
+		Use:   "setlink [hex header] [signer address]",
 		Short: "Set a link",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 
-			msg := types.NewMsgSetLink(args[0], cliCtx.GetFromAddress())
+			msg := types.NewMsgSetLink(args[1], args[0], cliCtx.GetFromAddress())
 			err := msg.ValidateBasic()
 			if err != nil {
 				return err
