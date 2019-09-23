@@ -49,7 +49,52 @@ func (k Keeper) GetLink(ctx sdk.Context, digest [32]byte) []byte {
 	return store.Get(digest[:])
 }
 
-// func (k Keeper) SetRelayGenesis(ctx sdk.Context, digest [32]byte) []byte {
-// 	store := ctx.KVStore(k.storeKey)
-// 	store.Set([32]byte())
-// }
+func (k Keeper) GetRelayGenesis(ctx sdk.Context, digest [32]byte) [32]byte {
+	return k.GetLink(ctx, digest).RelayGenesis
+}
+
+func (k Keeper) SetRelayGenesis(ctx sdk.Context, relayGenesis [32]byte, digest [32]byte) {
+	link := k.GetLink(ctx, digest)
+	link.RelayGenesis = relayGenesis
+	k.SetLink(ctx, relayGenesis)
+}
+
+func (k Keeper) GetBestKnownDigest(ctx sdk.Context, digest [32]byte) [32]byte {
+	return k.GetLink(ctx, digest).BestKnownDigest
+}
+
+func (k Keeper) SetBestKnownDigest(ctx sdk.Context, bestKnownDigest [32]byte, digest [32]byte) {
+	link := k.GetLink(ctx, digest)
+	link.BestKnownDigest = bestKnownDigest
+	k.SetLink(ctx, bestKnownDigest)
+}
+
+func (k Keeper) GetLastReorgCommonAncestor(ctx sdk.Context, digest [32]byte) [32]byte {
+	return k.GetLink(ctx, digest).LastReorgCommonAncestor
+}
+
+func (k Keeper) SetLastReorgCommonAncestor(ctx sdk.Context, lastReorgCommonAncestor [32]byte, digest [32]byte) {
+	link := k.GetLink(ctx, digest)
+	link.LastReorgCommonAncestor = lastReorgCommonAncestor
+	k.SetLink(ctx, lastReorgCommonAncestor)
+}
+
+func (k Keeper) GetPreviousBlock(ctx sdk.Context, digest [32]byte) [32]byte {
+	return k.GetLink(ctx, digest).PreviousBlock
+}
+
+func (k Keeper) SetPreviousBlock(ctx sdk.Context, previousBlock [32]byte, digest [32]byte) {
+	link := k.GetLink(ctx, digest)
+	link.PreviousBlock = previousBlock
+	k.SetLink(ctx, previousBlock)
+}
+
+func (k Keeper) GetBlockHeight(ctx sdk.Context, digest [32]byte) [32]byte {
+	return k.GetLink(ctx, digest).BlockHeight
+}
+
+func (k Keeper) SetBlockHeight(ctx sdk.Context, blockHeight [32]byte, digest [32]byte) {
+	link := k.GetLink(ctx, digest)
+	link.BlockHeight = blockHeight
+	k.SetLink(ctx, blockHeight)
+}
