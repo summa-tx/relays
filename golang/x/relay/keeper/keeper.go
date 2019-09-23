@@ -48,3 +48,8 @@ func (k Keeper) GetLink(ctx sdk.Context, digest [32]byte) []byte {
 	println(1)
 	return store.Get(digest[:])
 }
+
+// func (k Keeper) SetRelayGenesis(ctx sdk.Context, digest [32]byte) []byte {
+// 	store := ctx.KVStore(k.storeKey)
+// 	store.Set([32]byte())
+// }
