@@ -36,13 +36,13 @@ func queryGetParent(ctx sdk.Context, path []string, req abci.RequestQuery, keepe
 	copy(buf[:], digest[:32])
 	parent := keeper.GetLink(ctx, buf)
 
-	if bytes.Equal(parent, []byte{}) {
+	if bytes.Equal(parent[:], []byte{}) {
 		return []byte{}, types.ErrUnknownBlock(types.DefaultCodespace)
 	}
 
 	response := types.QueryResGetParent{
 		Digest: hex.EncodeToString(digest),
-		Parent: hex.EncodeToString(parent)}
+		Parent: hex.EncodeToString(parent[:])}
 	res, err := codec.MarshalJSONIndent(keeper.cdc, response)
 	if err != nil {
 		panic("could not marshal result to JSON")

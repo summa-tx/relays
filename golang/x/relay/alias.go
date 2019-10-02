@@ -30,6 +30,10 @@ var (
 type (
 	// Keeper is what is says on the tin
 	Keeper = keeper.Keeper
+
+	// Hash256Digest 32-byte double-sha2 digest
+	Hash256Digest = types.Hash256Digest
+
 	// MsgSetName is what is says on the tin
 	MsgSetName = types.MsgSetLink
 	// QueryResGetParent is what is says on the tin
