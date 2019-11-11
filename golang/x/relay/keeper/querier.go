@@ -29,12 +29,15 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 func queryGetParent(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) ([]byte, sdk.Error) {
 	digest, err := hex.DecodeString(path[0])
 	if err != nil || len(digest) != 32 {
-		panic("could not unhex argument string")
+		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
 	}
 
 	var buf [32]byte
 	copy(buf[:], digest[:32])
-	parent := keeper.GetLink(ctx, buf)
+	parent, sdkErr := keeper.GetLink(ctx, buf)
+	if sdkErr != nil {
+		return []byte{}, sdkErr
+	}
 
 	if bytes.Equal(parent[:], []byte{}) {
 		return []byte{}, types.ErrUnknownBlock(types.DefaultCodespace)

@@ -22,12 +22,6 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec) Keeper {
 	}
 }
 
-func digestFromSlice(buf []byte) types.Hash256Digest {
-	var digest types.Hash256Digest
-	copy(digest[:], buf)
-	return digest
-}
-
 func (k Keeper) setLink(ctx sdk.Context, header []byte) {
 	digest := btcspv.Hash256(header)
 	parent := btcspv.ExtractPrevBlockHashLE(header)
@@ -42,18 +36,26 @@ func (k Keeper) SetLink(ctx sdk.Context, header []byte) {
 }
 
 // GetLink gets headers links
-func (k Keeper) GetLink(ctx sdk.Context, digest types.Hash256Digest) types.Hash256Digest {
+func (k Keeper) GetLink(ctx sdk.Context, digest types.Hash256Digest) (types.Hash256Digest, sdk.Error) {
 	store := ctx.KVStore(k.storeKey)
 	result := store.Get(digest[:])
-	return digestFromSlice(result)
+	digest, err := types.NewHash256Digest(result)
+	if err != nil {
+		return digest, types.ErrBadHash256Digest(types.DefaultCodespace)
+	}
+	return digest, nil
 }
 
 // GetRelayGenesis returns the first digest in the relay
-func (k Keeper) GetRelayGenesis(ctx sdk.Context) types.Hash256Digest {
+func (k Keeper) GetRelayGenesis(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
 	store := ctx.KVStore(k.storeKey)
 	result := store.Get([]byte(types.RelayGenesisStorage))
 
-	return digestFromSlice(result)
+	digest, err := types.NewHash256Digest(result)
+	if err != nil {
+		return digest, types.ErrBadHash256Digest(types.DefaultCodespace)
+	}
+	return digest, nil
 }
 
 // SetRelayGenesis sets the first digest in the relay
@@ -64,11 +66,15 @@ func (k Keeper) SetRelayGenesis(ctx sdk.Context, relayGenesis types.Hash256Diges
 }
 
 // GetBestKnownDigest returns the best known digest in the relay
-func (k Keeper) GetBestKnownDigest(ctx sdk.Context, digest types.Hash256Digest) types.Hash256Digest {
+func (k Keeper) GetBestKnownDigest(ctx sdk.Context, digest types.Hash256Digest) (types.Hash256Digest, sdk.Error) {
 	store := ctx.KVStore(k.storeKey)
 	result := store.Get([]byte(types.BestKnownDigestStorage))
 
-	return digestFromSlice(result)
+	digest, err := types.NewHash256Digest(result)
+	if err != nil {
+		return digest, types.ErrBadHash256Digest(types.DefaultCodespace)
+	}
+	return digest, nil
 }
 
 // func (k Keeper) SetBestKnownDigest(ctx sdk.Context, bestKnownDigest types.Hash256Digest, digest types.Hash256Digest) {

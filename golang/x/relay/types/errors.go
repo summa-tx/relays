@@ -22,6 +22,12 @@ const (
 	// BadHeight occurs when a proposed descendant is below a proposed ancestor
 	BadHeight sdk.CodeType = 104
 
+	// BadHash256Digest occurs when a wrong-length hash256 digest is found
+	BadHash256Digest sdk.CodeType = 105
+
+	// BadHex occurs when a hex argument couldn't be deserialized
+	BadHex sdk.CodeType = 106
+
 	// 200-block -- AddHeaders
 
 	// RetargetOnExternal indicates a retarget was seen in AddHeaders
@@ -127,4 +133,14 @@ func ErrNotHeaviestAncestor(codespace sdk.CodespaceType) sdk.Error {
 // ErrNotHeavier throws an error
 func ErrNotHeavier(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, NotHeavier, "New best hash does not have more work than previous")
+}
+
+// ErrBadHash256Digest throws an error
+func ErrBadHash256Digest(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, BadHash256Digest, "Digest had wrong length")
+}
+
+// ErrBadHex throws an error
+func ErrBadHex(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, BadHex, "Bad hex string in query or msg")
 }
