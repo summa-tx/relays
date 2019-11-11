@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"encoding/hex"
+	"github.com/summa-tx/relays/golang/x/relay/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,79 +22,87 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec) Keeper {
 	}
 }
 
+func digestFromSlice(buf []byte) types.Hash256Digest {
+	var digest types.Hash256Digest
+	copy(digest[:], buf)
+	return digest
+}
+
 func (k Keeper) setLink(ctx sdk.Context, header []byte) {
-	println(hex.EncodeToString(header))
 	digest := btcspv.Hash256(header)
-	println(hex.EncodeToString(digest))
 	parent := btcspv.ExtractPrevBlockHashLE(header)
-	println(hex.EncodeToString(parent))
-	println(k.storeKey)
 	store := ctx.KVStore(k.storeKey)
-	println("store got")
 	store.Set(digest[:], parent[:])
 }
 
 // SetLink sets a header parent
 func (k Keeper) SetLink(ctx sdk.Context, header []byte) {
-	// TODO: Remove this
+	// TODO: Remove this in favor of fully validating add headers
 	k.setLink(ctx, header)
 }
 
 // GetLink gets headers links
-func (k Keeper) GetLink(ctx sdk.Context, digest [32]byte) []byte {
-	println(hex.EncodeToString(digest[:]))
-	println(k.storeKey)
+func (k Keeper) GetLink(ctx sdk.Context, digest types.Hash256Digest) types.Hash256Digest {
 	store := ctx.KVStore(k.storeKey)
-	println(1)
-	return store.Get(digest[:])
+	result := store.Get(digest[:])
+	return digestFromSlice(result)
 }
 
-func (k Keeper) GetRelayGenesis(ctx sdk.Context, digest [32]byte) [32]byte {
-	return k.GetLink(ctx, digest).RelayGenesis
+// GetRelayGenesis returns the first digest in the relay
+func (k Keeper) GetRelayGenesis(ctx sdk.Context) types.Hash256Digest {
+	store := ctx.KVStore(k.storeKey)
+	result := store.Get([]byte(types.RelayGenesisStorage))
+
+	return digestFromSlice(result)
 }
 
-func (k Keeper) SetRelayGenesis(ctx sdk.Context, relayGenesis [32]byte, digest [32]byte) {
-	link := k.GetLink(ctx, digest)
-	link.RelayGenesis = relayGenesis
-	k.SetLink(ctx, relayGenesis)
+// SetRelayGenesis sets the first digest in the relay
+func (k Keeper) SetRelayGenesis(ctx sdk.Context, relayGenesis types.Hash256Digest) {
+	// TODO: Remove this in favor of Genesis state
+	store := ctx.KVStore(k.storeKey)
+	store.Set([]byte(types.RelayGenesisStorage), relayGenesis[:])
 }
 
-func (k Keeper) GetBestKnownDigest(ctx sdk.Context, digest [32]byte) [32]byte {
-	return k.GetLink(ctx, digest).BestKnownDigest
+// GetBestKnownDigest returns the best known digest in the relay
+func (k Keeper) GetBestKnownDigest(ctx sdk.Context, digest types.Hash256Digest) types.Hash256Digest {
+	store := ctx.KVStore(k.storeKey)
+	result := store.Get([]byte(types.BestKnownDigestStorage))
+
+	return digestFromSlice(result)
 }
 
-func (k Keeper) SetBestKnownDigest(ctx sdk.Context, bestKnownDigest [32]byte, digest [32]byte) {
-	link := k.GetLink(ctx, digest)
-	link.BestKnownDigest = bestKnownDigest
-	k.SetLink(ctx, bestKnownDigest)
-}
-
-func (k Keeper) GetLastReorgCommonAncestor(ctx sdk.Context, digest [32]byte) [32]byte {
-	return k.GetLink(ctx, digest).LastReorgCommonAncestor
-}
-
-func (k Keeper) SetLastReorgCommonAncestor(ctx sdk.Context, lastReorgCommonAncestor [32]byte, digest [32]byte) {
-	link := k.GetLink(ctx, digest)
-	link.LastReorgCommonAncestor = lastReorgCommonAncestor
-	k.SetLink(ctx, lastReorgCommonAncestor)
-}
-
-func (k Keeper) GetPreviousBlock(ctx sdk.Context, digest [32]byte) [32]byte {
-	return k.GetLink(ctx, digest).PreviousBlock
-}
-
-func (k Keeper) SetPreviousBlock(ctx sdk.Context, previousBlock [32]byte, digest [32]byte) {
-	link := k.GetLink(ctx, digest)
-	link.PreviousBlock = previousBlock
-	k.SetLink(ctx, previousBlock)
-}
-
-func (k Keeper) GetBlockHeight(ctx sdk.Context, digest [32]byte) [32]byte {
-	return k.GetLink(ctx, digest).BlockHeight
-}
-
-func (k Keeper) SetBlockHeight(ctx sdk.Context, blockHeight [32]byte, digest [32]byte) {
-	link := k.GetLink(ctx, digest)
-	link.BlockHeight = blockHeight
-	k.SetLink(ctx, blockHeight)
-}
+// func (k Keeper) SetBestKnownDigest(ctx sdk.Context, bestKnownDigest types.Hash256Digest, digest types.Hash256Digest) {
+// 	link := k.GetLink(ctx, digest)
+// 	link.BestKnownDigest = bestKnownDigest
+// 	k.SetLink(ctx, bestKnownDigest)
+// }
+//
+// func (k Keeper) GetLastReorgCommonAncestor(ctx sdk.Context, digest types.Hash256Digest) types.Hash256Digest {
+// 	return k.GetLink(ctx, digest).LastReorgCommonAncestor
+// }
+//
+// func (k Keeper) SetLastReorgCommonAncestor(ctx sdk.Context, lastReorgCommonAncestor types.Hash256Digest, digest types.Hash256Digest) {
+// 	link := k.GetLink(ctx, digest)
+// 	link.LastReorgCommonAncestor = lastReorgCommonAncestor
+// 	k.SetLink(ctx, lastReorgCommonAncestor)
+// }
+//
+// func (k Keeper) GetPreviousBlock(ctx sdk.Context, digest types.Hash256Digest) types.Hash256Digest {
+// 	return k.GetLink(ctx, digest).PreviousBlock
+// }
+//
+// func (k Keeper) SetPreviousBlock(ctx sdk.Context, previousBlock types.Hash256Digest, digest types.Hash256Digest) {
+// 	link := k.GetLink(ctx, digest)
+// 	link.PreviousBlock = previousBlock
+// 	k.SetLink(ctx, previousBlock)
+// }
+//
+// func (k Keeper) GetBlockHeight(ctx sdk.Context, digest types.Hash256Digest) types.Hash256Digest {
+// 	return k.GetLink(ctx, digest).BlockHeight
+// }
+//
+// func (k Keeper) SetBlockHeight(ctx sdk.Context, blockHeight types.Hash256Digest, digest types.Hash256Digest) {
+// 	link := k.GetLink(ctx, digest)
+// 	link.BlockHeight = blockHeight
+// 	k.SetLink(ctx, blockHeight)
+// }
