@@ -34,8 +34,9 @@ type (
 	// Hash256Digest 32-byte double-sha2 digest
 	Hash256Digest = types.Hash256Digest
 
-	// MsgSetName is what is says on the tin
-	MsgSetName = types.MsgSetLink
+	// MsgSetLink is what is says on the tin
+	MsgSetLink = types.MsgSetLink
+
 	// QueryResGetParent is what is says on the tin
 	QueryResGetParent = types.QueryResGetParent
 )

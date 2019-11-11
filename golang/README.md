@@ -2,6 +2,8 @@
 
 1. Migrate solidity logic
 1. Add reasonable genesis state
+1. Add state export
+1. Consider storing more state than solidity does
 
 ## How to add a view function
 1. Add necessary getter(s) in `x/relay/keeper/keeper.go`
