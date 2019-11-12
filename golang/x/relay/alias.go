@@ -34,9 +34,15 @@ type (
 	// Hash256Digest 32-byte double-sha2 digest
 	Hash256Digest = types.Hash256Digest
 
-	// MsgSetLink is what is says on the tin
-	MsgSetLink = types.MsgSetLink
+	// Hash160Digest is a 20-byte ripemd160+sha2 hash
+	Hash160Digest = types.Hash160Digest
 
-	// QueryResGetParent is what is says on the tin
-	QueryResGetParent = types.QueryResGetParent
+	// RawHeader is an 80-byte raw header
+	RawHeader = types.RawHeader
+
+	// BitcoinHeader is a parsed Bitcoin header
+	BitcoinHeader = types.BitcoinHeader
+
+	// SPVProof is the base struct for an SPV proof
+	SPVProof = types.SPVProof
 )

@@ -1,22 +1,26 @@
 package types
 
-import "fmt"
+import (
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
+)
 
 // Hash256Digest 32-byte double-sha2 digest
-type Hash256Digest [32]byte
+type Hash256Digest = btcspv.Hash256Digest
 
-// NewHash256Digest instantiates a Hash256Digest from a byte slice
-func NewHash256Digest(b []byte) (Hash256Digest, error) {
-	var h Hash256Digest
-	copied := copy(h[:], b)
-	if copied != 32 {
-		return h, fmt.Errorf("Expected 32 bytes in a Hash256 digest, got %d", copied)
-	}
-	return h, nil
-}
+// Hash160Digest is a 20-byte ripemd160+sha2 hash
+type Hash160Digest = btcspv.Hash160Digest
 
-// Link is a link in the chain
-type Link struct {
-	Digest string `json:"digest"`
-	Parent string `json:"parent"`
-}
+// RawHeader is an 80-byte raw header
+type RawHeader = btcspv.RawHeader
+
+// BitcoinHeader is a parsed Bitcoin header
+type BitcoinHeader = btcspv.BitcoinHeader
+
+// SPVProof is the base struct for an SPV proof
+type SPVProof = btcspv.SPVProof
+
+// // Link is a link in the chain
+// type Link struct {
+// 	Digest string `json:"digest"`
+// 	Parent string `json:"parent"`
+// }

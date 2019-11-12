@@ -10,6 +10,9 @@ const (
 
 	// 100-block -- shared errors
 
+	// UnknownError is an unknown error
+	UnknownError sdk.CodeType = 100
+
 	// BadHeaderLength means Header array length not divisible by 80
 	BadHeaderLength sdk.CodeType = 101
 
@@ -27,6 +30,9 @@ const (
 
 	// BadHex occurs when a hex argument couldn't be deserialized
 	BadHex sdk.CodeType = 106
+
+	// BitcoinSPV is the code for errors bubbled up from Bitcoin SPV
+	BitcoinSPV sdk.CodeType = 107
 
 	// 200-block -- AddHeaders
 
@@ -143,4 +149,9 @@ func ErrBadHash256Digest(codespace sdk.CodespaceType) sdk.Error {
 // ErrBadHex throws an error
 func ErrBadHex(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, BadHex, "Bad hex string in query or msg")
+}
+
+// FromBTCSPVError converts a btcutils error into an sdk error
+func FromBTCSPVError(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, BitcoinSPV, err.Error())
 }

@@ -1,56 +1,50 @@
 package relay
 
 import (
-	"encoding/hex"
-	"fmt"
-
-	"github.com/summa-tx/relays/golang/x/relay/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 // GenesisState is the genesis state
 type GenesisState struct {
-	Headers []string     `json:"headers"`
-	Links   []types.Link `json:"links"`
+	Headers []btcspv.BitcoinHeader `json:"headers"`
 }
 
 // NewGenesisState instantiates a genesis state
-func NewGenesisState(headers []string) GenesisState {
-	return GenesisState{Headers: headers, Links: []types.Link{}}
+func NewGenesisState(headers []btcspv.BitcoinHeader) GenesisState {
+	return GenesisState{Headers: headers}
 }
 
-// ValidateGenesis Validates a genesis state
+// ValidateGenesis validates a genesis state
 func ValidateGenesis(data GenesisState) error {
+	raw := []byte{}
 	for _, header := range data.Headers {
-		if len(header) != 160 {
-			return fmt.Errorf("Invalid header, bad length")
-		}
-
-		_, err := hex.DecodeString(header)
+		_, err := header.Validate()
 		if err != nil {
 			return err
 		}
+		raw = append(raw, header.Raw[:]...)
 	}
+
+	_, err := btcspv.ValidateHeaderChain(raw)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // DefaultGenesisState makes a default empty genesis state
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		Headers: []string{},
-		Links:   []types.Link{},
+		Headers: []btcspv.BitcoinHeader{},
 	}
 }
 
 // InitGenesis inits the app state based on the genesis state
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) []abci.ValidatorUpdate {
-	for _, header := range data.Headers {
-		// can't fail if passes ValidateGenesis
-		h, _ := hex.DecodeString(header)
-		keeper.SetLink(ctx, h)
-	}
+	keeper.IngestHeaderChain(ctx, data.Headers)
 	return []abci.ValidatorUpdate{}
 }
 
