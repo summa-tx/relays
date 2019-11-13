@@ -176,10 +176,15 @@ github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0Q=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
+github.com/summa-tx/bitcoin-spv v2.0.0+incompatible h1:so6fH4hvyZ7LI8mC9mLOiV5u+8gxFpsXG84g1dGyK7M=
 github.com/summa-tx/bitcoin-spv/golang v1.1.0 h1:fpnC/LvOtMFCLrzjCmoTZyCGZr1/skgkJromSk4nBBU=
 github.com/summa-tx/bitcoin-spv/golang v1.1.0/go.mod h1:8VS5yAT8po0RU1YM86UIr1klFm0/JBf5bZHL0eHpYLs=
 github.com/summa-tx/bitcoin-spv/golang v1.1.1-0.20191112011044-15eeb47227b4 h1:ygtjTMYRNTyJvZb2DlN5xnbc20Zw6XSAry4br43XiW0=
 github.com/summa-tx/bitcoin-spv/golang v1.1.1-0.20191112011044-15eeb47227b4/go.mod h1:8VS5yAT8po0RU1YM86UIr1klFm0/JBf5bZHL0eHpYLs=
+github.com/summa-tx/bitcoin-spv/golang v1.1.1-0.20191112210231-284f474dd1a8 h1:M9kZdivYUXYQ2MkZsax89tW54oKXE0/hM3BCb6LMtR0=
+github.com/summa-tx/bitcoin-spv/golang v1.1.1-0.20191112210231-284f474dd1a8/go.mod h1:8VS5yAT8po0RU1YM86UIr1klFm0/JBf5bZHL0eHpYLs=
+github.com/summa-tx/bitcoin-spv/golang v1.1.1-0.20191113003027-995ff9fb2d07 h1:5znRqPaGWwJTgI7eb8yJdHekr6rREwAp9/fdLjgZyD8=
+github.com/summa-tx/bitcoin-spv/golang v1.1.1-0.20191113003027-995ff9fb2d07/go.mod h1:8VS5yAT8po0RU1YM86UIr1klFm0/JBf5bZHL0eHpYLs=
 github.com/syndtr/goleveldb v0.0.0-20180708030551-c4c61651e9e3 h1:sAlSBRDl4psFR3ysKXRSE8ss6Mt90+ma1zRTroTNBJA=
 github.com/syndtr/goleveldb v0.0.0-20180708030551-c4c61651e9e3/go.mod h1:Z4AUp2Km+PwemOoO/VB5AOx9XSsIItzFjoJlOSiYmn0=
 github.com/syndtr/goleveldb v1.0.1-0.20190318030020-c3a204f8e965 h1:1oFLiOyVl+W7bnBzGhf7BbIv9loSFQcieWWYIjLqcAw=
