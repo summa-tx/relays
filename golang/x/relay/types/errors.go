@@ -36,14 +36,11 @@ const (
 
 	// 200-block -- AddHeaders
 
-	// RetargetOnExternal indicates a retarget was seen in AddHeaders
-	RetargetOnExternal sdk.CodeType = 201
-
 	// UnexptectedRetarget indicates a retarget was seen during AddHeaders loop
-	UnexptectedRetarget sdk.CodeType = 202
+	UnexptectedRetarget sdk.CodeType = 201
 
 	// BadLink indicates a broken link was found in the header array during AddHeaders loop
-	BadLink sdk.CodeType = 203
+	BadLink sdk.CodeType = 202
 
 	// 300-block AddHeadersWithRetarget
 
@@ -89,11 +86,6 @@ func ErrUnknownBlock(codespace sdk.CodespaceType) sdk.Error {
 // ErrBadHeight throws an error
 func ErrBadHeight(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, BadHeight, "A descendant height is below the ancestor height")
-}
-
-// ErrRetargetOnExternal throws an error
-func ErrRetargetOnExternal(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, RetargetOnExternal, "Unexpected retarget on external call")
 }
 
 // ErrUnexptectedRetarget throws an error
