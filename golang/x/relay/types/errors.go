@@ -10,6 +10,9 @@ const (
 
 	// 100-block -- shared errors
 
+	// UnknownError is an unknown error
+	UnknownError sdk.CodeType = 100
+
 	// BadHeaderLength means Header array length not divisible by 80
 	BadHeaderLength sdk.CodeType = 101
 
@@ -22,16 +25,25 @@ const (
 	// BadHeight occurs when a proposed descendant is below a proposed ancestor
 	BadHeight sdk.CodeType = 104
 
+	// BadHash256Digest occurs when a wrong-length hash256 digest is found
+	BadHash256Digest sdk.CodeType = 105
+
+	// BadHex occurs when a hex argument couldn't be deserialized
+	BadHex sdk.CodeType = 106
+
+	// BitcoinSPV is the code for errors bubbled up from Bitcoin SPV
+	BitcoinSPV sdk.CodeType = 107
+
+	// AlreadyInit is the code for a second attempt to init the relay
+	AlreadyInit sdk.CodeType = 108
+
 	// 200-block -- AddHeaders
 
-	// RetargetOnExternal indicates a retarget was seen in AddHeaders
-	RetargetOnExternal sdk.CodeType = 201
-
 	// UnexptectedRetarget indicates a retarget was seen during AddHeaders loop
-	UnexptectedRetarget sdk.CodeType = 202
+	UnexptectedRetarget sdk.CodeType = 201
 
 	// BadLink indicates a broken link was found in the header array during AddHeaders loop
-	BadLink sdk.CodeType = 203
+	BadLink sdk.CodeType = 202
 
 	// 300-block AddHeadersWithRetarget
 
@@ -79,11 +91,6 @@ func ErrBadHeight(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, BadHeight, "A descendant height is below the ancestor height")
 }
 
-// ErrRetargetOnExternal throws an error
-func ErrRetargetOnExternal(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, RetargetOnExternal, "Unexpected retarget on external call")
-}
-
 // ErrUnexptectedRetarget throws an error
 func ErrUnexptectedRetarget(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, UnexptectedRetarget, "Target changed unexpectedly")
@@ -127,4 +134,24 @@ func ErrNotHeaviestAncestor(codespace sdk.CodespaceType) sdk.Error {
 // ErrNotHeavier throws an error
 func ErrNotHeavier(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, NotHeavier, "New best hash does not have more work than previous")
+}
+
+// ErrBadHash256Digest throws an error
+func ErrBadHash256Digest(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, BadHash256Digest, "Digest had wrong length")
+}
+
+// ErrBadHex throws an error
+func ErrBadHex(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, BadHex, "Bad hex string in query or msg")
+}
+
+// ErrAlreadyInit throws an error
+func ErrAlreadyInit(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, AlreadyInit, "Relay has already set genesis state")
+}
+
+// FromBTCSPVError converts a btcutils error into an sdk error
+func FromBTCSPVError(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, BitcoinSPV, err.Error())
 }
