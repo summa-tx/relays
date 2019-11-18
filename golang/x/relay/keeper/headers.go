@@ -13,6 +13,22 @@ func (k Keeper) getHeaderStore(ctx sdk.Context) sdk.KVStore {
 	return k.getPrefixStore(ctx, types.HeaderStorePrefix)
 }
 
+// HasHeader checks if a header is in the store
+func (k Keeper) HasHeader(ctx sdk.Context, digestLE types.Hash256Digest) bool {
+	return k.getHeaderStore(ctx).Has(digestLE[:])
+}
+
+// GetHeader retrieves a header from the store using its LE diges
+func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) types.BitcoinHeader {
+	var header types.BitcoinHeader
+	store := k.getHeaderStore(ctx)
+
+	buf := store.Get(digestLE[:])
+	k.cdc.MustUnmarshalBinaryBare(buf, &header)
+
+	return header
+}
+
 func compareTargets(full, truncated sdk.Uint) bool {
 	// dirty hacks. sdk.Uint doesn't give us easy access to the underlying
 	a, _ := full.MarshalAmino()
@@ -35,23 +51,7 @@ func (k Keeper) ingestHeader(ctx sdk.Context, header types.BitcoinHeader) {
 	store.Set(header.HashLE[:], buf)
 }
 
-// HasHeader checks if a header is in the store
-func (k Keeper) HasHeader(ctx sdk.Context, digestLE types.Hash256Digest) bool {
-	return k.getHeaderStore(ctx).Has(digestLE[:])
-}
-
-// GetHeader retrieves a header from the store using its LE diges
-func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) types.BitcoinHeader {
-	var header types.BitcoinHeader
-	store := k.getHeaderStore(ctx)
-
-	buf := store.Get(digestLE[:])
-	k.cdc.MustUnmarshalBinaryBare(buf, &header)
-
-	return header
-}
-
-func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader) sdk.Error {
+func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, internal bool) sdk.Error {
 	if !k.HasHeader(ctx, headers[0].PrevHashLE) {
 		return types.ErrUnknownBlock(types.DefaultCodespace)
 	}
@@ -59,7 +59,11 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader) sd
 	anchor := k.GetHeader(ctx, headers[0].PrevHashLE)
 	prev := anchor // scratchpad, we change this later
 
-	target := btcspv.ExtractTarget(anchor.Raw)
+	// On internal call, use the header chain target
+	expectedTarget := btcspv.ExtractTarget(anchor.Raw)
+	if internal {
+		expectedTarget = btcspv.ExtractTarget(headers[0].Raw)
+	}
 
 	// allocate memory for raw anchor + all headers
 	raw := make([]byte, 80*(len(headers)+1))
@@ -78,8 +82,8 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader) sd
 			return types.ErrBadHeight(types.DefaultCodespace)
 		}
 
-		// ensure target doesn't change
-		if btcspv.ExtractTarget(header.Raw) != target {
+		// ensure expectedTarget doesn't change
+		if btcspv.ExtractTarget(header.Raw) != expectedTarget {
 			return types.ErrUnexptectedRetarget(types.DefaultCodespace)
 		}
 
@@ -137,13 +141,13 @@ func (k Keeper) ingestDiffChange(ctx sdk.Context, prevEpochStartLE types.Hash256
 		return types.ErrBadRetarget(types.DefaultCodespace)
 	}
 
-	return k.ingestHeaders(ctx, headers)
+	return k.ingestHeaders(ctx, headers, true)
 }
 
 // IngestHeaderChain ingests a chain of headers
 func (k Keeper) IngestHeaderChain(ctx sdk.Context, headers []types.BitcoinHeader) sdk.Error {
 	// Find the anchor in our store
-	return k.ingestHeaders(ctx, headers)
+	return k.ingestHeaders(ctx, headers, false)
 }
 
 // IngestDiffChange ingests a chain of headers
