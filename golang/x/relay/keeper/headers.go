@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/hex"
 	"math/big"
 
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
@@ -11,6 +12,16 @@ import (
 
 func (k Keeper) getHeaderStore(ctx sdk.Context) sdk.KVStore {
 	return k.getPrefixStore(ctx, types.HeaderStorePrefix)
+}
+
+func (k Keeper) emitExtension(ctx sdk.Context, first, last types.BitcoinHeader) {
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeExtension,
+			sdk.NewAttribute(types.AttributeKeyFirstBlock, "0x"+hex.EncodeToString(first.HashLE[:])),
+			sdk.NewAttribute(types.AttributeKeyLastBlock, "0x"+hex.EncodeToString(last.HashLE[:])),
+		),
+	)
 }
 
 // HasHeader checks if a header is in the store
