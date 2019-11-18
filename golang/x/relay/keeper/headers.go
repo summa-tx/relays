@@ -29,19 +29,20 @@ func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) types.B
 	return header
 }
 
+// compareTargets compares Bitcoin truncated and full-length targets
 func compareTargets(full, truncated sdk.Uint) bool {
 	// dirty hacks. sdk.Uint doesn't give us easy access to the underlying
-	a, _ := full.MarshalAmino()
-	e, _ := truncated.MarshalAmino()
-	actualBI := new(big.Int)
-	actualBI.SetString(a, 0)
-	expectedBI := new(big.Int)
-	expectedBI.SetString(e, 0)
+	f, _ := full.MarshalAmino()
+	t, _ := truncated.MarshalAmino()
+	fullBI := new(big.Int)
+	fullBI.SetString(f, 0)
+	truncatedBI := new(big.Int)
+	truncatedBI.SetString(t, 0)
 
 	res := new(big.Int)
-	res.And(actualBI, expectedBI)
+	res.And(fullBI, truncatedBI)
 
-	return expectedBI == res
+	return truncatedBI.Cmp(res) == 0
 }
 
 func (k Keeper) ingestHeader(ctx sdk.Context, header types.BitcoinHeader) {

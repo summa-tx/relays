@@ -34,6 +34,9 @@ const (
 	// BitcoinSPV is the code for errors bubbled up from Bitcoin SPV
 	BitcoinSPV sdk.CodeType = 107
 
+	// AlreadyInit is the code for a second attempt to init the relay
+	AlreadyInit sdk.CodeType = 108
+
 	// 200-block -- AddHeaders
 
 	// UnexptectedRetarget indicates a retarget was seen during AddHeaders loop
@@ -141,6 +144,11 @@ func ErrBadHash256Digest(codespace sdk.CodespaceType) sdk.Error {
 // ErrBadHex throws an error
 func ErrBadHex(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, BadHex, "Bad hex string in query or msg")
+}
+
+// ErrAlreadyInit throws an error
+func ErrAlreadyInit(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, AlreadyInit, "Relay has already set genesis state")
 }
 
 // FromBTCSPVError converts a btcutils error into an sdk error

@@ -8,10 +8,13 @@ const (
 	StoreKey = ModuleName
 
 	// LinkStorePrefix to be used when accessing links
-	LinkStorePrefix = ModuleName + "links-"
+	LinkStorePrefix = ModuleName + "-links-"
 
 	// HeaderStorePrefix to be used when accessing headers
-	HeaderStorePrefix = ModuleName + "headers-"
+	HeaderStorePrefix = ModuleName + "-headers-"
+
+	// ChainStorePrefix to be used when accessing chain metadata
+	ChainStorePrefix = ModuleName + "-chain-"
 
 	// RelayGenesisStorage is the storage key for the relay genesis digest
 	RelayGenesisStorage = "RelayGenesis"
