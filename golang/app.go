@@ -93,9 +93,7 @@ func MakeCodec() *codec.Codec {
 }
 
 // NewRelayApp instantiates a new Bitcoin relay app
-func NewRelayApp(
-	logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp),
-) *relayApp {
+func NewRelayApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *relayApp {
 	// First define the top level codec that will be shared by the different modules. Note: Codec will be explained later
 	cdc := MakeCodec()
 
@@ -197,6 +195,7 @@ func NewRelayApp(
 	app.relayKeeper = relay.NewKeeper(
 		keys[relay.StoreKey],
 		app.cdc,
+		true, // TODO: pass this in somehow
 	)
 
 	app.mm = module.NewManager(
@@ -204,7 +203,7 @@ func NewRelayApp(
 		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.accountKeeper),
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
-		relay.NewAppModule(app.relayKeeper, app.bankKeeper),
+		relay.NewAppModule(app.relayKeeper),
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
 		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),

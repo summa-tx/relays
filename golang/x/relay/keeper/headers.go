@@ -75,7 +75,6 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 	copy(raw[0:80], anchor.Raw[:])
 
 	// Make the raw chain
-	// TODO: test behavior
 	for i, header := range headers {
 		_, err := header.Validate()
 		if err != nil {
@@ -88,7 +87,8 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 		}
 
 		// ensure expectedTarget doesn't change
-		if btcspv.ExtractTarget(header.Raw) != expectedTarget {
+		// it's allowed to change if the relay is in testnet mode
+		if k.IsMainNet && btcspv.ExtractTarget(header.Raw) != expectedTarget {
 			return types.ErrUnexptectedRetarget(types.DefaultCodespace)
 		}
 
