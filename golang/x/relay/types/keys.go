@@ -21,4 +21,7 @@ const (
 
 	// BestKnownDigestStorage is the storage key for the best known digest
 	BestKnownDigestStorage = "BestKnownDigest"
+
+	// LastReorgLCAStorage is the storage key for the last reorg LCA
+	LastReorgLCAStorage = "LastReorgLCA"
 )

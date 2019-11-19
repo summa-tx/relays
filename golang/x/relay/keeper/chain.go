@@ -33,18 +33,6 @@ func (k Keeper) SetGenesisState(ctx sdk.Context, genesis, epochStart btcspv.Bitc
 
 }
 
-// GetRelayGenesis returns the first digest in the relay
-func (k Keeper) GetRelayGenesis(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
-	store := k.getChainStore(ctx)
-	result := store.Get([]byte(types.RelayGenesisStorage))
-
-	digest, err := btcspv.NewHash256Digest(result)
-	if err != nil {
-		return digest, types.ErrBadHash256Digest(types.DefaultCodespace)
-	}
-	return digest, nil
-}
-
 // setRelayGenesis sets the first digest in the relay
 func (k Keeper) setRelayGenesis(ctx sdk.Context, relayGenesis types.Hash256Digest) {
 	// TODO: Remove this in favor of Genesis state
@@ -52,7 +40,19 @@ func (k Keeper) setRelayGenesis(ctx sdk.Context, relayGenesis types.Hash256Diges
 	store.Set([]byte(types.RelayGenesisStorage), relayGenesis[:])
 }
 
-// setBestKnownDigest sets the first digest in the relay
+// GetRelayGenesis returns the first digest in the relay
+func (k Keeper) GetRelayGenesis(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
+	store := k.getChainStore(ctx)
+	result := store.Get([]byte(types.RelayGenesisStorage))
+
+	digest, err := btcspv.NewHash256Digest(result)
+	if err != nil {
+		return types.Hash256Digest{}, types.ErrBadHash256Digest(types.DefaultCodespace)
+	}
+	return digest, nil
+}
+
+// setBestKnownDigest sets the best known chain tip
 func (k Keeper) setBestKnownDigest(ctx sdk.Context, bestKnown types.Hash256Digest) {
 	// TODO: Remove this in favor of Genesis state
 	store := k.getChainStore(ctx)
@@ -60,13 +60,32 @@ func (k Keeper) setBestKnownDigest(ctx sdk.Context, bestKnown types.Hash256Diges
 }
 
 // GetBestKnownDigest returns the best known digest in the relay
-func (k Keeper) GetBestKnownDigest(ctx sdk.Context, digest types.Hash256Digest) (types.Hash256Digest, sdk.Error) {
+func (k Keeper) GetBestKnownDigest(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
 	store := k.getChainStore(ctx)
 	result := store.Get([]byte(types.BestKnownDigestStorage))
 
 	digest, err := btcspv.NewHash256Digest(result)
 	if err != nil {
-		return digest, types.ErrBadHash256Digest(types.DefaultCodespace)
+		return types.Hash256Digest{}, types.ErrBadHash256Digest(types.DefaultCodespace)
+	}
+	return digest, nil
+}
+
+// setLastReorgLCA sets the latest common ancestor of the last reorg
+func (k Keeper) setLastReorgLCA(ctx sdk.Context, bestKnown types.Hash256Digest) {
+	// TODO: Remove this in favor of Genesis state
+	store := k.getChainStore(ctx)
+	store.Set([]byte(types.LastReorgLCAStorage), bestKnown[:])
+}
+
+// GetLastReorgLCA returns the best known digest in the relay
+func (k Keeper) GetLastReorgLCA(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
+	store := k.getChainStore(ctx)
+	result := store.Get([]byte(types.LastReorgLCAStorage))
+
+	digest, err := btcspv.NewHash256Digest(result)
+	if err != nil {
+		return types.Hash256Digest{}, types.ErrBadHash256Digest(types.DefaultCodespace)
 	}
 	return digest, nil
 }
