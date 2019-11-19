@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"encoding/hex"
-
 	"github.com/summa-tx/relays/golang/x/relay/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -14,14 +12,7 @@ func (k Keeper) getChainStore(ctx sdk.Context) sdk.KVStore {
 }
 
 func (k Keeper) emitReorg(ctx sdk.Context, prev, new, lca types.BitcoinHeader) {
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			types.EventTypeReorg,
-			sdk.NewAttribute(types.AttributeKeyPreviousBest, "0x"+hex.EncodeToString(prev.HashLE[:])),
-			sdk.NewAttribute(types.AttributeKeyNewBest, "0x"+hex.EncodeToString(new.HashLE[:])),
-			sdk.NewAttribute(types.AttributeKeyLatestCommon, "0x"+hex.EncodeToString(lca.HashLE[:])),
-		),
-	)
+	ctx.EventManager().EmitEvent(types.NewReorgEvent(prev, new, lca))
 }
 
 // SetGenesisState sets the genesis state

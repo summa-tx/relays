@@ -52,7 +52,7 @@ func DefaultGenesisState() GenesisState {
 
 // InitGenesis inits the app state based on the genesis state
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) []abci.ValidatorUpdate {
-	keeper.SetGenesisState(data.Headers[0], data.PeriodStart)
+	keeper.SetGenesisState(ctx, data.Headers[0], data.PeriodStart)
 	keeper.IngestHeaderChain(ctx, data.Headers[1:])
 	return []abci.ValidatorUpdate{}
 }

@@ -1,5 +1,11 @@
 package types
 
+import (
+	"encoding/hex"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
 // Relay module event types
 const (
 	EventTypeExtension = "extension"
@@ -13,5 +19,21 @@ const (
 	AttributeKeyLatestCommon = "latest_common_ancestor"
 )
 
-// event Extension(bytes32 indexed _first, bytes32 indexed _last);
-// event Reorg(bytes32 indexed _from, bytes32 indexed _to, bytes32 indexed _gcd);
+// NewReorgEvent instantiates a reorg event
+func NewReorgEvent(prev, new, lca BitcoinHeader) sdk.Event {
+	return sdk.NewEvent(
+		EventTypeReorg,
+		sdk.NewAttribute(AttributeKeyPreviousBest, "0x"+hex.EncodeToString(prev.HashLE[:])),
+		sdk.NewAttribute(AttributeKeyNewBest, "0x"+hex.EncodeToString(new.HashLE[:])),
+		sdk.NewAttribute(AttributeKeyLatestCommon, "0x"+hex.EncodeToString(lca.HashLE[:])),
+	)
+}
+
+// NewExtensionEvent instantiates an extension event
+func NewExtensionEvent(first, last BitcoinHeader) sdk.Event {
+	return sdk.NewEvent(
+		EventTypeExtension,
+		sdk.NewAttribute(AttributeKeyFirstBlock, "0x"+hex.EncodeToString(first.HashLE[:])),
+		sdk.NewAttribute(AttributeKeyLastBlock, "0x"+hex.EncodeToString(last.HashLE[:])),
+	)
+}
