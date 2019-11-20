@@ -71,6 +71,11 @@ const (
 	NotHeavier sdk.CodeType = 405
 )
 
+// ErrUnknownError throws an error
+func ErrUnknownError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, UnknownError, "Unknown Error")
+}
+
 // ErrBadHeaderLength throws an error
 func ErrBadHeaderLength(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, BadHeaderLength, "Header array length must be divisible by 80")

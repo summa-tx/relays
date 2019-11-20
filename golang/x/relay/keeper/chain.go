@@ -11,7 +11,7 @@ func (k Keeper) getChainStore(ctx sdk.Context) sdk.KVStore {
 	return k.getPrefixStore(ctx, types.ChainStorePrefix)
 }
 
-func (k Keeper) emitReorg(ctx sdk.Context, prev, new, lca types.BitcoinHeader) {
+func (k Keeper) emitReorg(ctx sdk.Context, prev, new, lca types.Hash256Digest) {
 	ctx.EventManager().EmitEvent(types.NewReorgEvent(prev, new, lca))
 }
 
@@ -78,4 +78,121 @@ func (k Keeper) setLastReorgLCA(ctx sdk.Context, bestKnown types.Hash256Digest) 
 // GetLastReorgLCA returns the best known digest in the relay
 func (k Keeper) GetLastReorgLCA(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
 	return k.getDigestByStoreKey(ctx, types.LastReorgLCAStorage)
+}
+
+func (k Keeper) isMostRecentCommonAncestor(ctx sdk.Context, ancestor, left, right types.Hash256Digest, limit uint32) bool {
+	if ancestor == left && ancestor == right {
+		return true
+	}
+
+	leftCurrent := left
+	leftPrev := left
+
+	rightCurrent := right
+	rightPrev := right
+
+	for i := uint32(0); i < limit; i++ {
+		if leftPrev != ancestor {
+			leftCurrent = leftPrev
+			leftPrev = k.getLink(ctx, leftPrev)
+		}
+		if rightPrev != ancestor {
+			rightCurrent = rightPrev
+			rightPrev = k.getLink(ctx, rightPrev)
+		}
+		if leftPrev == rightPrev {
+			break
+		}
+	}
+
+	if leftCurrent == rightCurrent {
+		return false
+	}
+
+	if leftPrev != rightPrev {
+		return false
+	}
+
+	return true
+}
+
+func (k Keeper) heaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, newBest types.Hash256Digest, limit uint32) (types.Hash256Digest, sdk.Error) {
+	ancestorBlock := k.GetHeader(ctx, ancestor)
+	leftBlock := k.GetHeader(ctx, currentBest)
+	rightBlock := k.GetHeader(ctx, newBest)
+
+	if leftBlock.Height < ancestorBlock.Height || rightBlock.Height < ancestorBlock.Height {
+		return types.Hash256Digest{}, types.ErrBadHeight(types.DefaultCodespace)
+	}
+
+	nextPeriodStartHeight := ancestorBlock.Height + 2016 - (ancestorBlock.Height % 2016)
+	leftInPeriod := leftBlock.Height < nextPeriodStartHeight
+	rightInPeriod := rightBlock.Height < nextPeriodStartHeight
+
+	/*
+		NB:
+		1. Left is in a new window, right is in the old window. Left is heavier
+		2. Right is in a new window, left is in the old window. Right is heavier
+		3. Both are in the same window, choose the higher one
+		4. They're in different new windows. Choose the heavier one
+	*/
+
+	if !leftInPeriod && rightInPeriod {
+		return leftBlock.HashLE, nil
+	}
+	if leftInPeriod && !rightInPeriod {
+		return rightBlock.HashLE, nil
+	}
+	if leftInPeriod && rightInPeriod {
+		if leftBlock.Height >= rightBlock.Height {
+			return leftBlock.HashLE, nil
+		}
+		return rightBlock.HashLE, nil
+	}
+
+	// if !leftInPeriod && !rightInPeriod
+	leftDiff := btcspv.ExtractDifficulty(leftBlock.Raw)
+	leftAccDiff := leftDiff.Mul(sdk.NewUint(uint64(leftBlock.Height % 2016)))
+
+	rightDiff := btcspv.ExtractDifficulty(rightBlock.Raw)
+	rightAccDiff := rightDiff.Mul(sdk.NewUint(uint64(rightBlock.Height % 2016)))
+
+	if leftAccDiff.GTE(rightAccDiff) {
+		return leftBlock.HashLE, nil
+	}
+	return rightBlock.HashLE, nil
+}
+
+// MarkNewHeaviest updates the best known digest and LCA
+func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, currentBest, newBest types.RawHeader, limit uint32) sdk.Error {
+	newBestDigest := btcspv.Hash256(newBest[:])
+	currentBestDigest := btcspv.Hash256(currentBest[:])
+
+	knownBestDigest, err := k.GetBestKnownDigest(ctx)
+	if err != nil || currentBestDigest != knownBestDigest {
+		return types.ErrNotBestKnown(types.DefaultCodespace)
+	}
+
+	if !k.HasHeader(ctx, newBestDigest) {
+		return types.ErrUnknownBlock(types.DefaultCodespace)
+	}
+
+	if !k.isMostRecentCommonAncestor(ctx, ancestor, knownBestDigest, newBestDigest, limit) {
+		return types.ErrNotHeaviestAncestor(types.DefaultCodespace)
+	}
+
+	better, err := k.heaviestFromAncestor(ctx, ancestor, knownBestDigest, newBestDigest, limit)
+	if err != nil {
+		return err
+	}
+
+	if newBestDigest != better {
+		return types.ErrNotHeavier(types.DefaultCodespace)
+	}
+
+	k.setLastReorgLCA(ctx, ancestor)
+	k.setBestKnownDigest(ctx, newBestDigest)
+	k.emitReorg(ctx, knownBestDigest, newBestDigest, ancestor)
+
+	return nil
 }

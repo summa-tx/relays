@@ -20,12 +20,12 @@ const (
 )
 
 // NewReorgEvent instantiates a reorg event
-func NewReorgEvent(prev, new, lca BitcoinHeader) sdk.Event {
+func NewReorgEvent(prev, new, lca Hash256Digest) sdk.Event {
 	return sdk.NewEvent(
 		EventTypeReorg,
-		sdk.NewAttribute(AttributeKeyPreviousBest, "0x"+hex.EncodeToString(prev.HashLE[:])),
-		sdk.NewAttribute(AttributeKeyNewBest, "0x"+hex.EncodeToString(new.HashLE[:])),
-		sdk.NewAttribute(AttributeKeyLatestCommon, "0x"+hex.EncodeToString(lca.HashLE[:])),
+		sdk.NewAttribute(AttributeKeyPreviousBest, "0x"+hex.EncodeToString(prev[:])),
+		sdk.NewAttribute(AttributeKeyNewBest, "0x"+hex.EncodeToString(new[:])),
+		sdk.NewAttribute(AttributeKeyLatestCommon, "0x"+hex.EncodeToString(lca[:])),
 	)
 }
 
