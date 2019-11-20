@@ -80,7 +80,8 @@ func (k Keeper) GetLastReorgLCA(ctx sdk.Context) (types.Hash256Digest, sdk.Error
 	return k.getDigestByStoreKey(ctx, types.LastReorgLCAStorage)
 }
 
-func (k Keeper) isMostRecentCommonAncestor(ctx sdk.Context, ancestor, left, right types.Hash256Digest, limit uint32) bool {
+// IsMostRecentCommonAncestor checks if a proposed ancestor is the LCA of two digests
+func (k Keeper) IsMostRecentCommonAncestor(ctx sdk.Context, ancestor, left, right types.Hash256Digest, limit uint32) bool {
 	if ancestor == left && ancestor == right {
 		return true
 	}
@@ -116,7 +117,8 @@ func (k Keeper) isMostRecentCommonAncestor(ctx sdk.Context, ancestor, left, righ
 	return true
 }
 
-func (k Keeper) heaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, newBest types.Hash256Digest, limit uint32) (types.Hash256Digest, sdk.Error) {
+// HeaviestFromAncestor determines the heavier descendant of a common ancestor
+func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, newBest types.Hash256Digest, limit uint32) (types.Hash256Digest, sdk.Error) {
 	ancestorBlock := k.GetHeader(ctx, ancestor)
 	leftBlock := k.GetHeader(ctx, currentBest)
 	rightBlock := k.GetHeader(ctx, newBest)
@@ -177,11 +179,11 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 		return types.ErrUnknownBlock(types.DefaultCodespace)
 	}
 
-	if !k.isMostRecentCommonAncestor(ctx, ancestor, knownBestDigest, newBestDigest, limit) {
+	if !k.IsMostRecentCommonAncestor(ctx, ancestor, knownBestDigest, newBestDigest, limit) {
 		return types.ErrNotHeaviestAncestor(types.DefaultCodespace)
 	}
 
-	better, err := k.heaviestFromAncestor(ctx, ancestor, knownBestDigest, newBestDigest, limit)
+	better, err := k.HeaviestFromAncestor(ctx, ancestor, knownBestDigest, newBestDigest, limit)
 	if err != nil {
 		return err
 	}
