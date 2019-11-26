@@ -1,13 +1,21 @@
 package types
 
 import (
+	"bytes"
 	"encoding/hex"
+	"errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
 // RouterKey is a name for the router
 const RouterKey = ModuleName // this was defined in your key.go file
+
+const HEIGHT_INTERVAL = 4
+
+var bestKnownDigest []byte
+var lastReorgCommonAncestor []byte
 
 // MsgSetLink defines a SetLink message
 type MsgSetLink struct {
@@ -52,142 +60,127 @@ func (msg MsgSetLink) GetSignBytes() []byte {
 // Route should return the name of the module
 func (msg MsgSetLink) Route() string { return RouterKey }
 
-// TODO: Write AddHeaders
+// TODO: Add digest type that is 32 bytes long
 // AddHeaders adds headers to storage after validating.  We check
 // integrity and consistency of the header chain.
 func AddHeaders(anchor []byte, headers []byte, internal bool) (bool, error) {
+	var height sdk.Uint
+	var header []byte
+	var currentDigest []byte
+	var previousDigest []byte = btcspv.Hash256(anchor)
 
+	target := btcspv.ExtractTarget(headers[0:80])
+	// TODO: write findHeight in queries
+	anchorHeight := findHeight(previousDigest) /* NB: errors if unknown */
+	extractedTarget := btcspv.ExtractTarget(anchor)
+	if !(internal || extractedTarget == target) {
+		return false, errors.New("Header array length must be divisible by 80")
+	}
+
+	/*
+		NB:
+		1. check that the header has sufficient work
+		2. check that headers are in a coherent chain (no retargets, hash links good)
+		3. Store the block connection
+		4. Store the height
+	*/
+	for i := 0; i < len(headers)/80; i++ {
+		start := i * 80
+		header := headers[start:(start + 80)]
+		height := anchorHeight + i + 1
+		currentDigest = btcspv.Hash256(header)
+		/*
+			NB:
+			if the block is already authenticated, we don't need to a work check
+			Or write anything to state. This saves gas
+		*/
+		if bytes.Equal(currentDigest, bytes.Repeat([]byte{0}, 32)) {
+			if btcspv.BytesToBigUint(btcspv.ReverseEndianness(currentDigest)).LTE(target) {
+				return false, errors.New("Header work is insufficient")
+			}
+			currentDigest = previousDigest
+			if height%HEIGHT_INTERVAL == 0 {
+				/*
+					NB: We store the height only every 4th header to save gas
+				*/
+				currentDigest = height
+			}
+		}
+		/* NB: we do still need to make chain level checks tho */
+		if !(btcspv.ExtractTarget(header) == target) {
+			return false, errors.New("Target changed unexpectedly")
+		}
+		if !(btcspv.ValidateHeaderPrevHash(header, previousDigest)) {
+			return false, errors.New("Headers do not form a consistent chain")
+		}
+
+		previousDigest = currentDigest
+	}
+	// TODO: How to do this in go...
+	// emit Extension(
+	// _anchor.hash256(),
+	// _currentDigest);
+	return true, nil
 }
 
-// function _addHeaders(bytes memory _anchor, bytes memory _headers, bool _internal) internal returns (bool) {
-// 	uint256 _height;
-// 	bytes memory _header;
-// 	bytes32 _currentDigest;
-// 	bytes32 _previousDigest = _anchor.hash256();
-
-// 	uint256 _target = _headers.slice(0, 80).extractTarget();
-// 	uint256 _anchorHeight = _findHeight(_previousDigest);  /* NB: errors if unknown */
-
-// 	require(
-// 			_internal || _anchor.extractTarget() == _target,
-// 			"Unexpected retarget on external call");
-// 	require(_headers.length % 80 == 0, "Header array length must be divisible by 80");
-
-// 	/*
-// 	NB:
-// 	1. check that the header has sufficient work
-// 	2. check that headers are in a coherent chain (no retargets, hash links good)
-// 	3. Store the block connection
-// 	4. Store the height
-// 	*/
-// 	for (uint256 i = 0; i < _headers.length / 80; i = i.add(1)) {
-// 			_header = _headers.slice(i.mul(80), 80);
-// 			_height = _anchorHeight.add(i + 1);
-// 			_currentDigest = _header.hash256();
-
-// 			/*
-// 			NB:
-// 			if the block is already authenticated, we don't need to a work check
-// 			Or write anything to state. This saves gas
-// 			*/
-// 			if (previousBlock[_currentDigest] == bytes32(0)) {
-// 					require(
-// 							abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
-// 							"Header work is insufficient");
-// 					previousBlock[_currentDigest] = _previousDigest;
-// 					if (_height % HEIGHT_INTERVAL == 0) {
-// 							/*
-// 							NB: We store the height only every 4th header to save gas
-// 							*/
-// 							blockHeight[_currentDigest] = _height;
-// 					}
-// 			}
-
-// 			/* NB: we do still need to make chain level checks tho */
-// 			require(_header.extractTarget() == _target, "Target changed unexpectedly");
-// 			require(_header.validateHeaderPrevHash(_previousDigest), "Headers do not form a consistent chain");
-
-// 			_previousDigest = _currentDigest;
-// 	}
-
-// 	emit Extension(
-// 			_anchor.hash256(),
-// 			_currentDigest);
-// 	return true;
-// }
-
-// TODO: write AddHeadersWithRetarget
 // Adds headers to storage, performs additional validation of retarget.
 func AddHeadersWithRetarget(oldPeriodStartHeader []byte, oldPeriodEndHeader []byte, headers []byte) (bool, error) {
+	/* NB: requires that both blocks are known */
+	startHeight := findHeight(btcspv.Hash256(oldPeriodStartHeader))
+	endHeight := findHeight(btcspv.Hash256(oldPeriodEndHeader))
 
+	/* NB: retargets should happen at 2016 block intervals */
+	if endHeight%2016 != 2015 {
+		return false, errors.New("Must provide the last header of the closing difficulty period")
+	} else if endHeight != startHeight+2015 {
+		return false, errors.New("Must provide exactly 1 difficulty period")
+	} else if btcspv.ExtractDifficulty(oldPeriodStartHeader) != btcspv.ExtractDifficulty(oldPeriodEndHeader) {
+		return false, errors.New("Period header difficulties do not match")
+	}
+
+	/* NB: This comparison looks weird because header nBits encoding truncates targets */
+
+	newPeriodStart := headers[0:80]
+	actualTarget := btcspv.ExtractTarget(newPeriodStart)
+	expectedTarget := btcspv.RetargetAlgorithm(
+		btcspv.ExtractTarget(oldPeriodStartHeader),
+		btcspv.ExtractTimestamp(oldPeriodStartHeader),
+		btcspv.ExtractTimestamp(oldPeriodEndHeader))
+	// TODO: Fix next line &
+	if actualTarget&expectedTarget != actualTarget {
+		return false, errors.New("Invalid retarget provided")
+	}
+
+	// Pass all but the first through to be added
+	return AddHeaders(oldPeriodEndHeader, headers, true)
+
+	return true, nil
 }
-
-// function _addHeadersWithRetarget(
-// 	bytes memory _oldPeriodStartHeader,
-// 	bytes memory _oldPeriodEndHeader,
-// 	bytes memory _headers
-// ) internal returns (bool) {
-// 	/* NB: requires that both blocks are known */
-// 	uint256 _startHeight = _findHeight(_oldPeriodStartHeader.hash256());
-// 	uint256 _endHeight = _findHeight(_oldPeriodEndHeader.hash256());
-
-// 	/* NB: retargets should happen at 2016 block intervals */
-// 	require(
-// 			_endHeight % 2016 == 2015,
-// 			"Must provide the last header of the closing difficulty period");
-// 	require(
-// 			_endHeight == _startHeight.add(2015),
-// 			"Must provide exactly 1 difficulty period");
-// 	require(
-// 			_oldPeriodStartHeader.extractDifficulty() == _oldPeriodEndHeader.extractDifficulty(),
-// 			"Period header difficulties do not match");
-
-// 	/* NB: This comparison looks weird because header nBits encoding truncates targets */
-// 	bytes memory _newPeriodStart = _headers.slice(0, 80);
-// 	uint256 _actualTarget = _newPeriodStart.extractTarget();
-// 	uint256 _expectedTarget = BTCUtils.retargetAlgorithm(
-// 			_oldPeriodStartHeader.extractTarget(),
-// 			_oldPeriodStartHeader.extractTimestamp(),
-// 			_oldPeriodEndHeader.extractTimestamp()
-// 	);
-// 	require(
-// 			(_actualTarget & _expectedTarget) == _actualTarget,
-// 			"Invalid retarget provided");
-
-// 	// Pass all but the first through to be added
-// 	return _addHeaders(_oldPeriodEndHeader, _headers, true);
-// }
 
 // TODO: write MarkNewHeaviest
 // Gives a starting point for the relay. We don't check this AT ALL really. Don't use relays with bad genesis
-func MarkNewHeaviest(ancestor []byte, currentBest []byte, newBest []byte, limit uint256) (bool, error) {
+func MarkNewHeaviest(ancestor []byte, currentBest []byte, newBest []byte, limit sdk.Uint) (bool, error) {
+	newBestDigest := btcspv.Hash256(newBest)
+	currentBestDigest := btcspv.Hash256(currentBest)
+	// TODO: Where is bestKnownDigest coming from?
+	if !bytes.Equal(currentBestDigest, bestKnownDigest) {
+		return false, errors.New("Passed in best is not best known")
+	} else if bytes.Equal(newBestDigest, bytes.Repeat([]byte{0}, 32)) {
+		return false, errors.New("New best is unknown")
+	} else if !isMostRecentAncestor(ancestor, bestKnownDigest, newBestDigest, limit) {
+		return false, errors.New("Ancestor must be heaviest common ancestor")
+	} else if !bytes.Equal(
+		heaviestFromAncestor(ancestor, currentBest, newBest),
+		newBestDigest) {
+		return false, errors.New("New best hash does not have more work than previous")
+	}
+	bestKnownDigest = newBestDigest
+	lastReorgCommonAncestor = ancestor
+	// TODO: Figure out how to do this in go
+	// emit Reorg(
+	// 	_currentBestDigest,
+	// 	_newBestDigest,
+	// 	_ancestor);
 
+	return true, nil
 }
-
-// function _markNewHeaviest(
-// 	bytes32 _ancestor,
-// 	bytes memory _currentBest,
-// 	bytes memory _newBest,
-// 	uint256 _limit
-// ) internal returns (bool) {
-// 	bytes32 _newBestDigest = _newBest.hash256();
-// 	bytes32 _currentBestDigest = _currentBest.hash256();
-// 	require(_currentBestDigest == bestKnownDigest, "Passed in best is not best known");
-// 	require(
-// 			previousBlock[_newBestDigest] != bytes32(0),
-// 			"New best is unknown");
-// 	require(
-// 			_isMostRecentAncestor(_ancestor, bestKnownDigest, _newBestDigest, _limit),
-// 			"Ancestor must be heaviest common ancestor");
-// 	require(
-// 			_heaviestFromAncestor(_ancestor, _currentBest, _newBest) == _newBestDigest,
-// 			"New best hash does not have more work than previous");
-
-// 	bestKnownDigest = _newBestDigest;
-// 	lastReorgCommonAncestor = _ancestor;
-// 	emit Reorg(
-// 			_currentBestDigest,
-// 			_newBestDigest,
-// 			_ancestor);
-// 	return true;
-// }
