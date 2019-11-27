@@ -118,8 +118,8 @@ func AddHeaders(anchor []byte, headers []byte, internal bool) (bool, error) {
 	}
 	// TODO: How to do this in go...
 	// emit Extension(
-	// _anchor.hash256(),
-	// _currentDigest);
+	// btcspv.Hash256(anchor),
+	// currentDigest);
 	return true, nil
 }
 
@@ -157,7 +157,7 @@ func AddHeadersWithRetarget(oldPeriodStartHeader []byte, oldPeriodEndHeader []by
 	return true, nil
 }
 
-// TODO: write MarkNewHeaviest
+// TODO: write isMostRecentAncestor and heaviestFromAncestor
 // Gives a starting point for the relay. We don't check this AT ALL really. Don't use relays with bad genesis
 func MarkNewHeaviest(ancestor []byte, currentBest []byte, newBest []byte, limit sdk.Uint) (bool, error) {
 	newBestDigest := btcspv.Hash256(newBest)
@@ -178,9 +178,9 @@ func MarkNewHeaviest(ancestor []byte, currentBest []byte, newBest []byte, limit 
 	lastReorgCommonAncestor = ancestor
 	// TODO: Figure out how to do this in go
 	// emit Reorg(
-	// 	_currentBestDigest,
-	// 	_newBestDigest,
-	// 	_ancestor);
+	// 	currentBestDigest,
+	// 	newBestDigest,
+	// 	ancestor);
 
 	return true, nil
 }
