@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
+	"github.com/summa-tx/relays/golang/x/relay/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -36,33 +37,43 @@ func queryIsAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keep
 	// parse the first path item as hex.
 	// TODO: check that the path is this many items long, error if not
 	hexDigest := path[0]
-	digestBytes, err := hex.DecodeString(hexDigest)
-	if err != nil {
+	digestBytes, decodeErr := hex.DecodeString(hexDigest)
+	if decodeErr != nil {
 		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
 	}
-	digestLE := btcspv.NewHash256Digest(digestBytes)
+	digestLE, newDigestErr := btcspv.NewHash256Digest(digestBytes)
+	if newDigestErr != nil {
+		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
+	}
 
 	// parse the second path item as hex.
 	// TODO: check that the path is this many items long, error if not
 	ancestorDigest := path[1]
-	ancestorDigestBytes, err := hex.DecodeString(ancestorDigest)
+	ancestorDigestBytes, decodeErr := hex.DecodeString(ancestorDigest)
 	if err != nil {
 		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
 	}
-	ancestorDigestLE := btcspv.NewHash256Digest(ancestorDigestBytes)
+	ancestorDigestLE, newDigestErr := btcspv.NewHash256Digest(ancestorDigestBytes)
+	if newDigestErr != nil {
+		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
+	}
 
 	// TODO: check that the path is this many items long, error if not
-	limit := 25 // TODO: parse from path, use 240 as default if not in path
+	limit := uint32(25) // TODO: parse from path, use 240 as default if not in path
 
 	// This calls the keeper with the parsed arguments, and gets an answer
 	result := keeper.IsAncestor(ctx, ancestorDigestLE, digestLE, limit)
 
 	// Now we format the answer as a response
-	response := types.QueryResIsAncestor{digestLE, ancestorDigestLE, result}
+	response := types.QueryResIsAncestor{
+		Digest:              digestLE,
+		ProspectiveAncestor: ancestorDigestLE,
+		IsAncestor:          result,
+	}
 
 	// And we serialize that response as JSON
-	res, err := codec.MarshalJSONIndent(keeper.cdc, response)
-	if err != nil {
+	res, marshalErr := codec.MarshalJSONIndent(keeper.cdc, response)
+	if marshalErr != nil {
 		// TODO: better handling
 		panic("could not marshal result to JSON")
 	}
