@@ -2,9 +2,11 @@ package types
 
 import (
 	"bytes"
+	"errors"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
 // QueryResGetParent is the payload for a GetParent Query
@@ -26,49 +28,39 @@ func IsMostRecentAncestor(ancestor []byte, left []byte, right []byte, limit sdk.
 	if bytes.Equal(ancestor, left) && bytes.Equal(ancestor, right) {
 		return true
 	}
+
+	leftCurrent := left
+	rightCurrent := right
+	leftPrev := left
+	rightPrev := right
+
+	for i := sdk.NewUint(0); i.LT(limit); i.Add(sdk.NewUint(1)) {
+		if bytes.Equal(leftPrev, ancestor) {
+			leftCurrent = leftPrev // cheap
+			// TODO: leftPrev = previousBlock[leftPrev]
+			leftPrev = rightPrev // expensive
+		}
+		if bytes.Equal(rightPrev, ancestor) {
+			rightCurrent = rightPrev // cheap
+			// TODO: rightPrev = previousBlock[rightPrev]
+			rightPrev = rightPrev // expensive
+		}
+	}
+
+	if bytes.Equal(leftCurrent, rightCurrent) {
+		return false
+	} /* NB: If the same, they're a nearer ancestor */
+	if !bytes.Equal(leftPrev, rightPrev) {
+		return false
+	} /* NB: Both must be ancestor */
 	return true
 }
-
-// function _isMostRecentAncestor(
-// 	bytes32 _ancestor,
-// 	bytes32 _left,
-// 	bytes32 _right,
-// 	uint256 _limit
-// ) internal view returns (bool) {
-// 	/* NB: sure why not */
-// 	if (_ancestor == _left && _ancestor == _right) {
-// 			return true;
-// 	}
-
-// 	bytes32 _leftCurrent = _left;
-// 	bytes32 _rightCurrent = _right;
-// 	bytes32 _leftPrev = _left;
-// 	bytes32 _rightPrev = _right;
-
-// 	for(uint256 i = 0; i < _limit; i = i.add(1)) {
-// 			if (_leftPrev != _ancestor) {
-// 					_leftCurrent = _leftPrev;  // cheap
-// 					_leftPrev = previousBlock[_leftPrev];  // expensive
-// 			}
-// 			if (_rightPrev != _ancestor) {
-// 					_rightCurrent = _rightPrev;  // cheap
-// 					_rightPrev = previousBlock[_rightPrev];  // expensive
-// 			}
-// 	}
-// 	if (_leftCurrent == _rightCurrent) {return false;} /* NB: If the same, they're a nearer ancestor */
-// 	if (_leftPrev != _rightPrev) {return false;} /* NB: Both must be ancestor */
-// 	return true;
-// }
 
 // Getter for relayGenesis.
 // This is an initialization parameter.
 func GetRelayGenesis() []byte {
 	return relayGenesis
 }
-
-// function getRelayGenesis() public view returns (bytes32) {
-// 	return relayGenesis;
-// }
 
 // Getter for relayGenesis.
 // This is updated only by calling MarkNewHeaviest
@@ -79,97 +71,88 @@ func getLastReorgCommonAncestor() []byte {
 // Finds the height of a header by its digest
 // Will fail if the header is unknown
 func FindHeight(digest []byte) sdk.Uint {
-
+	height := sdk.NewUint(0)
+	current := digest
+	for i := sdk.NewUint(0); i.LT(sdk.NewUint(HEIGHT_INTERVAL + 1)); i = i.Add(sdk.NewUint(1)) {
+		// TODO: height = blockHeight[current]
+		height = current
+		if height.IsZero() {
+			// TODO: current = previousBlock[current]
+			current = current
+		} else {
+			return height.Add(i)
+		}
+	}
+	// TODO: What does this do?
+	// revert("unknown block")
 }
-
-// function _findHeight(bytes32 _digest) internal view returns (uint256) {
-// 	uint256 _height = 0;
-// 	bytes32 _current = _digest;
-// 	for (uint256 i = 0; i < HEIGHT_INTERVAL + 1; i = i.add(1)) {
-// 			_height = blockHeight[_current];
-// 			if (_height == 0) {
-// 					_current = previousBlock[_current];
-// 			} else {
-// 					return _height.add(i);
-// 			}
-// 	}
-// 	revert("Unknown block");
-// }
 
 // Finds an ancestor for a block by its digest
 // Will fail if the header is unknown
-func FindAncestor(digest []byte, offset sdk.Uint) []byte {
-
+func FindAncestor(digest []byte, offset sdk.Uint) ([]byte, error) {
+	current := digest
+	for i := sdk.NewUint(0); i.LT(offset); i.Add(sdk.NewUint(1)) {
+		// current = previousBlock[current]
+	}
+	if bytes.Equal(current, bytes.Repeat([]byte{0}, 32)) {
+		return []byte{0}, errors.New("Unknown ancestor")
+	}
+	return current
 }
-
-// function _findAncestor(bytes32 _digest, uint256 _offset) internal view returns (bytes32) {
-// 	bytes32 _current = _digest;
-// 	for (uint256 i = 0; i < _offset; i = i.add(1)) {
-// 			_current = previousBlock[_current];
-// 	}
-// 	require(_current != bytes32(0), "Unknown ancestor");
-// 	return _current;
-// }
 
 // Checks if a digest is an ancestor of the current one
 // Limit the amount of lookups (and thus gas usage) with limit
 func IsAncestor(ancestor []byte, descendant []byte, limit sdk.Uint) bool {
+	current := descendant
+	/* NB: 200 gas/read, so gas is capped at ~200 * limit */
+	for i := sdk.NewUint(0); i.LT(limit); i.Add(sdk.NewUint(1)) {
+		if bytes.Equal(current, ancestor) {
+			return true
+		}
+		// current = previousBlock[current]
+	}
 	return false
 }
 
-// function _isAncestor(bytes32 _ancestor, bytes32 _descendant, uint256 _limit) internal view returns (bool) {
-// 	bytes32 _current = _descendant;
-// 	/* NB: 200 gas/read, so gas is capped at ~200 * limit */
-// 	for (uint256 i = 0; i < _limit; i = i.add(1)) {
-// 			if (_current == _ancestor) {
-// 					return true;
-// 			}
-// 			_current = previousBlock[_current];
-// 	}
-// 	return false;
-// }
-
 // Decides which header is heaviest from the ancestor
 // Does not support reorgs above 2017 blocks (:
-func HeaviestFromAncestor(ancestor []byte, left []byte, right []byte) []byte {
+func HeaviestFromAncestor(ancestor []byte, left []byte, right []byte) ([]byte, error) {
+	ancestorHeight := FindHeight(ancestor)
+	leftHeight := FindHeight(btcspv.Hash256(left))
+	rightHeight := FindHeight(btcspv.Hash256(right))
 
+	if leftHeight.LT(ancestorHeight) && rightHeight.LT(ancestorHeight) {
+		return []byte{0}, errors.New("A descendant height is below the ancestor height")
+	}
+
+	/* NB: we can shortcut if one block is in a new difficulty window and the other isn't */
+	length := sdk.NewUint(2016)
+	nextPeriodStartHeight := ancestorHeight.Add(length).Sub(ancestorHeight % length)
+	leftInPeriod := leftHeight.LT(nextPeriodStartHeight)
+	rightInPeriod := rightHeight.LT(nextPeriodStartHeight)
+
+	/*
+		NB:
+		1. Left is in a new window, right is in the old window. Left is heavier
+		2. Right is in a new window, left is in the old window. Right is heavier
+		3. Both are in the same window, choose the higher one
+		4. They're in different new windows. Choose the heavier one
+	*/
+	if !leftInPeriod && rightInPeriod {
+		return btcspv.Hash256(left), nil
+	} else if leftInPeriod && !rightInPeriod {
+		return btcspv.Hash256(right), nil
+	} else if leftInPeriod && rightInPeriod {
+		if leftHeight.GTE(rightHeight) {
+			return btcspv.Hash256(left), nil
+		} else {
+			return btcspv.Hash256(right), nil
+		}
+	} else {
+		if (leftHeight % length).Mul(btcspv.ExtractDifficulty(left)).LT((rightHeight % length).Mul(btcspv.ExtractDifficulty(right))) {
+			return btcspv.Hash256(right), nil
+		} else {
+			return btcspv.Hash256(left), nil
+		}
+	}
 }
-
-// function _heaviestFromAncestor(
-// 	bytes32 _ancestor,
-// 	bytes memory _left,
-// 	bytes memory _right
-// ) internal view returns (bytes32) {
-// 	uint256 _ancestorHeight = _findHeight(_ancestor);
-// 	uint256 _leftHeight = _findHeight(_left.hash256());
-// 	uint256 _rightHeight = _findHeight(_right.hash256());
-
-// 	require(
-// 			_leftHeight >= _ancestorHeight && _rightHeight >= _ancestorHeight,
-// 			"A descendant height is below the ancestor height");
-
-// 	/* NB: we can shortcut if one block is in a new difficulty window and the other isn't */
-// 	uint256 _nextPeriodStartHeight = _ancestorHeight.add(2016).sub(_ancestorHeight % 2016);
-// 	bool _leftInPeriod = _leftHeight < _nextPeriodStartHeight;
-// 	bool _rightInPeriod = _rightHeight < _nextPeriodStartHeight;
-
-// 	/*
-// 	NB:
-// 	1. Left is in a new window, right is in the old window. Left is heavier
-// 	2. Right is in a new window, left is in the old window. Right is heavier
-// 	3. Both are in the same window, choose the higher one
-// 	4. They're in different new windows. Choose the heavier one
-// 	*/
-// 	if (!_leftInPeriod && _rightInPeriod) {return _left.hash256();}
-// 	if (_leftInPeriod && !_rightInPeriod) {return _right.hash256();}
-// 	if (_leftInPeriod && _rightInPeriod) {
-// 			return _leftHeight >= _rightHeight ? _left.hash256() : _right.hash256();
-// 	} else {  // if (!_leftInPeriod && !_rightInPeriod) {
-// 			if (((_leftHeight % 2016).mul(_left.extractDifficulty())) <
-// 					(_rightHeight % 2016).mul(_right.extractDifficulty())) {
-// 					return _right.hash256();
-// 			} else {
-// 					return _left.hash256();
-// 			}
-// 	}
-// }

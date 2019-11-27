@@ -71,7 +71,7 @@ func AddHeaders(anchor []byte, headers []byte, internal bool) (bool, error) {
 
 	target := btcspv.ExtractTarget(headers[0:80])
 	// TODO: write findHeight in queries
-	anchorHeight := findHeight(previousDigest) /* NB: errors if unknown */
+	anchorHeight := FindHeight(previousDigest) /* NB: errors if unknown */
 	extractedTarget := btcspv.ExtractTarget(anchor)
 	if !(internal || extractedTarget == target) {
 		return false, errors.New("Header array length must be divisible by 80")
@@ -87,7 +87,7 @@ func AddHeaders(anchor []byte, headers []byte, internal bool) (bool, error) {
 	for i := 0; i < len(headers)/80; i++ {
 		start := i * 80
 		header := headers[start:(start + 80)]
-		height := anchorHeight + i + 1
+		height := anchorHeight.Add(sdk.NewUint(uint64(i + 1)))
 		currentDigest = btcspv.Hash256(header)
 		/*
 			NB:
@@ -126,13 +126,13 @@ func AddHeaders(anchor []byte, headers []byte, internal bool) (bool, error) {
 // Adds headers to storage, performs additional validation of retarget.
 func AddHeadersWithRetarget(oldPeriodStartHeader []byte, oldPeriodEndHeader []byte, headers []byte) (bool, error) {
 	/* NB: requires that both blocks are known */
-	startHeight := findHeight(btcspv.Hash256(oldPeriodStartHeader))
-	endHeight := findHeight(btcspv.Hash256(oldPeriodEndHeader))
+	startHeight := FindHeight(btcspv.Hash256(oldPeriodStartHeader))
+	endHeight := FindHeight(btcspv.Hash256(oldPeriodEndHeader))
 
 	/* NB: retargets should happen at 2016 block intervals */
 	if endHeight%2016 != 2015 {
 		return false, errors.New("Must provide the last header of the closing difficulty period")
-	} else if endHeight != startHeight+2015 {
+	} else if endHeight != startHeight.Add(sdk.NewUint(2015)) {
 		return false, errors.New("Must provide exactly 1 difficulty period")
 	} else if btcspv.ExtractDifficulty(oldPeriodStartHeader) != btcspv.ExtractDifficulty(oldPeriodEndHeader) {
 		return false, errors.New("Period header difficulties do not match")
@@ -167,10 +167,10 @@ func MarkNewHeaviest(ancestor []byte, currentBest []byte, newBest []byte, limit 
 		return false, errors.New("Passed in best is not best known")
 	} else if bytes.Equal(newBestDigest, bytes.Repeat([]byte{0}, 32)) {
 		return false, errors.New("New best is unknown")
-	} else if !isMostRecentAncestor(ancestor, bestKnownDigest, newBestDigest, limit) {
+	} else if !IsMostRecentAncestor(ancestor, bestKnownDigest, newBestDigest, limit) {
 		return false, errors.New("Ancestor must be heaviest common ancestor")
 	} else if !bytes.Equal(
-		heaviestFromAncestor(ancestor, currentBest, newBest),
+		HeaviestFromAncestor(ancestor, currentBest, newBest),
 		newBestDigest) {
 		return false, errors.New("New best hash does not have more work than previous")
 	}
