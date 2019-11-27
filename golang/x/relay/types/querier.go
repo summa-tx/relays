@@ -6,17 +6,6 @@ import (
 	"strings"
 )
 
-// // QueryResGetParent is the payload for a GetParent Query
-// type QueryResGetParent struct {
-// 	Digest Hash256Digest `json:"digest"`
-// 	Parent Hash256Digest `json:"parent"`
-// }
-//
-// // implement fmt.Stringer
-// func (r QueryResGetParent) String() string {
-// 	return strings.Join([]string{r.Digest, r.Parent}, "\n")
-// }
-
 type QueryResIsAncestor struct {
 	Digest              Hash256Digest `json:"digest"`
 	ProspectiveAncestor Hash256Digest `json:"prospectiveAncestor"`

@@ -111,7 +111,7 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 	return nil
 }
 
-func (k Keeper) ingestDiffChange(ctx sdk.Context, prevEpochStartLE types.Hash256Digest, headers []types.BitcoinHeader) sdk.Error {
+func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.Hash256Digest, headers []types.BitcoinHeader) sdk.Error {
 	if !k.HasHeader(ctx, prevEpochStartLE) {
 		return types.ErrUnknownBlock(types.DefaultCodespace)
 	}
@@ -155,7 +155,7 @@ func (k Keeper) IngestHeaderChain(ctx sdk.Context, headers []types.BitcoinHeader
 	return k.ingestHeaders(ctx, headers, false)
 }
 
-// IngestDiffChange ingests a chain of headers
-func (k Keeper) IngestDiffChange(ctx sdk.Context, prevEpochStartLE types.Hash256Digest, headers []types.BitcoinHeader) sdk.Error {
-	return k.ingestDiffChange(ctx, prevEpochStartLE, headers)
+// IngestDifficultyChange ingests a chain of headers
+func (k Keeper) IngestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.Hash256Digest, headers []types.BitcoinHeader) sdk.Error {
+	return k.ingestDifficultyChange(ctx, prevEpochStartLE, headers)
 }
