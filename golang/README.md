@@ -16,6 +16,7 @@
     1. Add new string tag for the new query
     1. Add new `query___` function
     1. Add new case block to `switch` in `NewQuerier()`
+--- DO UP TO HERE FOR NOW ---
 1. Add alias type in `x/relay/alias.go`
 1. Add to CLI  
     1. add to `x/relay/client/cli/query.go`
@@ -28,7 +29,7 @@
 1. Add msg type in `x/relay/types/msgs.go`
     1. Message type is a struct with the arguments
     1. Implement `New___()`
-    1. Implement `GetSigners()`
+    1. Implement `GetSigners()` <--- Ask me about this later
     1. Implement `Type()`
     1. Implement `ValidateBasic()`
     1. Implement `GetSignBytes()`
@@ -36,6 +37,7 @@
 1. Add to handler
     1. Add new `handle____` function
     1. Add new case block to `switch` in `NewHandler()`
+--- DO UP TO HERE FOR NOW ---
 1. Add aliases in `x/relay/alias.go`
     1. Add alisa in `var` block
     1. Add alias in `type` block

@@ -10,12 +10,12 @@ import (
 
 // GenesisState is the genesis state
 type GenesisState struct {
-	Headers     []btcspv.BitcoinHeader `json:"headers"`
-	PeriodStart btcspv.BitcoinHeader   `json:"periodStart"`
+	Headers     []BitcoinHeader `json:"headers"`
+	PeriodStart BitcoinHeader   `json:"periodStart"`
 }
 
 // NewGenesisState instantiates a genesis state
-func NewGenesisState(headers []btcspv.BitcoinHeader, periodStart btcspv.BitcoinHeader) GenesisState {
+func NewGenesisState(headers []BitcoinHeader, periodStart BitcoinHeader) GenesisState {
 	return GenesisState{Headers: headers, PeriodStart: periodStart}
 }
 
@@ -43,10 +43,11 @@ func ValidateGenesis(data GenesisState) error {
 }
 
 // DefaultGenesisState makes a default empty genesis state
+// TODO: set recent block as default
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		Headers:     []btcspv.BitcoinHeader{},
-		PeriodStart: btcspv.BitcoinHeader{},
+		Headers:     []BitcoinHeader{},
+		PeriodStart: BitcoinHeader{},
 	}
 }
 
@@ -58,6 +59,8 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) []abci.Valid
 }
 
 // ExportGenesis exports the genesis state
+// TODO: export GenesisState
+//       May need special store keys for it
 func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
 	panic("Not implemented")
 }

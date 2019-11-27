@@ -12,9 +12,19 @@ func NewHandler(keeper Keeper) sdk.Handler {
 		switch msg := msg.(type) {
 		// case types.MsgSetLink:
 		// 	return handleMsgSetLink(ctx, keeper, msg)
+		case types.MsgIngestHeaderChain:
+			return handleMsgIngestHeaderChain(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized nameservice Msg type: %v", msg.Type())
 			return sdk.ErrUnknownRequest(errMsg).Result()
 		}
 	}
+}
+
+func handleMsgIngestHeaderChain(ctx sdk.Context, keeper Keeper, msg types.MsgIngestHeaderChain) {
+	err := k.IngestHeaderChain(ctx, msg.Headers)
+	if err != nil {
+		return err.Result()
+	}
+	return sdk.Result{}
 }
