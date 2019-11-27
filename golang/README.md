@@ -1,7 +1,11 @@
 ## TODOs:
 
 1. Migrate solidity logic
+1. Add iterator for links
 1. Add reasonable genesis state
+1. Add state export
+1. Pass in testnet or mainnet status
+    1. Maybe genesis state? that's not perfect tho
 
 ## How to add a view function
 1. Add necessary getter(s) in `x/relay/keeper/keeper.go`

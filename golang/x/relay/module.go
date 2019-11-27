@@ -8,7 +8,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/x/bank"
 
 	"github.com/summa-tx/relays/golang/x/relay/client/cli"
 	"github.com/summa-tx/relays/golang/x/relay/client/rest"
@@ -73,15 +72,13 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 	keeper     Keeper
-	coinKeeper bank.Keeper
 }
 
 // NewAppModule creates a new AppModule Object
-func NewAppModule(k Keeper, bankKeeper bank.Keeper) AppModule {
+func NewAppModule(k Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         k,
-		coinKeeper:     bankKeeper,
 	}
 }
 
