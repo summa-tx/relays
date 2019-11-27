@@ -143,20 +143,20 @@ func (msg MsgIngestDifficultyChange) Route() string { return RouterKey }
 
 // MsgMarkNewHeaviest defines a MarkNewHeaviest message
 type MsgMarkNewHeaviest struct {
-	Signer      string          `json:"signer"`
-	CurrentBest RawHeader       `json:"currentBest"`
-	NewBest     RawHeader       `json:"newBest"`
-	Limit       uint32          `json:"limit"`
-	Headers     []BitcoinHeader `json:"headers"`
+	Signer      string        `json:"signer"`
+	Ancestor    Hash256Digest `json:"ancestor"`
+	CurrentBest RawHeader     `json:"currentBest"`
+	NewBest     RawHeader     `json:"newBest"`
+	Limit       uint32        `json:"limit"`
 }
 
-func NewMsgMarkNewHeaviest(address string, currentBest RawHeader, newBest RawHeader, limit uint32, headers []BitcoinHeader) MsgMarkNewHeaviest {
+func NewMsgMarkNewHeaviest(address string, ancestor Hash256Digest, currentBest RawHeader, newBest RawHeader, limit uint32) MsgMarkNewHeaviest {
 	return MsgMarkNewHeaviest{
 		address,
+		ancestor,
 		currentBest,
 		newBest,
 		limit,
-		headers,
 	}
 }
 
@@ -171,13 +171,6 @@ func (msg MsgMarkNewHeaviest) GetSigners() []sdk.AccAddress {
 func (msg MsgMarkNewHeaviest) Type() string { return "mark_new_heaviest" }
 
 func (msg MsgMarkNewHeaviest) ValidateBasic() sdk.Error {
-	for i := range msg.Headers {
-		valid, err := msg.Headers[i].Validate()
-		if valid == false || err != nil {
-			return ErrBadHeaderLength(DefaultCodespace)
-		}
-	}
-
 	if len(msg.CurrentBest) != 80 || len(msg.NewBest) != 80 {
 		return ErrBadHeaderLength(DefaultCodespace)
 	}

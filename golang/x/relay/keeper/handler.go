@@ -13,6 +13,10 @@ func NewHandler(keeper Keeper) sdk.Handler {
 		switch msg := msg.(type) {
 		case types.MsgIngestHeaderChain:
 			return handleMsgIngestHeaderChain(ctx, keeper, msg)
+		case types.MsgIngestDifficultyChange:
+			return handleMsgIngestDifficultyChange(ctx, keeper, msg)
+		case types.MsgMarkNewHeaviest:
+			return handleMsgMarkNewHeaviest(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized nameservice Msg type: %v", msg.Type())
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -22,6 +26,22 @@ func NewHandler(keeper Keeper) sdk.Handler {
 
 func handleMsgIngestHeaderChain(ctx sdk.Context, keeper Keeper, msg types.MsgIngestHeaderChain) sdk.Result {
 	err := keeper.IngestHeaderChain(ctx, msg.Headers)
+	if err != nil {
+		return err.Result()
+	}
+	return sdk.Result{}
+}
+
+func handleMsgIngestDifficultyChange(ctx sdk.Context, keeper Keeper, msg types.MsgIngestDifficultyChange) sdk.Result {
+	err := keeper.IngestDifficultyChange(ctx, msg.Start, msg.Headers)
+	if err != nil {
+		return err.Result()
+	}
+	return sdk.Result{}
+}
+
+func handleMsgMarkNewHeaviest(ctx sdk.Context, keeper Keeper, msg types.MsgMarkNewHeaviest) sdk.Result {
+	err := keeper.MarkNewHeaviest(ctx, msg.Ancestor, msg.CurrentBest, msg.NewBest, msg.Limit)
 	if err != nil {
 		return err.Result()
 	}
