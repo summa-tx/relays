@@ -60,17 +60,19 @@ func (msg MsgSetLink) GetSignBytes() []byte {
 // Route should return the name of the module
 func (msg MsgSetLink) Route() string { return RouterKey }
 
-// TODO: Add digest type that is 32 bytes long
 // AddHeaders adds headers to storage after validating.  We check
 // integrity and consistency of the header chain.
-func AddHeaders(anchor []byte, headers []byte, internal bool) (bool, error) {
+func AddHeaders(
+	anchor types.RawHeader,
+	headers types.RawHeader,
+	internal bool
+) (bool, error) {
 	var height sdk.Uint
-	var header []byte
-	var currentDigest []byte
-	var previousDigest []byte = btcspv.Hash256(anchor)
+	var header types.RawHeader
+	var currentDigest types.Hash256Digest
+	var previousDigest := btcspv.Hash256(anchor)
 
 	target := btcspv.ExtractTarget(headers[0:80])
-	// TODO: write findHeight in queries
 	anchorHeight := FindHeight(previousDigest) /* NB: errors if unknown */
 	extractedTarget := btcspv.ExtractTarget(anchor)
 	if !(internal || extractedTarget == target) {
@@ -116,7 +118,7 @@ func AddHeaders(anchor []byte, headers []byte, internal bool) (bool, error) {
 
 		previousDigest = currentDigest
 	}
-	// TODO: How to do this in go...
+	// TODO: Use emitExtension in headers.go
 	// emit Extension(
 	// btcspv.Hash256(anchor),
 	// currentDigest);
@@ -124,9 +126,13 @@ func AddHeaders(anchor []byte, headers []byte, internal bool) (bool, error) {
 }
 
 // Adds headers to storage, performs additional validation of retarget.
-func AddHeadersWithRetarget(oldPeriodStartHeader []byte, oldPeriodEndHeader []byte, headers []byte) (bool, error) {
+func AddHeadersWithRetarget(
+	oldPeriodStartHeader types.RawHeader,
+	oldPeriodEndHeader types.RawHeader,
+	headers []byte
+) (bool, error) {
 	/* NB: requires that both blocks are known */
-	startHeight := FindHeight(btcspv.Hash256(oldPeriodStartHeader))
+	startHeight := FindHeight(btcspv.Hash256(oldPeriodStartHeader[:]))
 	endHeight := FindHeight(btcspv.Hash256(oldPeriodEndHeader))
 
 	/* NB: retargets should happen at 2016 block intervals */
@@ -146,7 +152,6 @@ func AddHeadersWithRetarget(oldPeriodStartHeader []byte, oldPeriodEndHeader []by
 		btcspv.ExtractTarget(oldPeriodStartHeader),
 		btcspv.ExtractTimestamp(oldPeriodStartHeader),
 		btcspv.ExtractTimestamp(oldPeriodEndHeader))
-	// TODO: Fix next line &
 	if actualTarget&expectedTarget != actualTarget {
 		return false, errors.New("Invalid retarget provided")
 	}
@@ -157,12 +162,16 @@ func AddHeadersWithRetarget(oldPeriodStartHeader []byte, oldPeriodEndHeader []by
 	return true, nil
 }
 
-// TODO: write isMostRecentAncestor and heaviestFromAncestor
+// TODO: delete, already in chain.go
 // Gives a starting point for the relay. We don't check this AT ALL really. Don't use relays with bad genesis
-func MarkNewHeaviest(ancestor []byte, currentBest []byte, newBest []byte, limit sdk.Uint) (bool, error) {
+func MarkNewHeaviest(
+	ancestor types.Hash256Digest,
+	currentBest types.Hash256Digest,
+	newBest types.Hash256Digest,
+	limit sdk.Uint
+) (bool, error) {
 	newBestDigest := btcspv.Hash256(newBest)
 	currentBestDigest := btcspv.Hash256(currentBest)
-	// TODO: Where is bestKnownDigest coming from?
 	if !bytes.Equal(currentBestDigest, bestKnownDigest) {
 		return false, errors.New("Passed in best is not best known")
 	} else if bytes.Equal(newBestDigest, bytes.Repeat([]byte{0}, 32)) {
@@ -176,7 +185,7 @@ func MarkNewHeaviest(ancestor []byte, currentBest []byte, newBest []byte, limit 
 	}
 	bestKnownDigest = newBestDigest
 	lastReorgCommonAncestor = ancestor
-	// TODO: Figure out how to do this in go
+	// TODO: Use Emit Reorg function in chain.go
 	// emit Reorg(
 	// 	currentBestDigest,
 	// 	newBestDigest,

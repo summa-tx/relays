@@ -7,6 +7,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
+	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
 // QueryResGetParent is the payload for a GetParent Query
@@ -24,7 +25,12 @@ var relayGenesis []byte
 
 // Checks if a digest is an ancestor of the current one
 // Limit the amount of lookups (and thus gas usage) with limit
-func IsMostRecentAncestor(ancestor []byte, left []byte, right []byte, limit sdk.Uint) bool {
+func IsMostRecentAncestor(
+	ancestor types.Hash256Digest,
+	left types.Hash256Digest,
+	right types.Hash256Digest,
+	limit sdk.Uint
+) bool {
 	if bytes.Equal(ancestor, left) && bytes.Equal(ancestor, right) {
 		return true
 	}
@@ -56,21 +62,22 @@ func IsMostRecentAncestor(ancestor []byte, left []byte, right []byte, limit sdk.
 	return true
 }
 
+// TODO: delete?  There is already a GetRelayGenesis in querier.go
 // Getter for relayGenesis.
 // This is an initialization parameter.
-func GetRelayGenesis() []byte {
+func GetRelayGenesis() types.Hash256Digest {
 	return relayGenesis
 }
 
 // Getter for relayGenesis.
 // This is updated only by calling MarkNewHeaviest
-func getLastReorgCommonAncestor() []byte {
+func getLastReorgCommonAncestor() types.Hash256Digest {
 	return lastReorgCommonAncestor
 }
 
 // Finds the height of a header by its digest
 // Will fail if the header is unknown
-func FindHeight(digest []byte) sdk.Uint {
+func FindHeight(digest types.Hash256Digest) sdk.Uint {
 	height := sdk.NewUint(0)
 	current := digest
 	for i := sdk.NewUint(0); i.LT(sdk.NewUint(HEIGHT_INTERVAL + 1)); i = i.Add(sdk.NewUint(1)) {
@@ -87,9 +94,10 @@ func FindHeight(digest []byte) sdk.Uint {
 	// revert("unknown block")
 }
 
+// TODO: delete?  Already in links.go
 // Finds an ancestor for a block by its digest
 // Will fail if the header is unknown
-func FindAncestor(digest []byte, offset sdk.Uint) ([]byte, error) {
+func FindAncestor(digest types.Hash256Digest, offset sdk.Uint) ([]byte, error) {
 	current := digest
 	for i := sdk.NewUint(0); i.LT(offset); i.Add(sdk.NewUint(1)) {
 		// current = previousBlock[current]
@@ -100,9 +108,14 @@ func FindAncestor(digest []byte, offset sdk.Uint) ([]byte, error) {
 	return current
 }
 
+// TODO: Delete? Already in links.go
 // Checks if a digest is an ancestor of the current one
 // Limit the amount of lookups (and thus gas usage) with limit
-func IsAncestor(ancestor []byte, descendant []byte, limit sdk.Uint) bool {
+func IsAncestor(
+	ancestor types.Hash256Digest,
+	descendant types.Hash256Digest,
+	limit sdk.Uint
+) bool {
 	current := descendant
 	/* NB: 200 gas/read, so gas is capped at ~200 * limit */
 	for i := sdk.NewUint(0); i.LT(limit); i.Add(sdk.NewUint(1)) {
@@ -114,9 +127,14 @@ func IsAncestor(ancestor []byte, descendant []byte, limit sdk.Uint) bool {
 	return false
 }
 
+// TODO: Delete, already in chain.go
 // Decides which header is heaviest from the ancestor
 // Does not support reorgs above 2017 blocks (:
-func HeaviestFromAncestor(ancestor []byte, left []byte, right []byte) ([]byte, error) {
+func HeaviestFromAncestor(
+	ancestor types.Hash256Digest,
+	left types.Hash256Digest,
+	right types.Hash256Digest
+) (types.Hash256Digest, error) {
 	ancestorHeight := FindHeight(ancestor)
 	leftHeight := FindHeight(btcspv.Hash256(left))
 	rightHeight := FindHeight(btcspv.Hash256(right))
