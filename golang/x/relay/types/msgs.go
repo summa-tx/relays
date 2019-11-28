@@ -114,7 +114,7 @@ func (msg MsgIngestDifficultyChange) ValidateBasic() sdk.Error {
 	for i := range msg.Headers {
 		valid, err := msg.Headers[i].Validate()
 		if valid == false || err != nil {
-			return ErrBadHeaderLength(DefaultCodespace)
+			return FromBTCSPVError(DefaultCodespace, err)
 		}
 	}
 	return nil
