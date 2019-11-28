@@ -1,8 +1,8 @@
 package relay
 
 import (
-	"os"
 	"encoding/json"
+	"os"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -18,12 +18,12 @@ import (
 
 	"github.com/summa-tx/relays/golang/x/relay"
 
-	tmtypes "github.com/tendermint/tendermint/types"
-	distr "github.com/cosmos/cosmos-sdk/x/distribution"
-	abci "github.com/tendermint/tendermint/abci/types"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	distr "github.com/cosmos/cosmos-sdk/x/distribution"
+	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
+	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -77,7 +77,7 @@ type relayApp struct {
 	supplyKeeper   supply.Keeper
 	paramsKeeper   params.Keeper
 
-	relayKeeper    relay.Keeper
+	relayKeeper relay.Keeper
 
 	// Module Manager
 	mm *module.Manager
@@ -190,7 +190,7 @@ func NewRelayApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 			app.slashingKeeper.Hooks()),
 	)
 
-	// The NameserviceKeeper is the Keeper from the module for this tutorial
+	// The RelayKeeper is the Keeper from the module for this tutorial
 	// It handles interactions with the namestore
 	app.relayKeeper = relay.NewKeeper(
 		keys[relay.StoreKey],
