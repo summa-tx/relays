@@ -191,7 +191,7 @@ func NewRelayApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 	)
 
 	// The RelayKeeper is the Keeper from the module for this tutorial
-	// It handles interactions with the namestore
+	// It handles interactions with the store
 	app.relayKeeper = relay.NewKeeper(
 		keys[relay.StoreKey],
 		app.cdc,
