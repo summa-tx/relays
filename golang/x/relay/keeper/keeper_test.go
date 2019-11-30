@@ -29,7 +29,7 @@ type DiffChangeCase struct {
 	Headers        []types.BitcoinHeader `json:"headers"`
 	PrevEpochStart types.BitcoinHeader   `json:"prevEpochStart"`
 	Anchor         types.BitcoinHeader   `json:"anchor"`
-	Output         string                `json:"output"`
+	Output         sdk.CodeType          `json:"output"`
 }
 
 type HeaderTestCases struct {

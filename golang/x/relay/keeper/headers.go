@@ -127,7 +127,7 @@ func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anc
 	if anchor.Height != prevEpochStart.Height+2015 || anchor.Height < prevEpochStart.Height {
 		return types.ErrWrongStart(types.DefaultCodespace)
 	}
-	if btcspv.ExtractDifficulty(anchor.Raw) != btcspv.ExtractDifficulty(prevEpochStart.Raw) {
+	if !btcspv.ExtractDifficulty(anchor.Raw).Equal(btcspv.ExtractDifficulty(prevEpochStart.Raw)) {
 		return types.ErrPeriodMismatch(types.DefaultCodespace)
 	}
 

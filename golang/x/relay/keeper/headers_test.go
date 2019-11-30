@@ -17,3 +17,20 @@ func (suite *KeeperSuite) TestValidateHeaderChain() {
 		}
 	}
 }
+
+func (suite *KeeperSuite) TestValidateDifficultyChange() {
+	cases := suite.Fixtures.HeaderTestCases.ValidateDiffChange
+
+	for _, tc := range cases {
+		err := validateDifficultyChange(tc.Headers, tc.PrevEpochStart, tc.Anchor)
+		if tc.Output == 0 {
+			if err != nil {
+				log.Printf("Unexpected Error\n%s\n", err.Error())
+			}
+			suite.Nil(err)
+		} else {
+			suite.Equal(tc.Output, err.Code())
+		}
+	}
+
+}
