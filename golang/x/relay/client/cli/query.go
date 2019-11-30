@@ -7,8 +7,17 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
+
+type QueryResGetParent struct {
+	Digest btcspv.Hash256Digest `json:"digest"`
+}
+
+func (d *QueryResGetParent) String() string {
+	return fmt.Sprintf("%d", d.Digest)
+}
 
 // GetQueryCmd sets up query CLI commands
 func GetQueryCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
@@ -41,9 +50,9 @@ func GetCommandGetParent(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				return nil
 			}
 
-			var out types.QueryResGetParent
+			var out QueryResGetParent
 			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(out)
+			return cliCtx.PrintOutput(&out)
 		},
 	}
 }

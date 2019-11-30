@@ -1,14 +1,20 @@
 package types
 
-import "strings"
+import (
+	"encoding/hex"
+	"fmt"
+	"strings"
+)
 
-// QueryResGetParent is the payload for a GetParent Query
-type QueryResGetParent struct {
-	Digest string `json:"digest"`
-	Parent string `json:"parent"`
+type QueryResIsAncestor struct {
+	Digest              Hash256Digest `json:"digest"`
+	ProspectiveAncestor Hash256Digest `json:"prospectiveAncestor"`
+	IsAncestor          bool          `json:"isAncestor"`
 }
 
-// implement fmt.Stringer
-func (r QueryResGetParent) String() string {
-	return strings.Join([]string{r.Digest, r.Parent}, "\n")
+func (r QueryResIsAncestor) String() string {
+	dig := "0x" + hex.EncodeToString(r.Digest[:])
+	digAnc := "0x" + hex.EncodeToString(r.ProspectiveAncestor[:])
+	res := fmt.Sprintf("%t\n", r.IsAncestor)
+	return strings.Join([]string{dig, digAnc, res}, "\n")
 }

@@ -40,7 +40,8 @@ func GetCmdSetLink(cdc *codec.Codec) *cobra.Command {
 
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 
-			msg := types.NewMsgSetLink(args[1], args[0], cliCtx.GetFromAddress())
+			addr := sdk.AccAddress(args[1])
+			msg := types.NewMsgSetLink(addr, args[0], cliCtx.GetFromAddress())
 			err := msg.ValidateBasic()
 			if err != nil {
 				return err

@@ -457,7 +457,7 @@ contract Relay is IRelay {
     }
 
     /// @notice     Getter for relayGenesis
-    /// @dev        This is an initialization paramter
+    /// @dev        This is an initialization parameter
     /// @return     The hash of the first block of the relay
     function getRelayGenesis() public view returns (bytes32) {
         return relayGenesis;
