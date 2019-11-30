@@ -56,7 +56,7 @@ func (k Keeper) ingestHeader(ctx sdk.Context, header types.BitcoinHeader) {
 	store.Set(header.HashLE[:], buf)
 }
 
-func validateHeaderChainForIngestion(anchor types.BitcoinHeader, headers []types.BitcoinHeader, internal, isMainnet bool) sdk.Error {
+func validateHeaderChain(anchor types.BitcoinHeader, headers []types.BitcoinHeader, internal, isMainnet bool) sdk.Error {
 	prev := anchor // scratchpad, we change this later
 
 	// On internal call, use the header chain target
@@ -64,7 +64,6 @@ func validateHeaderChainForIngestion(anchor types.BitcoinHeader, headers []types
 	if internal {
 		expectedTarget = btcspv.ExtractTarget(headers[0].Raw)
 	}
-
 	// allocate memory for raw anchor + all headers
 	raw := make([]byte, 80*(len(headers)+1))
 	copy(raw[0:80], anchor.Raw[:])
@@ -83,8 +82,8 @@ func validateHeaderChainForIngestion(anchor types.BitcoinHeader, headers []types
 
 		// ensure expectedTarget doesn't change
 		// it's allowed to change if the relay is in testnet mode
-		if isMainnet && btcspv.ExtractTarget(header.Raw) != expectedTarget {
-			return types.ErrUnexptectedRetarget(types.DefaultCodespace)
+		if isMainnet && !btcspv.ExtractTarget(header.Raw).Equal(expectedTarget) {
+			return types.ErrUnexpectedRetarget(types.DefaultCodespace)
 		}
 
 		// copy header raw into a bytearray
@@ -109,7 +108,7 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 
 	anchor := k.GetHeader(ctx, headers[0].PrevHashLE)
 
-	err := validateHeaderChainForIngestion(anchor, headers, internal, k.IsMainNet)
+	err := validateHeaderChain(anchor, headers, internal, k.IsMainNet)
 	if err != nil {
 		return err
 	}
@@ -121,7 +120,7 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 	return nil
 }
 
-func validateDifficultyChangeForIngestion(prevEpochStartLE types.Hash256Digest, headers []types.BitcoinHeader, prevEpochStart, anchor types.BitcoinHeader) sdk.Error {
+func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anchor types.BitcoinHeader) sdk.Error {
 	if anchor.Height%2016 != 2015 {
 		return types.ErrWrongEnd(types.DefaultCodespace)
 	}
@@ -159,7 +158,7 @@ func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.H
 	prevEpochStart := k.GetHeader(ctx, prevEpochStartLE)
 	anchor := k.GetHeader(ctx, headers[0].PrevHashLE)
 
-	err := validateDifficultyChangeForIngestion(prevEpochStartLE, headers, prevEpochStart, anchor)
+	err := validateDifficultyChange(headers, prevEpochStart, anchor)
 	if err != nil {
 		return err
 	}

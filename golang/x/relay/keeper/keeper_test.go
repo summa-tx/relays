@@ -7,19 +7,40 @@ import (
 	"os"
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
 type LinkTest struct{}
 
 type ChainTest struct{}
 
-type HeaderTest struct{}
+type IngestCase struct {
+	Headers   []types.BitcoinHeader `json:"headers"`
+	Anchor    types.BitcoinHeader   `json:"anchor"`
+	Internal  bool                  `json:"internal"`
+	IsMainnet bool                  `json:"isMainnet"`
+	Output    sdk.CodeType          `json:"output"`
+}
+
+type DiffChangeCase struct {
+	Headers        []types.BitcoinHeader `json:"headers"`
+	PrevEpochStart types.BitcoinHeader   `json:"prevEpochStart"`
+	Anchor         types.BitcoinHeader   `json:"anchor"`
+	Output         string                `json:"output"`
+}
+
+type HeaderTestCases struct {
+	ValidateDiffChange []DiffChangeCase `json:"validateDifficultyChange"`
+	ValidateChain      []IngestCase     `json:"validateHeaderChain"`
+}
 
 type KeeperTestCases struct {
-	LinkTestCases   []LinkTest   `json:"link"`
-	HeaderTestCases []HeaderTest `json:"header"`
-	ChainTestCases  []ChainTest  `json:"chain"`
+	LinkTestCases   []LinkTest      `json:"link"`
+	HeaderTestCases HeaderTestCases `json:"header"`
+	ChainTestCases  []ChainTest     `json:"chain"`
 }
 
 type KeeperSuite struct {
@@ -49,8 +70,4 @@ func TestKeeper(t *testing.T) {
 	keeperSuite.Fixtures = fixtures
 
 	suite.Run(t, keeperSuite)
-}
-
-func (suite *KeeperSuite) TestGetPrefixStore() {
-
 }
