@@ -50,7 +50,7 @@ func queryIsAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keep
 	// TODO: check that the path is this many items long, error if not
 	ancestorDigest := path[1]
 	ancestorDigestBytes, decodeErr := hex.DecodeString(ancestorDigest)
-	if err != nil {
+	if decodeErr != nil {
 		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
 	}
 	ancestorDigestLE, newDigestErr := btcspv.NewHash256Digest(ancestorDigestBytes)
