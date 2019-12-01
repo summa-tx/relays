@@ -6,11 +6,10 @@ func (suite *KeeperSuite) TestValidateHeaderChain() {
 	for _, tc := range cases {
 		err := validateHeaderChain(tc.Anchor, tc.Headers, tc.Internal, tc.IsMainnet)
 		if tc.Output == 0 {
-			if err != nil {
-				logIfTestCaseError(tc, err)
-			}
+			logIfTestCaseError(tc, err)
 			suite.Nil(err)
 		} else {
+			suite.NotNil(err)
 			suite.Equal(tc.Output, err.Code())
 		}
 	}
@@ -25,7 +24,17 @@ func (suite *KeeperSuite) TestValidateDifficultyChange() {
 			logIfTestCaseError(tc, err)
 			suite.Nil(err)
 		} else {
+			suite.NotNil(err)
 			suite.Equal(tc.Output, err.Code())
 		}
+	}
+}
+
+func (suite *KeeperSuite) TestCompareTargets() {
+	cases := suite.Fixtures.HeaderTestCases.CompareTargets
+
+	for _, tc := range cases {
+		result := compareTargets(tc.Full, tc.Truncated)
+		suite.Equal(result, tc.Output)
 	}
 }

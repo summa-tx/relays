@@ -36,6 +36,7 @@ func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) types.B
 // compareTargets compares Bitcoin truncated and full-length targets
 func compareTargets(full, truncated sdk.Uint) bool {
 	// dirty hacks. sdk.Uint doesn't give us easy access to the underlying
+	// will be fixed in future sdk version
 	f, _ := full.MarshalAmino()
 	t, _ := truncated.MarshalAmino()
 	fullBI := new(big.Int)

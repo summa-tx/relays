@@ -43,9 +43,17 @@ type DiffChangeCase struct {
 	Output         sdk.CodeType          `json:"output"`
 }
 
+type CompareCase struct {
+	Case
+	Full      sdk.Uint `json:"full"`
+	Truncated sdk.Uint `json:"truncated"`
+	Output    bool     `json:"output"`
+}
+
 type HeaderTestCases struct {
 	ValidateDiffChange []DiffChangeCase `json:"validateDifficultyChange"`
 	ValidateChain      []IngestCase     `json:"validateHeaderChain"`
+	CompareTargets     []CompareCase    `json:"compareTargets"`
 }
 
 type KeeperTestCases struct {
@@ -85,7 +93,8 @@ func TestKeeper(t *testing.T) {
 	logIfError(err)
 
 	var fixtures KeeperTestCases
-	json.Unmarshal([]byte(byteValue), &fixtures)
+	err = json.Unmarshal([]byte(byteValue), &fixtures)
+	logIfError(err)
 
 	keeperSuite := new(KeeperSuite)
 	keeperSuite.Fixtures = fixtures
