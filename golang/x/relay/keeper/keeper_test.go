@@ -13,11 +13,21 @@ import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
+type NamedCase interface {
+	Name() string
+}
+
+type Case struct {
+	NamedCase
+	Comment string `json:"comment"`
+}
+
 type LinkTest struct{}
 
 type ChainTest struct{}
 
 type IngestCase struct {
+	Case
 	Headers   []types.BitcoinHeader `json:"headers"`
 	Anchor    types.BitcoinHeader   `json:"anchor"`
 	Internal  bool                  `json:"internal"`
@@ -26,6 +36,7 @@ type IngestCase struct {
 }
 
 type DiffChangeCase struct {
+	Case
 	Headers        []types.BitcoinHeader `json:"headers"`
 	PrevEpochStart types.BitcoinHeader   `json:"prevEpochStart"`
 	Anchor         types.BitcoinHeader   `json:"anchor"`
@@ -48,9 +59,19 @@ type KeeperSuite struct {
 	Fixtures KeeperTestCases
 }
 
-func logIfErr(err error) {
+func (c Case) Name() string {
+	return c.Comment
+}
+
+func logIfError(err error) {
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func logIfTestCaseError(tc NamedCase, err sdk.Error) {
+	if err != nil {
+		log.Printf("Unexpected Error\nIn case: %s\n%s\n", tc.Name(), err.Error())
 	}
 }
 
@@ -58,10 +79,10 @@ func logIfErr(err error) {
 func TestKeeper(t *testing.T) {
 	jsonFile, err := os.Open("../../../../testVectors.json")
 	defer jsonFile.Close()
-	logIfErr(err)
+	logIfError(err)
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
-	logIfErr(err)
+	logIfError(err)
 
 	var fixtures KeeperTestCases
 	json.Unmarshal([]byte(byteValue), &fixtures)

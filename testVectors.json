@@ -5,6 +5,7 @@
   "header": {
     "validateDifficultyChange": [
       {
+        "comment": "valid case",
         "headers": [
           {
             "raw": "02000000b2b3d204fbd1fda5f1bfa8e83d6f67be7307c05a64d4441b0000000000000000cd19b368ea76f54a604d5c5222d190112f364df1a5af37fbc24cb3fbd32b97642004a153a2ab5118824d1fac",
@@ -52,6 +53,7 @@
     ],
     "validateHeaderChain": [
       {
+        "comment": "valid case",
         "headers": [
           {
             "height": 562623,
