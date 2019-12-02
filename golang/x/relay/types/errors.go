@@ -104,6 +104,27 @@ const (
 	NotHeavier sdk.CodeType = 405
 	// NotHeavierMessage is the corresponding message
 	NotHeavierMessage = "New best hash does not have more work than previous"
+
+	// 500-block Queries
+
+	// NotEnoughArguments means there are not enough arguments specified in the path of a query
+	NotEnoughArguments sdk.CodeType = 501
+	// NotEnoughArgumentsMessage is the corresponding message
+	NotEnoughArgumentsMessage = "Not enough arguments"
+
+	// TooManyArguments means there are too many arguments specified in the path of a query
+	TooManyArguments sdk.CodeType = 502
+	// TooManyArgumentsMessage is the corresponding message
+	TooManyArgumentsMessage = "Too many arguments"
+
+	// MarshalJSON means there was an error marshalling a query result to json
+	MarshalJSON sdk.CodeType = 503
+	// MarshalJSONMessage is the corresponding message
+	MarshalJSONMessage = "Could not marshal result to JSON"
+
+	// 600-block External
+
+	ExternalError sdk.CodeType = 601
 )
 
 // ErrUnknownError throws an error
@@ -191,7 +212,27 @@ func ErrAlreadyInit(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, AlreadyInit, AlreadyInitMessage)
 }
 
+// ErrTooManyArguments throws an error
+func ErrTooManyArguments(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, TooManyArguments, TooManyArgumentsMessage)
+}
+
+// ErrNotEnoughArguments throws an error
+func ErrNotEnoughArguments(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, NotEnoughArguments, NotEnoughArgumentsMessage)
+}
+
+// ErrMarshalJSON throws an error
+func ErrMarshalJSON(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, MarshalJSON, MarshalJSONMessage)
+}
+
 // FromBTCSPVError converts a btcutils error into an sdk error
 func FromBTCSPVError(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, BitcoinSPV, err.Error())
+}
+
+// ErrExternal converts any external error into an sdk error
+func ErrExternal(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, ExternalError, err.Error())
 }
