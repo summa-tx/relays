@@ -122,8 +122,7 @@ func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.Validator
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	init, _ := InitGenesis(ctx, am.keeper, genesisState)
-	return init
+	return InitGenesis(ctx, am.keeper, genesisState)
 }
 
 // ExportGenesis is

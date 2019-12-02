@@ -263,7 +263,7 @@ func queryIsMostRecentCommonAncestor(ctx sdk.Context, path []string, req abci.Re
 	// check that the path is this many items long, error if not
 	if len(path) > 4 {
 		return []byte{}, types.ErrTooManyArguments(types.DefaultCodespace)
-	} else if len(path) < 4 {
+	} else if len(path) < 3 {
 		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
 	}
 
