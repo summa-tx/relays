@@ -86,6 +86,7 @@ func logIfTestCaseError(tc NamedCase, err sdk.Error) {
 // Runs the whole test suite
 func TestKeeper(t *testing.T) {
 	jsonFile, err := os.Open("../../../../testVectors.json")
+	logIfError(err)
 	defer jsonFile.Close()
 	logIfError(err)
 

@@ -272,16 +272,7 @@ func queryIsMostRecentCommonAncestor(ctx sdk.Context, path []string, req abci.Re
 		return []byte{}, leftErr
 	}
 
-	right := path[2]
-	rightBytes, decodeErr := hex.DecodeString(right)
-	if decodeErr != nil {
-		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
-	}
-	rightDigest, newDigestErr := btcspv.NewHash256Digest(rightBytes)
-	if newDigestErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
-	}
-	rightDigest, rightErr := hash256DigestFromHex(path[0])
+	rightDigest, rightErr := hash256DigestFromHex(path[2])
 	if rightErr != nil {
 		return []byte{}, rightErr
 	}

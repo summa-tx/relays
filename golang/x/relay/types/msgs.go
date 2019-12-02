@@ -74,7 +74,7 @@ func (msg MsgIngestHeaderChain) Type() string { return "ingest_header_chain" }
 func (msg MsgIngestHeaderChain) ValidateBasic() sdk.Error {
 	for i := range msg.Headers {
 		valid, err := msg.Headers[i].Validate()
-		if valid == false || err != nil {
+		if !valid || err != nil {
 			return FromBTCSPVError(DefaultCodespace, err)
 		}
 	}
@@ -113,7 +113,7 @@ func (msg MsgIngestDifficultyChange) Type() string { return "ingest_difficulty_c
 func (msg MsgIngestDifficultyChange) ValidateBasic() sdk.Error {
 	for i := range msg.Headers {
 		valid, err := msg.Headers[i].Validate()
-		if valid == false || err != nil {
+		if !valid || err != nil {
 			return FromBTCSPVError(DefaultCodespace, err)
 		}
 	}
