@@ -19,6 +19,7 @@ func (r QueryResIsAncestor) String() string {
 	return strings.Join([]string{dig, digAnc, res}, "\n")
 }
 
+// TODO: update these structs to include arguments
 type QueryResGetRelayGenesis struct {
 	Digest Hash256Digest `json:"digest"`
 }
