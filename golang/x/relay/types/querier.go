@@ -14,14 +14,11 @@ type QueryResIsAncestor struct {
 func (r QueryResIsAncestor) String() string {
 	dig := "0x" + hex.EncodeToString(r.Digest[:])
 	digAnc := "0x" + hex.EncodeToString(r.ProspectiveAncestor[:])
-	// res := fmt.Sprintf("%t\n", r.Res)
-	// return strings.Join([]string{dig, digAnc, res}, "\n")
 	return fmt.Sprintf(
 		"Digest: %s, Ancestor: %s, Result: %t",
 		dig, digAnc, r.Res)
 }
 
-// TODO: update these structs to include arguments
 type QueryResGetRelayGenesis struct {
 	Res Hash256Digest `json:"res"`
 }
@@ -70,6 +67,24 @@ func (r QueryResHeaviestFromAncestor) String() string {
 	limit := r.Limit
 	res := "0x" + hex.EncodeToString(r.Res[:])
 	return fmt.Sprintf(
-		"Ancestor: %s, Current Best: %s, New BestL: %s, Limit: %d, Result: %s",
+		"Ancestor: %s, Current Best: %s, New Best: %s, Limit: %d, Result: %s",
 		anc, curBest, newBest, limit, res)
+}
+
+type QueryResIsMostRecentCommonAncestor struct {
+	Ancestor Hash256Digest `json:"ancestor"`
+	Left     Hash256Digest `json:"left"`
+	Right    Hash256Digest `json:"right"`
+	Limit    uint32        `json:"limit"`
+	Res      bool          `json:"res"`
+}
+
+func (r QueryResIsMostRecentCommonAncestor) String() string {
+	anc := "0x" + hex.EncodeToString(r.Ancestor[:])
+	left := "0x" + hex.EncodeToString(r.Left[:])
+	right := "0x" + hex.EncodeToString(r.Right[:])
+	limit := r.Limit
+	return fmt.Sprintf(
+		"Ancestor: %s, Left: %s, Right: %s, Limit: %d, Result: %t",
+		anc, left, right, limit, r.Res)
 }
