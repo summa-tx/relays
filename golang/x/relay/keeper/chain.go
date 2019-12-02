@@ -33,7 +33,7 @@ func (k Keeper) setDigestByStoreKey(ctx sdk.Context, key string, digest types.Ha
 }
 
 // SetGenesisState sets the genesis state
-func (k Keeper) SetGenesisState(ctx sdk.Context, genesis, epochStart btcspv.BitcoinHeader) sdk.Error {
+func (k Keeper) SetGenesisState(ctx sdk.Context, genesis, epochStart types.BitcoinHeader) sdk.Error {
 	store := k.getChainStore(ctx)
 
 	if store.Has([]byte(types.RelayGenesisStorage)) {
@@ -45,7 +45,7 @@ func (k Keeper) SetGenesisState(ctx sdk.Context, genesis, epochStart btcspv.Bitc
 
 	k.setRelayGenesis(ctx, genesis.HashLE)
 	k.setBestKnownDigest(ctx, genesis.HashLE)
-	k.setLastReorgLCA(ctx, genesis.HashLE)
+	k.setLastReorgCA(ctx, genesis.HashLE)
 
 	return nil
 }
@@ -70,13 +70,13 @@ func (k Keeper) GetBestKnownDigest(ctx sdk.Context) (types.Hash256Digest, sdk.Er
 	return k.getDigestByStoreKey(ctx, types.BestKnownDigestStorage)
 }
 
-// setLastReorgLCA sets the latest common ancestor of the last reorg
-func (k Keeper) setLastReorgLCA(ctx sdk.Context, bestKnown types.Hash256Digest) {
+// setLastReorgCA sets the latest common ancestor of the last reorg
+func (k Keeper) setLastReorgCA(ctx sdk.Context, bestKnown types.Hash256Digest) {
 	k.setDigestByStoreKey(ctx, types.LastReorgLCAStorage, bestKnown)
 }
 
-// GetLastReorgLCA returns the best known digest in the relay
-func (k Keeper) GetLastReorgLCA(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
+// GetLastReorgCA returns the best known digest in the relay
+func (k Keeper) GetLastReorgCA(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
 	return k.getDigestByStoreKey(ctx, types.LastReorgLCAStorage)
 }
 
@@ -192,7 +192,7 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 		return types.ErrNotHeavier(types.DefaultCodespace)
 	}
 
-	k.setLastReorgLCA(ctx, ancestor)
+	k.setLastReorgCA(ctx, ancestor)
 	k.setBestKnownDigest(ctx, newBestDigest)
 	k.emitReorg(ctx, knownBestDigest, newBestDigest, ancestor)
 

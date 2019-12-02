@@ -69,6 +69,17 @@ const (
 
 	// NotHeavier means the proposed new best is not heavier than the current best
 	NotHeavier sdk.CodeType = 405
+
+	// 500-block Queries
+
+	// NotEnoughArguments means there are not enough arguments specified in the path of a query
+	NotEnoughArguments sdk.CodeType = 501
+
+	// TooManyArguments means there are too many arguments specified in the path of a query
+	TooManyArguments sdk.CodeType = 501
+
+	// MarshalJSON means there was an error marshalling a query result to json
+	MarshalJSON sdk.CodeType = 502
 )
 
 // ErrUnknownError throws an error
@@ -154,6 +165,21 @@ func ErrBadHex(codespace sdk.CodespaceType) sdk.Error {
 // ErrAlreadyInit throws an error
 func ErrAlreadyInit(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, AlreadyInit, "Relay has already set genesis state")
+}
+
+// ErrTooManyArguments throws an error
+func ErrTooManyArguments(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, AlreadyInit, "Too many arguments")
+}
+
+// ErrNotEnoughArguments throws an error
+func ErrNotEnoughArguments(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, AlreadyInit, "Not enough arguments")
+}
+
+// ErrMarshalJSON throws an error
+func ErrMarshalJSON(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, AlreadyInit, "Could not marshal result to JSON")
 }
 
 // FromBTCSPVError converts a btcutils error into an sdk error

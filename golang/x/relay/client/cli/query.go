@@ -7,12 +7,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
-	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
 type QueryResGetParent struct {
-	Digest btcspv.Hash256Digest `json:"digest"`
+	Digest types.Hash256Digest `json:"digest"`
 }
 
 func (d *QueryResGetParent) String() string {

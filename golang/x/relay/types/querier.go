@@ -27,3 +27,30 @@ func (r QueryResGetRelayGenesis) String() string {
 	digest := "0x" + hex.EncodeToString(r.Digest[:])
 	return fmt.Sprintf("%s\n", digest)
 }
+
+type QueryResGetLastReorgCA struct {
+	Digest Hash256Digest `json:"digest"`
+}
+
+func (r QueryResGetLastReorgCA) String() string {
+	digest := "0x" + hex.EncodeToString(r.Digest[:])
+	return fmt.Sprintf("%s\n", digest)
+}
+
+type QueryResFindAncestor struct {
+	Digest Hash256Digest `json:"digest"`
+}
+
+func (r QueryResFindAncestor) String() string {
+	digest := "0x" + hex.EncodeToString(r.Digest[:])
+	return fmt.Sprintf("%s\n", digest)
+}
+
+type QueryResHeaviestFromAncestor struct {
+	Digest Hash256Digest `json:"digest"`
+}
+
+func (r QueryResHeaviestFromAncestor) String() string {
+	digest := "0x" + hex.EncodeToString(r.Digest[:])
+	return fmt.Sprintf("%s\n", digest)
+}
