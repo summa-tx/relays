@@ -96,7 +96,7 @@ func queryIsAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keep
 	response := types.QueryResIsAncestor{
 		Digest:              digestLE,
 		ProspectiveAncestor: ancestorDigestLE,
-		IsAncestor:          result,
+		Res:                 result,
 	}
 
 	// And we serialize that response as JSON
@@ -113,7 +113,7 @@ func queryGetRelayGenesis(ctx sdk.Context, req abci.RequestQuery, keeper Keeper)
 
 	// Now we format the answer as a response
 	response := types.QueryResGetRelayGenesis{
-		Digest: result,
+		Res: result,
 	}
 
 	// And we serialize that response as JSON
@@ -130,7 +130,7 @@ func queryGetLastReorgCA(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) 
 
 	// Now we format the answer as a response
 	response := types.QueryResGetLastReorgCA{
-		Digest: result,
+		Res: result,
 	}
 
 	// And we serialize that response as JSON
@@ -163,13 +163,16 @@ func queryFindAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, ke
 	if convErr != nil {
 		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, convErr)
 	}
+	newOffset := uint32(offset)
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result, err := keeper.FindAncestor(ctx, digestLE, uint32(offset))
+	result, err := keeper.FindAncestor(ctx, digestLE, newOffset)
 
 	// Now we format the answer as a response
 	response := types.QueryResFindAncestor{
-		Digest: result,
+		DigestLE: digestLE,
+		Offset:   newOffset,
+		Res:      result,
 	}
 
 	// And we serialize that response as JSON
@@ -223,13 +226,18 @@ func queryHeaviestFromAncestor(ctx sdk.Context, path []string, req abci.RequestQ
 	if convErr != nil {
 		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, convErr)
 	}
+	newLimit := uint32(limit)
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result, err := keeper.HeaviestFromAncestor(ctx, ancestor, currentBestDigest, newBestDigest, uint32(limit))
+	result, err := keeper.HeaviestFromAncestor(ctx, ancestor, currentBestDigest, newBestDigest, newLimit)
 
 	// Now we format the answer as a response
 	response := types.QueryResHeaviestFromAncestor{
-		Digest: result,
+		Ancestor:    ancestor,
+		CurrentBest: currentBestDigest,
+		NewBest:     newBestDigest,
+		Limit:       newLimit,
+		Res:         result,
 	}
 
 	// And we serialize that response as JSON
