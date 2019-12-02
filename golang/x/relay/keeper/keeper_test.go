@@ -88,7 +88,6 @@ func TestKeeper(t *testing.T) {
 	jsonFile, err := os.Open("../../../../testVectors.json")
 	logIfError(err)
 	defer jsonFile.Close()
-	logIfError(err)
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	logIfError(err)
