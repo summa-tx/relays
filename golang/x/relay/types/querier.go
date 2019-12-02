@@ -8,6 +8,7 @@ import (
 type QueryResIsAncestor struct {
 	Digest              Hash256Digest `json:"digest"`
 	ProspectiveAncestor Hash256Digest `json:"prospectiveAncestor"`
+	Limit               uint32        `json:"limit"`
 	Res                 bool          `json:"result"`
 }
 
@@ -15,8 +16,8 @@ func (r QueryResIsAncestor) String() string {
 	dig := "0x" + hex.EncodeToString(r.Digest[:])
 	digAnc := "0x" + hex.EncodeToString(r.ProspectiveAncestor[:])
 	return fmt.Sprintf(
-		"Digest: %s, Ancestor: %s, Result: %t",
-		dig, digAnc, r.Res)
+		"Digest: %s, Ancestor: %s, Limit: %d, Result: %t",
+		dig, digAnc, r.Limit, r.Res)
 }
 
 type QueryResGetRelayGenesis struct {
@@ -64,11 +65,10 @@ func (r QueryResHeaviestFromAncestor) String() string {
 	anc := "0x" + hex.EncodeToString(r.Ancestor[:])
 	curBest := "0x" + hex.EncodeToString(r.CurrentBest[:])
 	newBest := "0x" + hex.EncodeToString(r.NewBest[:])
-	limit := r.Limit
 	res := "0x" + hex.EncodeToString(r.Res[:])
 	return fmt.Sprintf(
 		"Ancestor: %s, Current Best: %s, New Best: %s, Limit: %d, Result: %s",
-		anc, curBest, newBest, limit, res)
+		anc, curBest, newBest, r.Limit, res)
 }
 
 type QueryResIsMostRecentCommonAncestor struct {
@@ -83,8 +83,7 @@ func (r QueryResIsMostRecentCommonAncestor) String() string {
 	anc := "0x" + hex.EncodeToString(r.Ancestor[:])
 	left := "0x" + hex.EncodeToString(r.Left[:])
 	right := "0x" + hex.EncodeToString(r.Right[:])
-	limit := r.Limit
 	return fmt.Sprintf(
 		"Ancestor: %s, Left: %s, Right: %s, Limit: %d, Result: %t",
-		anc, left, right, limit, r.Res)
+		anc, left, right, r.Limit, r.Res)
 }
