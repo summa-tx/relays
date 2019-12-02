@@ -81,7 +81,7 @@ func queryIsAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keep
 	// parse the second path item as hex.
 	ancestorDigest := path[1]
 	ancestorDigestBytes, decodeErr := hex.DecodeString(ancestorDigest)
-	if err != nil {
+	if decodeErr != nil {
 		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
 	}
 	ancestorDigestLE, newDigestErr := btcspv.NewHash256Digest(ancestorDigestBytes)

@@ -36,6 +36,7 @@ func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) types.B
 // compareTargets compares Bitcoin truncated and full-length targets
 func compareTargets(full, truncated sdk.Uint) bool {
 	// dirty hacks. sdk.Uint doesn't give us easy access to the underlying
+	// will be fixed in future sdk version
 	f, _ := full.MarshalAmino()
 	t, _ := truncated.MarshalAmino()
 	fullBI := new(big.Int)
@@ -56,12 +57,7 @@ func (k Keeper) ingestHeader(ctx sdk.Context, header types.BitcoinHeader) {
 	store.Set(header.HashLE[:], buf)
 }
 
-func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, internal bool) sdk.Error {
-	if !k.HasHeader(ctx, headers[0].PrevHashLE) {
-		return types.ErrUnknownBlock(types.DefaultCodespace)
-	}
-
-	anchor := k.GetHeader(ctx, headers[0].PrevHashLE)
+func validateHeaderChain(anchor types.BitcoinHeader, headers []types.BitcoinHeader, internal, isMainnet bool) sdk.Error {
 	prev := anchor // scratchpad, we change this later
 
 	// On internal call, use the header chain target
@@ -69,7 +65,6 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 	if internal {
 		expectedTarget = btcspv.ExtractTarget(headers[0].Raw)
 	}
-
 	// allocate memory for raw anchor + all headers
 	raw := make([]byte, 80*(len(headers)+1))
 	copy(raw[0:80], anchor.Raw[:])
@@ -88,8 +83,8 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 
 		// ensure expectedTarget doesn't change
 		// it's allowed to change if the relay is in testnet mode
-		if k.IsMainNet && btcspv.ExtractTarget(header.Raw) != expectedTarget {
-			return types.ErrUnexptectedRetarget(types.DefaultCodespace)
+		if isMainnet && !btcspv.ExtractTarget(header.Raw).Equal(expectedTarget) {
+			return types.ErrUnexpectedRetarget(types.DefaultCodespace)
 		}
 
 		// copy header raw into a bytearray
@@ -104,9 +99,50 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 		return types.FromBTCSPVError(types.DefaultCodespace, err)
 	}
 
+	return nil
+}
+
+func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, internal bool) sdk.Error {
+	if !k.HasHeader(ctx, headers[0].PrevHashLE) {
+		return types.ErrUnknownBlock(types.DefaultCodespace)
+	}
+
+	anchor := k.GetHeader(ctx, headers[0].PrevHashLE)
+
+	err := validateHeaderChain(anchor, headers, internal, k.IsMainNet)
+	if err != nil {
+		return err
+	}
+
 	for _, header := range headers {
 		k.setLink(ctx, header)
 		k.ingestHeader(ctx, header)
+	}
+	return nil
+}
+
+func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anchor types.BitcoinHeader) sdk.Error {
+	if anchor.Height%2016 != 2015 {
+		return types.ErrWrongEnd(types.DefaultCodespace)
+	}
+	if anchor.Height != prevEpochStart.Height+2015 || anchor.Height < prevEpochStart.Height {
+		return types.ErrWrongStart(types.DefaultCodespace)
+	}
+	if !btcspv.ExtractDifficulty(anchor.Raw).Equal(btcspv.ExtractDifficulty(prevEpochStart.Raw)) {
+		return types.ErrPeriodMismatch(types.DefaultCodespace)
+	}
+
+	// calculated target
+	expectedTarget := btcspv.RetargetAlgorithm(
+		btcspv.ExtractTarget(prevEpochStart.Raw),
+		btcspv.ExtractTimestamp(prevEpochStart.Raw),
+		btcspv.ExtractTimestamp(anchor.Raw))
+
+	// Observed target in the new period start header
+	actualTarget := btcspv.ExtractTarget(headers[0].Raw)
+
+	if !compareTargets(expectedTarget, actualTarget) {
+		return types.ErrBadRetarget(types.DefaultCodespace)
 	}
 	return nil
 }
@@ -123,27 +159,9 @@ func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.H
 	prevEpochStart := k.GetHeader(ctx, prevEpochStartLE)
 	anchor := k.GetHeader(ctx, headers[0].PrevHashLE)
 
-	if anchor.Height%2016 != 2015 {
-		return types.ErrWrongEnd(types.DefaultCodespace)
-	}
-	if anchor.Height != prevEpochStart.Height+2015 || anchor.Height < prevEpochStart.Height {
-		return types.ErrWrongStart(types.DefaultCodespace)
-	}
-	if btcspv.ExtractDifficulty(anchor.Raw) != btcspv.ExtractDifficulty(prevEpochStart.Raw) {
-		return types.ErrPeriodMismatch(types.DefaultCodespace)
-	}
-
-	// calculated target
-	expectedTarget := btcspv.RetargetAlgorithm(
-		btcspv.ExtractTarget(prevEpochStart.Raw),
-		btcspv.ExtractTimestamp(prevEpochStart.Raw),
-		btcspv.ExtractTimestamp(anchor.Raw))
-
-	// Observed target in the new period start header
-	actualTarget := btcspv.ExtractTarget(headers[0].Raw)
-
-	if !compareTargets(expectedTarget, actualTarget) {
-		return types.ErrBadRetarget(types.DefaultCodespace)
+	err := validateDifficultyChange(headers, prevEpochStart, anchor)
+	if err != nil {
+		return err
 	}
 
 	return k.ingestHeaders(ctx, headers, true)
