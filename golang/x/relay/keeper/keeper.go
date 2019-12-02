@@ -25,7 +25,3 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, mainnet bool) Keeper {
 func (k Keeper) getPrefixStore(ctx sdk.Context, namespace string) sdk.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte(namespace))
 }
-
-// func (k Keeper) getIsAncestor(ctx sdk.Context, namespace string) sdk.KVStore {
-
-// }
