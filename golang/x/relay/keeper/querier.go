@@ -205,7 +205,7 @@ func queryHeaviestFromAncestor(ctx sdk.Context, path []string, req abci.RequestQ
 	// check that the path is this many items long, error if not
 	if len(path) > 4 {
 		return []byte{}, types.ErrTooManyArguments(types.DefaultCodespace)
-	} else if len(path) < 4 {
+	} else if len(path) < 3 {
 		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
 	}
 
@@ -225,14 +225,19 @@ func queryHeaviestFromAncestor(ctx sdk.Context, path []string, req abci.RequestQ
 		return []byte{}, newBestErr
 	}
 
-	limit, convErr := strconv.ParseUint(path[3], 0, 10)
-	if convErr != nil {
-		return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
+	var limit uint32
+	if len(path) == 3 {
+		limit = 15
+	} else {
+		num, convErr := strconv.ParseUint(path[3], 0, 10)
+		if convErr != nil {
+			return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
+		}
+		limit = uint32(num)
 	}
-	newLimit := uint32(limit)
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result, err := keeper.HeaviestFromAncestor(ctx, ancestor, currentBestDigest, newBestDigest, newLimit)
+	result, err := keeper.HeaviestFromAncestor(ctx, ancestor, currentBestDigest, newBestDigest, limit)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -242,7 +247,7 @@ func queryHeaviestFromAncestor(ctx sdk.Context, path []string, req abci.RequestQ
 		Ancestor:    ancestor,
 		CurrentBest: currentBestDigest,
 		NewBest:     newBestDigest,
-		Limit:       newLimit,
+		Limit:       limit,
 		Res:         result,
 	}
 
@@ -277,21 +282,26 @@ func queryIsMostRecentCommonAncestor(ctx sdk.Context, path []string, req abci.Re
 		return []byte{}, rightErr
 	}
 
-	limit, convErr := strconv.ParseUint(path[3], 0, 10)
-	if convErr != nil {
-		return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
+	var limit uint32
+	if len(path) == 3 {
+		limit = 15
+	} else {
+		num, convErr := strconv.ParseUint(path[3], 0, 10)
+		if convErr != nil {
+			return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
+		}
+		limit = uint32(num)
 	}
-	newLimit := uint32(limit)
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result := keeper.IsMostRecentCommonAncestor(ctx, ancestor, leftDigest, rightDigest, newLimit)
+	result := keeper.IsMostRecentCommonAncestor(ctx, ancestor, leftDigest, rightDigest, limit)
 
 	// Now we format the answer as a response
 	response := types.QueryResIsMostRecentCommonAncestor{
 		Ancestor: ancestor,
 		Left:     leftDigest,
 		Right:    rightDigest,
-		Limit:    newLimit,
+		Limit:    limit,
 		Res:      result,
 	}
 
