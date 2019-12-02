@@ -18,3 +18,12 @@ func (r QueryResIsAncestor) String() string {
 	res := fmt.Sprintf("%t\n", r.IsAncestor)
 	return strings.Join([]string{dig, digAnc, res}, "\n")
 }
+
+type QueryResGetRelayGenesis struct {
+	Digest Hash256Digest `json:"digest"`
+}
+
+func (r QueryResGetRelayGenesis) String() string {
+	digest := "0x" + hex.EncodeToString(r.Digest[:])
+	return fmt.Sprintf("%s\n", digest)
+}

@@ -13,6 +13,9 @@ import (
 // QueryIsAncestor is a query string tag for IsAncestor
 const QueryIsAncestor = "isancestor"
 
+// QueryGetRelayGenesis is a query string tag for GetRelayGenesis
+const QueryGetRelayGenesis = "getrelaygenesis"
+
 // NewQuerier makes a query routing function
 func NewQuerier(keeper Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
@@ -69,6 +72,24 @@ func queryIsAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keep
 		Digest:              digestLE,
 		ProspectiveAncestor: ancestorDigestLE,
 		IsAncestor:          result,
+	}
+
+	// And we serialize that response as JSON
+	res, marshalErr := codec.MarshalJSONIndent(keeper.cdc, response)
+	if marshalErr != nil {
+		// TODO: better handling
+		panic("could not marshal result to JSON")
+	}
+	return res, nil
+}
+
+func queryGetRelayGenesis(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+	// This calls the keeper with the parsed arguments, and gets an answer
+	result, err := keeper.GetRelayGenesis(ctx)
+
+	// Now we format the answer as a response
+	response := types.QueryResGetRelayGenesis{
+		Digest: result,
 	}
 
 	// And we serialize that response as JSON
