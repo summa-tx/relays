@@ -13,9 +13,9 @@ import (
 )
 
 type setLinkReq struct {
-	BaseReq rest.BaseReq `json:"base_req"`
-	Header  string       `json:"header"`
-	Sender  string       `json:"sender"`
+	BaseReq rest.BaseReq   `json:"base_req"`
+	Header  string         `json:"header"`
+	Sender  sdk.AccAddress `json:"sender"`
 }
 
 func setLinkHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -32,15 +32,11 @@ func setLinkHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		addr, err := sdk.AccAddressFromBech32(req.Sender)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
+		addr := sdk.AccAddress(req.Sender)
 
 		// create the message
 		msg := types.NewMsgSetLink(req.Sender, req.Header, addr)
-		err = msg.ValidateBasic()
+		err := msg.ValidateBasic()
 
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

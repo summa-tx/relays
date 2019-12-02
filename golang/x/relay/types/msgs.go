@@ -13,12 +13,12 @@ const RouterKey = ModuleName // this was defined in your key.go file
 
 // MsgSetLink defines a SetLink message
 type MsgSetLink struct {
-	Signer string `json:"signer"`
-	Header string `json:"header"`
+	Signer sdk.AccAddress `json:"signer"`
+	Header string         `json:"header"`
 }
 
 // NewMsgSetLink is a constructor function for MsgSetLink
-func NewMsgSetLink(address, header string, owner sdk.AccAddress) MsgSetLink {
+func NewMsgSetLink(address sdk.AccAddress, header string, owner sdk.AccAddress) MsgSetLink {
 	return MsgSetLink{
 		address,
 		header,
@@ -27,11 +27,7 @@ func NewMsgSetLink(address, header string, owner sdk.AccAddress) MsgSetLink {
 
 // GetSigners defines whose signature is required
 func (msg MsgSetLink) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.Signer)
-	if err != nil {
-		return []sdk.AccAddress{}
-	}
-	return []sdk.AccAddress{addr}
+	return []sdk.AccAddress{msg.Signer}
 }
 
 // Type should return the action
@@ -41,7 +37,7 @@ func (msg MsgSetLink) Type() string { return "set_link" }
 func (msg MsgSetLink) ValidateBasic() sdk.Error {
 	b, err := hex.DecodeString(msg.Header)
 	if err != nil || len(b) != 80 {
-		return ErrBadHeaderLength(DefaultCodespace)
+		return FromBTCSPVError(DefaultCodespace, err)
 	}
 	return nil
 }
@@ -58,11 +54,11 @@ func (msg MsgSetLink) Route() string { return RouterKey }
 
 // MsgIngestHeaderChain defines a IngestHeaderChain message
 type MsgIngestHeaderChain struct {
-	Signer  string          `json:"signer"`
+	Signer  sdk.AccAddress  `json:"signer"`
 	Headers []BitcoinHeader `json:"headers"`
 }
 
-func NewMsgIngestHeaderChain(address string, headers []BitcoinHeader) MsgIngestHeaderChain {
+func NewMsgIngestHeaderChain(address sdk.AccAddress, headers []BitcoinHeader) MsgIngestHeaderChain {
 	return MsgIngestHeaderChain{
 		address,
 		headers,
@@ -70,11 +66,7 @@ func NewMsgIngestHeaderChain(address string, headers []BitcoinHeader) MsgIngestH
 }
 
 func (msg MsgIngestHeaderChain) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.Signer)
-	if err != nil {
-		return []sdk.AccAddress{}
-	}
-	return []sdk.AccAddress{addr}
+	return []sdk.AccAddress{msg.Signer}
 }
 
 func (msg MsgIngestHeaderChain) Type() string { return "ingest_header_chain" }
@@ -83,7 +75,7 @@ func (msg MsgIngestHeaderChain) ValidateBasic() sdk.Error {
 	for i := range msg.Headers {
 		valid, err := msg.Headers[i].Validate()
 		if valid == false || err != nil {
-			return ErrBadHeaderLength(DefaultCodespace)
+			return FromBTCSPVError(DefaultCodespace, err)
 		}
 	}
 	return nil
@@ -91,7 +83,6 @@ func (msg MsgIngestHeaderChain) ValidateBasic() sdk.Error {
 
 func (msg MsgIngestHeaderChain) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-
 }
 
 func (msg MsgIngestHeaderChain) Route() string { return RouterKey }
@@ -100,12 +91,12 @@ func (msg MsgIngestHeaderChain) Route() string { return RouterKey }
 
 // MsgIngestDifficultyChange defines a IngestDifficultyChange message
 type MsgIngestDifficultyChange struct {
-	Signer  string          `json:"signer"`
+	Signer  sdk.AccAddress  `json:"signer"`
 	Start   Hash256Digest   `json:"prevEpochStartLE"`
 	Headers []BitcoinHeader `json:"headers"`
 }
 
-func NewMsgIngestDifficultyChange(address string, start Hash256Digest, headers []BitcoinHeader) MsgIngestDifficultyChange {
+func NewMsgIngestDifficultyChange(address sdk.AccAddress, start Hash256Digest, headers []BitcoinHeader) MsgIngestDifficultyChange {
 	return MsgIngestDifficultyChange{
 		address,
 		start,
@@ -114,11 +105,7 @@ func NewMsgIngestDifficultyChange(address string, start Hash256Digest, headers [
 }
 
 func (msg MsgIngestDifficultyChange) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.Signer)
-	if err != nil {
-		return []sdk.AccAddress{}
-	}
-	return []sdk.AccAddress{addr}
+	return []sdk.AccAddress{msg.Signer}
 }
 
 func (msg MsgIngestDifficultyChange) Type() string { return "ingest_difficulty_change" }
@@ -127,7 +114,7 @@ func (msg MsgIngestDifficultyChange) ValidateBasic() sdk.Error {
 	for i := range msg.Headers {
 		valid, err := msg.Headers[i].Validate()
 		if valid == false || err != nil {
-			return ErrBadHeaderLength(DefaultCodespace)
+			return FromBTCSPVError(DefaultCodespace, err)
 		}
 	}
 	return nil
@@ -143,14 +130,14 @@ func (msg MsgIngestDifficultyChange) Route() string { return RouterKey }
 
 // MsgMarkNewHeaviest defines a MarkNewHeaviest message
 type MsgMarkNewHeaviest struct {
-	Signer      string        `json:"signer"`
-	Ancestor    Hash256Digest `json:"ancestor"`
-	CurrentBest RawHeader     `json:"currentBest"`
-	NewBest     RawHeader     `json:"newBest"`
-	Limit       uint32        `json:"limit"`
+	Signer      sdk.AccAddress `json:"signer"`
+	Ancestor    Hash256Digest  `json:"ancestor"`
+	CurrentBest RawHeader      `json:"currentBest"`
+	NewBest     RawHeader      `json:"newBest"`
+	Limit       uint32         `json:"limit"`
 }
 
-func NewMsgMarkNewHeaviest(address string, ancestor Hash256Digest, currentBest RawHeader, newBest RawHeader, limit uint32) MsgMarkNewHeaviest {
+func NewMsgMarkNewHeaviest(address sdk.AccAddress, ancestor Hash256Digest, currentBest RawHeader, newBest RawHeader, limit uint32) MsgMarkNewHeaviest {
 	return MsgMarkNewHeaviest{
 		address,
 		ancestor,
@@ -161,11 +148,7 @@ func NewMsgMarkNewHeaviest(address string, ancestor Hash256Digest, currentBest R
 }
 
 func (msg MsgMarkNewHeaviest) GetSigners() []sdk.AccAddress {
-	addr, err := sdk.AccAddressFromBech32(msg.Signer)
-	if err != nil {
-		return []sdk.AccAddress{}
-	}
-	return []sdk.AccAddress{addr}
+	return []sdk.AccAddress{msg.Signer}
 }
 
 func (msg MsgMarkNewHeaviest) Type() string { return "mark_new_heaviest" }

@@ -7,7 +7,7 @@ import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
-// NewHandler returns a handler for "nameservice" type messages.
+// NewHandler returns a handler for relay type messages.
 func NewHandler(keeper Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {
@@ -18,7 +18,7 @@ func NewHandler(keeper Keeper) sdk.Handler {
 		case types.MsgMarkNewHeaviest:
 			return handleMsgMarkNewHeaviest(ctx, keeper, msg)
 		default:
-			errMsg := fmt.Sprintf("Unrecognized nameservice Msg type: %v", msg.Type())
+			errMsg := fmt.Sprintf("Unrecognized relay Msg type: %v", msg.Type())
 			return sdk.ErrUnknownRequest(errMsg).Result()
 		}
 	}
@@ -29,7 +29,9 @@ func handleMsgIngestHeaderChain(ctx sdk.Context, keeper Keeper, msg types.MsgIng
 	if err != nil {
 		return err.Result()
 	}
-	return sdk.Result{}
+	return sdk.Result{
+		Events: ctx.EventManager().Events(),
+	}
 }
 
 func handleMsgIngestDifficultyChange(ctx sdk.Context, keeper Keeper, msg types.MsgIngestDifficultyChange) sdk.Result {
@@ -37,7 +39,9 @@ func handleMsgIngestDifficultyChange(ctx sdk.Context, keeper Keeper, msg types.M
 	if err != nil {
 		return err.Result()
 	}
-	return sdk.Result{}
+	return sdk.Result{
+		Events: ctx.EventManager().Events(),
+	}
 }
 
 func handleMsgMarkNewHeaviest(ctx sdk.Context, keeper Keeper, msg types.MsgMarkNewHeaviest) sdk.Result {
@@ -45,5 +49,7 @@ func handleMsgMarkNewHeaviest(ctx sdk.Context, keeper Keeper, msg types.MsgMarkN
 	if err != nil {
 		return err.Result()
 	}
-	return sdk.Result{}
+	return sdk.Result{
+		Events: ctx.EventManager().Events(),
+	}
 }
