@@ -23,14 +23,18 @@ func (k Keeper) HasHeader(ctx sdk.Context, digestLE types.Hash256Digest) bool {
 }
 
 // GetHeader retrieves a header from the store using its LE diges
-func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) types.BitcoinHeader {
+func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) (types.BitcoinHeader, sdk.Error) {
 	var header types.BitcoinHeader
 	store := k.getHeaderStore(ctx)
+
+	if !store.Has(digestLE[:]) {
+		return types.BitcoinHeader{}, types.ErrUnknownBlock(types.DefaultCodespace)
+	}
 
 	buf := store.Get(digestLE[:])
 	k.cdc.MustUnmarshalBinaryBare(buf, &header)
 
-	return header
+	return header, nil
 }
 
 // compareTargets compares Bitcoin truncated and full-length targets
@@ -107,9 +111,12 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 		return types.ErrUnknownBlock(types.DefaultCodespace)
 	}
 
-	anchor := k.GetHeader(ctx, headers[0].PrevHashLE)
+	anchor, err := k.GetHeader(ctx, headers[0].PrevHashLE)
+	if err != nil {
+		return types.ErrUnknownBlock(types.DefaultCodespace)
+	}
 
-	err := validateHeaderChain(anchor, headers, internal, k.IsMainNet)
+	err = validateHeaderChain(anchor, headers, internal, k.IsMainNet)
 	if err != nil {
 		return err
 	}
@@ -118,6 +125,9 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 		k.setLink(ctx, header)
 		k.ingestHeader(ctx, header)
 	}
+
+	k.emitExtension(ctx, anchor, headers[len(headers)-1])
+
 	return nil
 }
 
@@ -156,10 +166,16 @@ func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.H
 	}
 
 	// Find the anchor in our store
-	prevEpochStart := k.GetHeader(ctx, prevEpochStartLE)
-	anchor := k.GetHeader(ctx, headers[0].PrevHashLE)
+	prevEpochStart, err := k.GetHeader(ctx, prevEpochStartLE)
+	if err != nil {
+		return types.ErrUnknownBlock(types.DefaultCodespace)
+	}
+	anchor, err := k.GetHeader(ctx, headers[0].PrevHashLE)
+	if err != nil {
+		return types.ErrUnknownBlock(types.DefaultCodespace)
+	}
 
-	err := validateDifficultyChange(headers, prevEpochStart, anchor)
+	err = validateDifficultyChange(headers, prevEpochStart, anchor)
 	if err != nil {
 		return err
 	}

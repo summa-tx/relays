@@ -32,29 +32,6 @@ func (k Keeper) setDigestByStoreKey(ctx sdk.Context, key string, digest types.Ha
 	store.Set([]byte(key), digest[:])
 }
 
-// SetGenesisState sets the genesis state
-func (k Keeper) SetGenesisState(ctx sdk.Context, genesis, epochStart btcspv.BitcoinHeader) sdk.Error {
-	store := k.getChainStore(ctx)
-
-	if store.Has([]byte(types.RelayGenesisStorage)) {
-		return types.ErrAlreadyInit(types.DefaultCodespace)
-	}
-
-	k.ingestHeader(ctx, genesis)
-	k.ingestHeader(ctx, epochStart)
-
-	k.setRelayGenesis(ctx, genesis.HashLE)
-	k.setBestKnownDigest(ctx, genesis.HashLE)
-	k.setLastReorgLCA(ctx, genesis.HashLE)
-
-	return nil
-}
-
-// setRelayGenesis sets the first digest in the relay
-func (k Keeper) setRelayGenesis(ctx sdk.Context, relayGenesis types.Hash256Digest) {
-	k.setDigestByStoreKey(ctx, types.RelayGenesisStorage, relayGenesis)
-}
-
 // GetRelayGenesis returns the first digest in the relay
 func (k Keeper) GetRelayGenesis(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
 	return k.getDigestByStoreKey(ctx, types.RelayGenesisStorage)
@@ -119,9 +96,18 @@ func (k Keeper) IsMostRecentCommonAncestor(ctx sdk.Context, ancestor, left, righ
 
 // HeaviestFromAncestor determines the heavier descendant of a common ancestor
 func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, newBest types.Hash256Digest, limit uint32) (types.Hash256Digest, sdk.Error) {
-	ancestorBlock := k.GetHeader(ctx, ancestor)
-	leftBlock := k.GetHeader(ctx, currentBest)
-	rightBlock := k.GetHeader(ctx, newBest)
+	ancestorBlock, err := k.GetHeader(ctx, ancestor)
+	if err != nil {
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+	}
+	leftBlock, err := k.GetHeader(ctx, currentBest)
+	if err != nil {
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+	}
+	rightBlock, err := k.GetHeader(ctx, newBest)
+	if err != nil {
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+	}
 
 	if leftBlock.Height < ancestorBlock.Height || rightBlock.Height < ancestorBlock.Height {
 		return types.Hash256Digest{}, types.ErrBadHeight(types.DefaultCodespace)

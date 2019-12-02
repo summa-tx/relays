@@ -42,19 +42,25 @@ func ValidateGenesis(data GenesisState) error {
 	return nil
 }
 
-// DefaultGenesisState makes a default empty genesis state
-// TODO: set recent block as default
+// DefaultGenesisState sets block 606210 as genesis
 func DefaultGenesisState() GenesisState {
+	periodStart, headers := getGenesisHeaders()
 	return GenesisState{
-		Headers:     []BitcoinHeader{},
-		PeriodStart: BitcoinHeader{},
+		Headers:     headers,
+		PeriodStart: periodStart,
 	}
 }
 
 // InitGenesis inits the app state based on the genesis state
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) []abci.ValidatorUpdate {
-	keeper.SetGenesisState(ctx, data.Headers[0], data.PeriodStart)
-	keeper.IngestHeaderChain(ctx, data.Headers[1:])
+	err := keeper.SetGenesisState(ctx, data.Headers[0], data.PeriodStart)
+	if err != nil {
+		panic("already init!")
+	}
+	err = keeper.IngestHeaderChain(ctx, data.Headers[1:])
+	if err != nil {
+		panic("Bad header chain in genesis state!")
+	}
 	return []abci.ValidatorUpdate{}
 }
 
