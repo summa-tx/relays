@@ -8,7 +8,7 @@ import (
 type QueryResIsAncestor struct {
 	Digest              Hash256Digest `json:"digest"`
 	ProspectiveAncestor Hash256Digest `json:"prospectiveAncestor"`
-	Res                 bool          `json:"res"`
+	Res                 bool          `json:"result"`
 }
 
 func (r QueryResIsAncestor) String() string {
@@ -20,7 +20,7 @@ func (r QueryResIsAncestor) String() string {
 }
 
 type QueryResGetRelayGenesis struct {
-	Res Hash256Digest `json:"res"`
+	Res Hash256Digest `json:"result"`
 }
 
 func (r QueryResGetRelayGenesis) String() string {
@@ -28,11 +28,11 @@ func (r QueryResGetRelayGenesis) String() string {
 	return fmt.Sprintf("%s\n", digest)
 }
 
-type QueryResGetLastReorgCA struct {
-	Res Hash256Digest `json:"res"`
+type QueryResGetLastReorgLCA struct {
+	Res Hash256Digest `json:"result"`
 }
 
-func (r QueryResGetLastReorgCA) String() string {
+func (r QueryResGetLastReorgLCA) String() string {
 	digest := "0x" + hex.EncodeToString(r.Res[:])
 	return fmt.Sprintf("%s\n", digest)
 }
@@ -40,7 +40,7 @@ func (r QueryResGetLastReorgCA) String() string {
 type QueryResFindAncestor struct {
 	DigestLE Hash256Digest `json:"digestLE"`
 	Offset   uint32        `json:"offset"`
-	Res      Hash256Digest `json:"res"`
+	Res      Hash256Digest `json:"result"`
 }
 
 func (r QueryResFindAncestor) String() string {
@@ -57,7 +57,7 @@ type QueryResHeaviestFromAncestor struct {
 	CurrentBest Hash256Digest `json:"currentBest"`
 	NewBest     Hash256Digest `json:"newBest"`
 	Limit       uint32        `json:"limit"`
-	Res         Hash256Digest `json:"res"`
+	Res         Hash256Digest `json:"result"`
 }
 
 func (r QueryResHeaviestFromAncestor) String() string {
@@ -76,7 +76,7 @@ type QueryResIsMostRecentCommonAncestor struct {
 	Left     Hash256Digest `json:"left"`
 	Right    Hash256Digest `json:"right"`
 	Limit    uint32        `json:"limit"`
-	Res      bool          `json:"res"`
+	Res      bool          `json:"result"`
 }
 
 func (r QueryResIsMostRecentCommonAncestor) String() string {

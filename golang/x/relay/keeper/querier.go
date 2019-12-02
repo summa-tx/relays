@@ -17,8 +17,8 @@ const QueryIsAncestor = "isancestor"
 // QueryGetRelayGenesis is a query string tag for GetRelayGenesis
 const QueryGetRelayGenesis = "getrelaygenesis"
 
-// QueryGetLastReorgCA is a query string tag for GetLastReorgCA
-const QueryGetLastReorgCA = "getlastreorgca"
+// QueryGetLastReorgLCA is a query string tag for GetLastReorgLCA
+const QueryGetLastReorgLCA = "getlastreorglca"
 
 // QueryFindAncestor is a query string tag for FindAncestor
 const QueryFindAncestor = "findancestor"
@@ -29,6 +29,19 @@ const QueryHeaviestFromAncestor = "heaviestfromancestor"
 // QueryIsMostRecentCommonAncestor is a query string tag for IsMostRecentCommonAncestor
 const QueryIsMostRecentCommonAncestor = "ismostrecentcommonancestor"
 
+// hash256DigestFromHex converts a hex into a Hash256Digest
+func hash256DigestFromHex(hexStr string) (types.Hash256Digest, sdk.Error) {
+	bytes, decodeErr := hex.DecodeString(hexStr)
+	if decodeErr != nil {
+		return types.Hash256Digest{}, types.ErrBadHex(types.DefaultCodespace)
+	}
+	digest, newDigestErr := btcspv.NewHash256Digest(bytes)
+	if newDigestErr != nil {
+		return types.Hash256Digest{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
+	}
+	return digest, nil
+}
+
 // NewQuerier makes a query routing function
 func NewQuerier(keeper Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
@@ -37,8 +50,8 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 			return queryIsAncestor(ctx, path[1:], req, keeper)
 		case QueryGetRelayGenesis:
 			return queryGetRelayGenesis(ctx, req, keeper)
-		case QueryGetLastReorgCA:
-			return queryGetLastReorgCA(ctx, req, keeper)
+		case QueryGetLastReorgLCA:
+			return queryGetLastReorgLCA(ctx, req, keeper)
 		case QueryFindAncestor:
 			return queryFindAncestor(ctx, path[1:], req, keeper)
 		case QueryHeaviestFromAncestor:
@@ -63,44 +76,40 @@ func queryIsAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keep
 	// check that the path is this many items long, error if not
 	if len(path) > 3 {
 		return []byte{}, types.ErrTooManyArguments(types.DefaultCodespace)
-	} else if len(path) < 3 {
+	} else if len(path) < 2 {
 		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
 	}
 
 	// parse the first path item as hex.
-	hexDigest := path[0]
-	digestBytes, decodeErr := hex.DecodeString(hexDigest)
-	if decodeErr != nil {
-		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
-	}
-	digestLE, newDigestErr := btcspv.NewHash256Digest(digestBytes)
-	if newDigestErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
+	digestLE, digestErr := hash256DigestFromHex(path[0])
+	if digestErr != nil {
+		return []byte{}, digestErr
 	}
 
 	// parse the second path item as hex.
-	ancestorDigest := path[1]
-	ancestorDigestBytes, decodeErr := hex.DecodeString(ancestorDigest)
-	if decodeErr != nil {
-		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
-	}
-	ancestorDigestLE, newDigestErr := btcspv.NewHash256Digest(ancestorDigestBytes)
-	if newDigestErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
+	ancestor, ancestorErr := hash256DigestFromHex(path[1])
+	if ancestorErr != nil {
+		return []byte{}, ancestorErr
 	}
 
-	limit, convErr := strconv.Atoi(path[2]) // TODO: parse from path, use 240 as default if not in path
-	if convErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, convErr)
+	var limit uint32
+	if len(path) == 2 {
+		limit = 15
+	} else {
+		num, convErr := strconv.ParseUint(path[2], 0, 10)
+		if convErr != nil {
+			return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
+		}
+		limit = uint32(num)
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result := keeper.IsAncestor(ctx, ancestorDigestLE, digestLE, uint32(limit))
+	result := keeper.IsAncestor(ctx, ancestor, digestLE, uint32(limit))
 
 	// Now we format the answer as a response
 	response := types.QueryResIsAncestor{
 		Digest:              digestLE,
-		ProspectiveAncestor: ancestorDigestLE,
+		ProspectiveAncestor: ancestor,
 		Res:                 result,
 	}
 
@@ -132,7 +141,7 @@ func queryGetRelayGenesis(ctx sdk.Context, req abci.RequestQuery, keeper Keeper)
 	return res, nil
 }
 
-func queryGetLastReorgCA(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+func queryGetLastReorgLCA(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
 	// This calls the keeper and gets an answer
 	result, err := keeper.GetRelayGenesis(ctx)
 	if err != nil {
@@ -140,7 +149,7 @@ func queryGetLastReorgCA(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) 
 	}
 
 	// Now we format the answer as a response
-	response := types.QueryResGetLastReorgCA{
+	response := types.QueryResGetLastReorgLCA{
 		Res: result,
 	}
 
@@ -160,19 +169,14 @@ func queryFindAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, ke
 		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
 	}
 
-	hexDigest := path[0]
-	digestBytes, decodeErr := hex.DecodeString(hexDigest)
-	if decodeErr != nil {
-		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
-	}
-	digestLE, newDigestErr := btcspv.NewHash256Digest(digestBytes)
-	if newDigestErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
+	digestLE, digestErr := hash256DigestFromHex(path[0])
+	if digestErr != nil {
+		return []byte{}, digestErr
 	}
 
-	offset, convErr := strconv.Atoi(path[1])
+	offset, convErr := strconv.ParseUint(path[1], 0, 10)
 	if convErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, convErr)
+		return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
 	}
 	newOffset := uint32(offset)
 
@@ -205,40 +209,25 @@ func queryHeaviestFromAncestor(ctx sdk.Context, path []string, req abci.RequestQ
 		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
 	}
 
-	ancestorHex := path[0]
-	ancestorBytes, decodeErr := hex.DecodeString(ancestorHex)
-	if decodeErr != nil {
-		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
-	}
-	ancestor, newDigestErr := btcspv.NewHash256Digest(ancestorBytes)
-	if newDigestErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
+	ancestor, ancestorErr := hash256DigestFromHex(path[0])
+	if ancestorErr != nil {
+		return []byte{}, ancestorErr
 	}
 
 	// parse the second path item as hex.
-	currentBest := path[1]
-	currentBestBytes, decodeErr := hex.DecodeString(currentBest)
-	if err != nil {
-		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
-	}
-	currentBestDigest, newDigestErr := btcspv.NewHash256Digest(currentBestBytes)
-	if newDigestErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
+	currentBestDigest, currentBestErr := hash256DigestFromHex(path[1])
+	if currentBestErr != nil {
+		return []byte{}, currentBestErr
 	}
 
-	newBest := path[2]
-	newBestBytes, decodeErr := hex.DecodeString(newBest)
-	if err != nil {
-		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
-	}
-	newBestDigest, newDigestErr := btcspv.NewHash256Digest(newBestBytes)
-	if newDigestErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
+	newBestDigest, newBestErr := hash256DigestFromHex(path[2])
+	if newBestErr != nil {
+		return []byte{}, newBestErr
 	}
 
-	limit, convErr := strconv.Atoi(path[3])
+	limit, convErr := strconv.ParseUint(path[3], 0, 10)
 	if convErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, convErr)
+		return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
 	}
 	newLimit := uint32(limit)
 
@@ -273,40 +262,33 @@ func queryIsMostRecentCommonAncestor(ctx sdk.Context, path []string, req abci.Re
 		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
 	}
 
-	ancestorHex := path[0]
-	ancestorBytes, decodeErr := hex.DecodeString(ancestorHex)
-	if decodeErr != nil {
-		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
-	}
-	ancestor, newDigestErr := btcspv.NewHash256Digest(ancestorBytes)
-	if newDigestErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
+	ancestor, ancestorErr := hash256DigestFromHex(path[0])
+	if ancestorErr != nil {
+		return []byte{}, ancestorErr
 	}
 
-	// parse the second path item as hex.
-	left := path[1]
-	leftBytes, decodeErr := hex.DecodeString(left)
-	if err != nil {
-		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
-	}
-	leftDigest, newDigestErr := btcspv.NewHash256Digest(leftBytes)
-	if newDigestErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
+	leftDigest, leftErr := hash256DigestFromHex(path[1])
+	if leftErr != nil {
+		return []byte{}, leftErr
 	}
 
 	right := path[2]
 	rightBytes, decodeErr := hex.DecodeString(right)
-	if err != nil {
+	if decodeErr != nil {
 		return []byte{}, types.ErrBadHex(types.DefaultCodespace)
 	}
 	rightDigest, newDigestErr := btcspv.NewHash256Digest(rightBytes)
 	if newDigestErr != nil {
 		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
 	}
+	rightDigest, rightErr := hash256DigestFromHex(path[0])
+	if rightErr != nil {
+		return []byte{}, rightErr
+	}
 
-	limit, convErr := strconv.Atoi(path[3])
+	limit, convErr := strconv.ParseUint(path[3], 0, 10)
 	if convErr != nil {
-		return []byte{}, types.FromBTCSPVError(types.DefaultCodespace, convErr)
+		return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
 	}
 	newLimit := uint32(limit)
 
