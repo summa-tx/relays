@@ -150,8 +150,13 @@ func queryHeaviestFromAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Ke
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
 	}
 
+	limit := params.Limit
+	if limit == 0 {
+		limit = types.DefaultLookupLimit
+	}
+
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result, err := keeper.HeaviestFromAncestor(ctx, params.Ancestor, params.CurrentBest, params.NewBest, params.Limit)
+	result, err := keeper.HeaviestFromAncestor(ctx, params.Ancestor, params.CurrentBest, params.NewBest, limit)
 	if err != nil {
 		return []byte{}, err
 	}
