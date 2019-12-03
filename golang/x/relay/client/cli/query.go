@@ -96,7 +96,7 @@ func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		// what are the arguments. <> for required, [] for optional
 		Use:     "findancestor <digest> <offset>",
-		Example: "isancestor 12..ab 2", // how do you use it?
+		Example: "findancestor 12..ab 2", // how do you use it?
 		// a help message. shows on `help isancestor`
 		Long: "Finds the ancestor of a given digest",
 		// how many arguments does it take?
@@ -133,14 +133,14 @@ func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 
 			// run the query. the routeString is passed as strings to our querier switch/case in `keeper/querier.go`
-			res, _, err := cliCtx.QueryWithData("custom/relay/isancestor", queryData)
+			res, _, err := cliCtx.QueryWithData("custom/relay/findancestor", queryData)
 
 			if err != nil {
 				fmt.Printf("could not find ancestor of %s... \n", args[0][:8])
 				return nil
 			}
 
-			var out types.QueryResIsAncestor
+			var out types.QueryResFindAncestor
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(&out)
 		},
