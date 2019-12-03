@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
@@ -17,14 +18,14 @@ func (suite *KeeperSuite) TestHash256DigestFromHex() {
 
 	Hash256FromHexFail := []struct {
 		Input string
-		Err   string
+		Err   sdk.CodeType
 	}{
 		{
 			"jjjjjj",
-			"ERROR:\nCodespace: relay\nCode: 106\nMessage: \"Bad hex string in query or msg\"\n",
+			types.BadHex,
 		}, {
 			"ffffff",
-			"ERROR:\nCodespace: relay\nCode: 107\nMessage: \"Expected 32 bytes in a Hash256Digest, got 3\"\n",
+			types.BitcoinSPV,
 		},
 	}
 
@@ -35,12 +36,11 @@ func (suite *KeeperSuite) TestHash256DigestFromHex() {
 	}
 	for i := range Hash256FromHexFail {
 		_, err := hash256DigestFromHex(Hash256FromHexFail[i].Input)
-		suite.EqualError(err, Hash256FromHexFail[i].Err)
+		suite.Equal(Hash256FromHexFail[i].Err, err.Code())
 	}
 }
 
 func (suite *KeeperSuite) TestDecodeUint32FromPath() {
-	// (path []string, idx int, defaultLimit uint32) (uint32, sdk.Error)
 	DecodeUintPass := []struct {
 		Path         []string
 		Idx          int
@@ -64,13 +64,13 @@ func (suite *KeeperSuite) TestDecodeUint32FromPath() {
 		Path         []string
 		Idx          int
 		DefaultLimit uint32
-		Err          string
+		Err          sdk.CodeType
 	}{
 		{
 			[]string{"", "", "aj"},
 			2,
 			15,
-			"ERROR:\nCodespace: relay\nCode: 601\nMessage: \"strconv.ParseUint: parsing \\\"aj\\\": invalid syntax\"\n",
+			types.ExternalError,
 		},
 	}
 
@@ -87,6 +87,6 @@ func (suite *KeeperSuite) TestDecodeUint32FromPath() {
 		index := DecodeUintFail[i].Idx
 		limit := DecodeUintFail[i].DefaultLimit
 		_, err := decodeUint32FromPath(path, index, limit)
-		suite.EqualError(err, DecodeUintFail[i].Err)
+		suite.Equal(DecodeUintFail[i].Err, err.Code())
 	}
 }
