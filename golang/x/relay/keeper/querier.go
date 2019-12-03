@@ -42,6 +42,18 @@ func hash256DigestFromHex(hexStr string) (types.Hash256Digest, sdk.Error) {
 	return digest, nil
 }
 
+func decodeUint32FromPath(path []string, idx int, defaultLimit uint32) (uint32, sdk.Error) {
+	if idx+1 > len(path) {
+		return defaultLimit, nil
+	}
+	// parse int from path[idx], return error if necessary
+	num, convErr := strconv.ParseUint(path[idx], 0, 32)
+	if convErr != nil {
+		return defaultLimit, types.ErrExternal(types.DefaultCodespace, convErr)
+	}
+	return uint32(num), nil
+}
+
 // NewQuerier makes a query routing function
 func NewQuerier(keeper Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
@@ -92,15 +104,9 @@ func queryIsAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keep
 		return []byte{}, ancestorErr
 	}
 
-	var limit uint32
-	if len(path) == 2 {
-		limit = 15
-	} else {
-		num, convErr := strconv.ParseUint(path[2], 0, 10)
-		if convErr != nil {
-			return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
-		}
-		limit = uint32(num)
+	limit, limitErr := decodeUint32FromPath(path, 2, 15)
+	if limitErr != nil {
+		return []byte{}, limitErr
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
@@ -110,6 +116,7 @@ func queryIsAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keep
 	response := types.QueryResIsAncestor{
 		Digest:              digestLE,
 		ProspectiveAncestor: ancestor,
+		Limit:               limit,
 		Res:                 result,
 	}
 
@@ -143,7 +150,7 @@ func queryGetRelayGenesis(ctx sdk.Context, req abci.RequestQuery, keeper Keeper)
 
 func queryGetLastReorgLCA(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
 	// This calls the keeper and gets an answer
-	result, err := keeper.GetRelayGenesis(ctx)
+	result, err := keeper.GetLastReorgLCA(ctx)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -174,7 +181,7 @@ func queryFindAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, ke
 		return []byte{}, digestErr
 	}
 
-	offset, convErr := strconv.ParseUint(path[1], 0, 10)
+	offset, convErr := strconv.ParseUint(path[1], 0, 32)
 	if convErr != nil {
 		return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
 	}
@@ -225,15 +232,9 @@ func queryHeaviestFromAncestor(ctx sdk.Context, path []string, req abci.RequestQ
 		return []byte{}, newBestErr
 	}
 
-	var limit uint32
-	if len(path) == 3 {
-		limit = 15
-	} else {
-		num, convErr := strconv.ParseUint(path[3], 0, 10)
-		if convErr != nil {
-			return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
-		}
-		limit = uint32(num)
+	limit, limitErr := decodeUint32FromPath(path, 3, 15)
+	if limitErr != nil {
+		return []byte{}, limitErr
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
@@ -282,15 +283,9 @@ func queryIsMostRecentCommonAncestor(ctx sdk.Context, path []string, req abci.Re
 		return []byte{}, rightErr
 	}
 
-	var limit uint32
-	if len(path) == 3 {
-		limit = 15
-	} else {
-		num, convErr := strconv.ParseUint(path[3], 0, 10)
-		if convErr != nil {
-			return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
-		}
-		limit = uint32(num)
+	limit, limitErr := decodeUint32FromPath(path, 3, 15)
+	if limitErr != nil {
+		return []byte{}, limitErr
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
