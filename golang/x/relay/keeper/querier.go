@@ -42,8 +42,8 @@ func hash256DigestFromHex(hexStr string) (types.Hash256Digest, sdk.Error) {
 	return digest, nil
 }
 
-func DecodeUint32FromPath(path []string, idx int, defaultLimit uint32) (uint32, sdk.Error) {
-	if len(path) >= idx {
+func decodeUint32FromPath(path []string, idx int, defaultLimit uint32) (uint32, sdk.Error) {
+	if idx+1 > len(path) {
 		return defaultLimit, nil
 	}
 	// parse int from path[idx], return error if necessary
@@ -104,7 +104,7 @@ func queryIsAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keep
 		return []byte{}, ancestorErr
 	}
 
-	limit, limitErr := DecodeUint32FromPath(path, 2, 15)
+	limit, limitErr := decodeUint32FromPath(path, 2, 15)
 	if limitErr != nil {
 		return []byte{}, limitErr
 	}
@@ -232,7 +232,7 @@ func queryHeaviestFromAncestor(ctx sdk.Context, path []string, req abci.RequestQ
 		return []byte{}, newBestErr
 	}
 
-	limit, limitErr := DecodeUint32FromPath(path, 3, 15)
+	limit, limitErr := decodeUint32FromPath(path, 3, 15)
 	if limitErr != nil {
 		return []byte{}, limitErr
 	}
@@ -283,7 +283,7 @@ func queryIsMostRecentCommonAncestor(ctx sdk.Context, path []string, req abci.Re
 		return []byte{}, rightErr
 	}
 
-	limit, limitErr := DecodeUint32FromPath(path, 3, 15)
+	limit, limitErr := decodeUint32FromPath(path, 3, 15)
 	if limitErr != nil {
 		return []byte{}, limitErr
 	}
