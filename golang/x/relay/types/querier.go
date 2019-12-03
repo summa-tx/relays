@@ -72,17 +72,22 @@ func (r QueryResGetLastReorgLCA) String() string {
 	return fmt.Sprintf("%s\n", digest)
 }
 
-// QueryResFindAncestor is the response struct for queryFindAncestor
-type QueryResFindAncestor struct {
+// QueryParamsFindAncestor represents the parameters for a FindAncestor query
+type QueryParamsFindAncestor struct {
 	DigestLE Hash256Digest `json:"digestLE"`
 	Offset   uint32        `json:"offset"`
-	Res      Hash256Digest `json:"result"`
+}
+
+// QueryResFindAncestor is the response struct for queryFindAncestor
+type QueryResFindAncestor struct {
+	Params QueryParamsFindAncestor `json:"params"`
+	Res    Hash256Digest           `json:"result"`
 }
 
 // String formats a QueryResFindAncestor struct
 func (r QueryResFindAncestor) String() string {
-	dig := "0x" + hex.EncodeToString(r.DigestLE[:])
-	offset := r.Offset
+	dig := "0x" + hex.EncodeToString(r.Params.DigestLE[:])
+	offset := r.Params.Offset
 	res := "0x" + hex.EncodeToString(r.Res[:])
 	return fmt.Sprintf(
 		"Digest LE: %s, Offset: %d, Result: %s",

@@ -33,7 +33,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 		case types.QueryGetLastReorgLCA:
 			return queryGetLastReorgLCA(ctx, req, keeper)
 		case types.QueryFindAncestor:
-			return queryFindAncestor(ctx, path[1:], req, keeper)
+			return queryFindAncestor(ctx, req, keeper)
 		case types.QueryHeaviestFromAncestor:
 			return queryHeaviestFromAncestor(ctx, path[1:], req, keeper)
 		case types.QueryIsMostRecentCommonAncestor:
@@ -114,36 +114,24 @@ func queryGetLastReorgLCA(ctx sdk.Context, req abci.RequestQuery, keeper Keeper)
 	return res, nil
 }
 
-func queryFindAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
-	// check that the path is this many items long, error if not
-	if len(path) > 2 {
-		return []byte{}, types.ErrTooManyArguments(types.DefaultCodespace)
-	} else if len(path) < 2 {
-		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
-	}
+func queryFindAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+	var params types.QueryParamsFindAncestor
 
-	digestLE, digestErr := types.Hash256DigestFromHex(path[0])
-	if digestErr != nil {
-		return []byte{}, digestErr
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if unmarshallErr != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
 	}
-
-	offset, convErr := strconv.ParseUint(path[1], 0, 32)
-	if convErr != nil {
-		return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
-	}
-	newOffset := uint32(offset)
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result, err := keeper.FindAncestor(ctx, digestLE, newOffset)
+	result, err := keeper.FindAncestor(ctx, params.DigestLE, params.Offset)
 	if err != nil {
 		return []byte{}, err
 	}
 
 	// Now we format the answer as a response
 	response := types.QueryResFindAncestor{
-		DigestLE: digestLE,
-		Offset:   newOffset,
-		Res:      result,
+		Params: params,
+		Res:    result,
 	}
 
 	// And we serialize that response as JSON
