@@ -150,7 +150,7 @@ func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 func GetCmdHeaviestFromAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		// what are the arguments. <> for required, [] for optional
-		Use:     "heaviestfromancestor <ancestor> <currentBest> <newBest> [limit]",
+		Use:     "heaviestfromancestor <ancestor> <currentbest> <newbest> [limit]",
 		Example: "heaviestFromancestor 12..ab 34..cd 56..ef 200", // how do you use it?
 		// a help message shows on `help heaviestfromancestor`
 		Long: "Determines the heavier descendant of a common ancestor",
