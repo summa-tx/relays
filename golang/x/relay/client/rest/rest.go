@@ -18,4 +18,6 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) 
 	//     {} denotes variable parts of the url route
 	//     These are our function arguments
 	s.HandleFunc("/isancestor/{digest}/{ancestor}/{limit}", isAncestorHandler(cliCtx, storeName)).Methods("GET")
+	s.HandleFunc("/findancestor/{digest}/{offset}", findAncestorHandler(cliCtx, storeName)).Methods("GET")
+
 }
