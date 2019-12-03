@@ -39,8 +39,7 @@ type relayApp struct {
 	cdc *codec.Codec
 
 	// keys to access the substores
-	keys  map[string]*sdk.KVStoreKey
-	tkeys map[string]*sdk.TransientStoreKey
+	keys map[string]*sdk.KVStoreKey
 
 	relayKeeper relay.Keeper
 
@@ -72,7 +71,6 @@ func NewRelayApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 		BaseApp: bApp,
 		cdc:     cdc,
 		keys:    keys,
-		tkeys:   tkeys,
 	}
 
 	// The RelayKeeper is the Keeper from the module for this tutorial

@@ -47,7 +47,7 @@ func (k Keeper) FindAncestor(ctx sdk.Context, digestLE types.Hash256Digest, offs
 }
 
 // IsAncestor checks whether
-func (k Keeper) IsAncestor(ctx sdk.Context, ancestor, digestLE types.Hash256Digest, limit uint32) bool {
+func (k Keeper) IsAncestor(ctx sdk.Context, digestLE, ancestor types.Hash256Digest, limit uint32) bool {
 	current := digestLE
 
 	for i := uint32(0); i < limit; i++ {

@@ -5,41 +5,6 @@ import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
-func (suite *KeeperSuite) TestHash256DigestFromHex() {
-	Hash256FromHexPass := []struct {
-		Input  string
-		Output types.Hash256Digest
-	}{
-		{
-			"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-			types.Hash256Digest{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255},
-		},
-	}
-
-	Hash256FromHexFail := []struct {
-		Input string
-		Err   sdk.CodeType
-	}{
-		{
-			"jjjjjj",
-			types.BadHex,
-		}, {
-			"ffffff",
-			types.BitcoinSPV,
-		},
-	}
-
-	for i := range Hash256FromHexPass {
-		digest, err := hash256DigestFromHex(Hash256FromHexPass[i].Input)
-		suite.Nil(err)
-		suite.Equal(digest, Hash256FromHexPass[i].Output)
-	}
-	for i := range Hash256FromHexFail {
-		_, err := hash256DigestFromHex(Hash256FromHexFail[i].Input)
-		suite.Equal(Hash256FromHexFail[i].Err, err.Code())
-	}
-}
-
 func (suite *KeeperSuite) TestDecodeUint32FromPath() {
 	DecodeUintPass := []struct {
 		Path         []string

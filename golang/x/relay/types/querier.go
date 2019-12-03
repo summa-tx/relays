@@ -5,21 +5,49 @@ import (
 	"fmt"
 )
 
-// QueryResIsAncestor is the response struct for queryIsAncestor
-type QueryResIsAncestor struct {
-	Digest              Hash256Digest `json:"digest"`
+const (
+	// DefaultLookupLimit is the default limit for lookup requests
+	DefaultLookupLimit = 18
+
+	// QueryIsAncestor is a query string tag for IsAncestor
+	QueryIsAncestor = "isancestor"
+
+	// QueryGetRelayGenesis is a query string tag for GetRelayGenesis
+	QueryGetRelayGenesis = "getrelaygenesis"
+
+	// QueryGetLastReorgLCA is a query string tag for GetLastReorgLCA
+	QueryGetLastReorgLCA = "getlastreorglca"
+
+	// QueryFindAncestor is a query string tag for FindAncestor
+	QueryFindAncestor = "findancestor"
+
+	// QueryHeaviestFromAncestor is a query string tag for HeaviestFromAncestor
+	QueryHeaviestFromAncestor = "heaviestfromancestor"
+
+	// QueryIsMostRecentCommonAncestor is a query string tag for IsMostRecentCommonAncestor
+	QueryIsMostRecentCommonAncestor = "ismostrecentcommonancestor"
+)
+
+// QueryParamsIsAncestor represents the parameters for an IsAncestor query
+type QueryParamsIsAncestor struct {
+	DigestLE            Hash256Digest `json:"digest"`
 	ProspectiveAncestor Hash256Digest `json:"prospectiveAncestor"`
 	Limit               uint32        `json:"limit"`
-	Res                 bool          `json:"result"`
+}
+
+// QueryResIsAncestor is the response to a IsAncestor query
+type QueryResIsAncestor struct {
+	Params QueryParamsIsAncestor `json:"params"`
+	Res    bool                  `json:"result"`
 }
 
 // String formats a QueryResIsAncestor struct
 func (r QueryResIsAncestor) String() string {
-	dig := "0x" + hex.EncodeToString(r.Digest[:])
-	digAnc := "0x" + hex.EncodeToString(r.ProspectiveAncestor[:])
+	dig := "0x" + hex.EncodeToString(r.Params.DigestLE[:])
+	digAnc := "0x" + hex.EncodeToString(r.Params.ProspectiveAncestor[:])
 	return fmt.Sprintf(
 		"Digest: %s, Ancestor: %s, Limit: %d, Result: %t",
-		dig, digAnc, r.Limit, r.Res)
+		dig, digAnc, r.Params.Limit, r.Res)
 }
 
 // QueryResGetRelayGenesis is the response struct for queryGetRelayGenesis
