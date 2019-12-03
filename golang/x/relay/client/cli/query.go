@@ -98,7 +98,7 @@ func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		Use:     "findancestor <digest> <offset>",
 		Example: "findancestor 12..ab 2", // how do you use it?
 		// a help message. shows on `help findancestor`
-		Long: "Finds the ancestor of a given digest",
+		Long: "Finds the digest <offset> blocks before <digest>. Errors if digest or the ancestor is unknown",
 		// how many arguments does it take?
 		// also useful: cobra.ExactArgs(3)
 		Args: cobra.ExactArgs(2),
