@@ -146,7 +146,7 @@ func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-// GetCmdIsAncestor returns the CLI command struct for IsAncestor
+// GetCmdHeaviestFromAncestor returns the CLI command struct for HeaviestFromAncestor
 func GetCmdHeaviestFromAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		// what are the arguments. <> for required, [] for optional
