@@ -72,7 +72,7 @@ func findAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handl
 		// mux.Vars holds the variable elements of the URL from rest.go
 		vars := mux.Vars(r)
 
-		digestLE, sdkErr := types.Hash256DigestFromHex(vars["digestLE"])
+		digestLE, sdkErr := types.Hash256DigestFromHex(vars["digest"])
 		if sdkErr != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
 			return
