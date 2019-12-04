@@ -35,7 +35,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 		case types.QueryFindAncestor:
 			return queryFindAncestor(ctx, req, keeper)
 		case types.QueryHeaviestFromAncestor:
-			return queryHeaviestFromAncestor(ctx, path[1:], req, keeper)
+			return queryHeaviestFromAncestor(ctx, req, keeper)
 		case types.QueryIsMostRecentCommonAncestor:
 			return queryIsMostRecentCommonAncestor(ctx, req, keeper)
 		default:
@@ -142,48 +142,29 @@ func queryFindAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (r
 	return res, nil
 }
 
-func queryHeaviestFromAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
-	// check that the path is this many items long, error if not
-	if len(path) > 4 {
-		return []byte{}, types.ErrTooManyArguments(types.DefaultCodespace)
-	} else if len(path) < 3 {
-		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
+func queryHeaviestFromAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+	var params types.QueryParamsHeaviestFromAncestor
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if unmarshallErr != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
 	}
 
-	ancestor, ancestorErr := types.Hash256DigestFromHex(path[0])
-	if ancestorErr != nil {
-		return []byte{}, ancestorErr
-	}
-
-	// parse the second path item as hex.
-	currentBestDigest, currentBestErr := types.Hash256DigestFromHex(path[1])
-	if currentBestErr != nil {
-		return []byte{}, currentBestErr
-	}
-
-	newBestDigest, newBestErr := types.Hash256DigestFromHex(path[2])
-	if newBestErr != nil {
-		return []byte{}, newBestErr
-	}
-
-	limit, limitErr := decodeUint32FromPath(path, 3, 15)
-	if limitErr != nil {
-		return []byte{}, limitErr
+	limit := params.Limit
+	if limit == 0 {
+		limit = types.DefaultLookupLimit
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result, err := keeper.HeaviestFromAncestor(ctx, ancestor, currentBestDigest, newBestDigest, limit)
+	result, err := keeper.HeaviestFromAncestor(ctx, params.Ancestor, params.CurrentBest, params.NewBest, limit)
 	if err != nil {
 		return []byte{}, err
 	}
 
 	// Now we format the answer as a response
 	response := types.QueryResHeaviestFromAncestor{
-		Ancestor:    ancestor,
-		CurrentBest: currentBestDigest,
-		NewBest:     newBestDigest,
-		Limit:       limit,
-		Res:         result,
+		Params: params,
+		Res:    result,
 	}
 
 	// And we serialize that response as JSON
