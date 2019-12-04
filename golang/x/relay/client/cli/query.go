@@ -24,6 +24,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdIsAncestor(queryRoute, cdc),
 		GetCmdFindAncestor(queryRoute, cdc),
 		GetCmdIsMostRecentCommonAncestor(queryRoute, cdc),
+		GetCmdHeaviestFromAncestor(queryRoute, cdc),
 	)...)
 	return relayQueryCommand
 }
