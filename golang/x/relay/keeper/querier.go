@@ -37,7 +37,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 		case types.QueryHeaviestFromAncestor:
 			return queryHeaviestFromAncestor(ctx, req, keeper)
 		case types.QueryIsMostRecentCommonAncestor:
-			return queryIsMostRecentCommonAncestor(ctx, path[1:], req, keeper)
+			return queryIsMostRecentCommonAncestor(ctx, req, keeper)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown relay query endpoint")
 		}
@@ -175,44 +175,26 @@ func queryHeaviestFromAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Ke
 	return res, nil
 }
 
-func queryIsMostRecentCommonAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
-	// check that the path is this many items long, error if not
-	if len(path) > 4 {
-		return []byte{}, types.ErrTooManyArguments(types.DefaultCodespace)
-	} else if len(path) < 3 {
-		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
+func queryIsMostRecentCommonAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+	var params types.QueryParamsIsMostRecentCommonAncestor
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if unmarshallErr != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
 	}
 
-	ancestor, ancestorErr := types.Hash256DigestFromHex(path[0])
-	if ancestorErr != nil {
-		return []byte{}, ancestorErr
-	}
-
-	leftDigest, leftErr := types.Hash256DigestFromHex(path[1])
-	if leftErr != nil {
-		return []byte{}, leftErr
-	}
-
-	rightDigest, rightErr := types.Hash256DigestFromHex(path[2])
-	if rightErr != nil {
-		return []byte{}, rightErr
-	}
-
-	limit, limitErr := decodeUint32FromPath(path, 3, 15)
-	if limitErr != nil {
-		return []byte{}, limitErr
+	limit := params.Limit
+	if limit == 0 {
+		limit = types.DefaultLookupLimit
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result := keeper.IsMostRecentCommonAncestor(ctx, ancestor, leftDigest, rightDigest, limit)
+	result := keeper.IsMostRecentCommonAncestor(ctx, params.Ancestor, params.Left, params.Right, limit)
 
 	// Now we format the answer as a response
 	response := types.QueryResIsMostRecentCommonAncestor{
-		Ancestor: ancestor,
-		Left:     leftDigest,
-		Right:    rightDigest,
-		Limit:    limit,
-		Res:      result,
+		Params: params,
+		Res:    result,
 	}
 
 	// And we serialize that response as JSON

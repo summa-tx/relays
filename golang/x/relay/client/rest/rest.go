@@ -20,6 +20,8 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) 
 	s.HandleFunc("/isancestor/{digest}/{ancestor}/", isAncestorHandler(cliCtx, storeName)).Methods("GET")
 	s.HandleFunc("/isancestor/{digest}/{ancestor}/{limit}", isAncestorHandler(cliCtx, storeName)).Methods("GET")
 	s.HandleFunc("/findancestor/{digest}/{offset}", findAncestorHandler(cliCtx, storeName)).Methods("GET")
+	s.HandleFunc("/ismostrecentcommonancestor/{ancestor}/{left}/{right}/", isMostRecentCommonAncestorHandler(cliCtx, storeName)).Methods("GET")
+	s.HandleFunc("/ismostrecentcommonancestor/{ancestor}/{left}/{right}/{limit}", isMostRecentCommonAncestorHandler(cliCtx, storeName)).Methods("GET")
 	s.HandleFunc("/heaviestfromancestor/{ancestor}/{currentbest}/{newbest}/", heaviestFromAncestorHandler(cliCtx, storeName)).Methods("GET")
 	s.HandleFunc("/heaviestfromancestor/{ancestor}/{currentbest}/{newbest}/{limit}", heaviestFromAncestorHandler(cliCtx, storeName)).Methods("GET")
 }
