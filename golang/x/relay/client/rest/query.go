@@ -13,7 +13,7 @@ import (
 )
 
 // handler function for isAncestor queries. parses arguments from url string, and passes them through
-// as a different url string because that is apparently how the sdk works
+// as a QueryResIsAncestor struct
 func isAncestorHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// mux.Vars holds the variable elements of the URL from rest.go
@@ -56,6 +56,34 @@ func isAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handler
 		res, _, err := cliCtx.QueryWithData("custom/relay/isancestor", queryData)
 
 		// below this is boilerplate
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+// handler function for getRelayGenesis queries. parses arguments from url string, and passes them through
+// as a QueryResGetRelayGenesis struct
+func getRelayGenesisHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		res, _, err := cliCtx.QueryWithData("custom/relay/getrelaygenesis", nil)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+// handler function for getLastReorgLCA queries. parses arguments from url string, and passes them through
+// as a QueryResGetLastReorgLCA struct
+func getLastReorgLCAHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		res, _, err := cliCtx.QueryWithData("custom/relay/getlastreorglca", nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
