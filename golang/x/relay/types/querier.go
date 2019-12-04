@@ -94,24 +94,28 @@ func (r QueryResFindAncestor) String() string {
 		dig, offset, res)
 }
 
-// QueryResHeaviestFromAncestor is the response struct for queryHeaviestFromAncestor
-type QueryResHeaviestFromAncestor struct {
+type QueryParamsHeaviestFromAncestor struct {
 	Ancestor    Hash256Digest `json:"ancestor"`
 	CurrentBest Hash256Digest `json:"currentBest"`
 	NewBest     Hash256Digest `json:"newBest"`
 	Limit       uint32        `json:"limit"`
-	Res         Hash256Digest `json:"result"`
+}
+
+// QueryResHeaviestFromAncestor is the response struct for queryHeaviestFromAncestor
+type QueryResHeaviestFromAncestor struct {
+	Params QueryParamsHeaviestFromAncestor `json:"params"`
+	Res    Hash256Digest                   `json:"result"`
 }
 
 // String formats a QueryResHeaviestFromAncestor struct
 func (r QueryResHeaviestFromAncestor) String() string {
-	anc := "0x" + hex.EncodeToString(r.Ancestor[:])
-	curBest := "0x" + hex.EncodeToString(r.CurrentBest[:])
-	newBest := "0x" + hex.EncodeToString(r.NewBest[:])
+	anc := "0x" + hex.EncodeToString(r.Params.Ancestor[:])
+	curBest := "0x" + hex.EncodeToString(r.Params.CurrentBest[:])
+	newBest := "0x" + hex.EncodeToString(r.Params.NewBest[:])
 	res := "0x" + hex.EncodeToString(r.Res[:])
 	return fmt.Sprintf(
 		"Ancestor: %s, Current Best: %s, New Best: %s, Limit: %d, Result: %s",
-		anc, curBest, newBest, r.Limit, res)
+		anc, curBest, newBest, r.Params.Limit, res)
 }
 
 // QueryResIsMostRecentCommonAncestor is the response struct for queryIsMostRecentCommonAncestor
