@@ -95,7 +95,7 @@ func logIfTestCaseError(tc NamedCase, err sdk.Error) {
 	}
 }
 
-func (suite *KeeperSuite) InitTestContext(mainnet, isCheckTx bool) {
+func (s *KeeperSuite) InitTestContext(mainnet, isCheckTx bool) {
 	keyStaking := sdk.NewKVStoreKey(staking.StoreKey)
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
@@ -122,8 +122,8 @@ func (suite *KeeperSuite) InitTestContext(mainnet, isCheckTx bool) {
 	ctx := sdk.NewContext(ms, abci.Header{ChainID: "relayTestChain"}, isCheckTx, tmlog.NewNopLogger())
 	keeper := NewKeeper(relayKey, cdc, mainnet)
 
-	suite.Context = ctx
-	suite.Keeper = keeper
+	s.Context = ctx
+	s.Keeper = keeper
 }
 
 // Runs the whole test suite
@@ -142,12 +142,11 @@ func TestKeeper(t *testing.T) {
 	keeperSuite := new(KeeperSuite)
 	keeperSuite.Fixtures = fixtures
 
-	keeperSuite.InitTestContext(true, false)
-
 	suite.Run(t, keeperSuite)
 }
 
 func (s *KeeperSuite) TestGetPrefixStore() {
+	s.InitTestContext(true, false)
 	prefStore := s.Keeper.getPrefixStore(s.Context, "toast-")
 	store := s.Context.KVStore(s.Keeper.storeKey)
 
@@ -157,4 +156,28 @@ func (s *KeeperSuite) TestGetPrefixStore() {
 	actual := store.Get([]byte("toast-1"))
 
 	s.Equal(expected, actual)
+}
+
+func (s *KeeperSuite) TestSetGenesisState() {
+	s.InitTestContext(true, false)
+
+	genesis := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].Anchor
+	epochStart := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].PrevEpochStart
+	err := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
+	s.Nil(err)
+
+	gen, err := s.Keeper.GetRelayGenesis(s.Context)
+	s.Nil(err)
+	s.Equal(genesis.HashLE, gen)
+
+	lca, err := s.Keeper.GetLastReorgLCA(s.Context)
+	s.Nil(err)
+	s.Equal(genesis.HashLE, lca)
+
+	best, err := s.Keeper.GetBestKnownDigest(s.Context)
+	s.Nil(err)
+	s.Equal(genesis.HashLE, best)
+
+	err = s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
+	s.Equal(types.AlreadyInit, err.Code())
 }
