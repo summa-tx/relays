@@ -35,7 +35,8 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "ingestheaders <json list of headers>",
-		Short: "Set a link",
+		Short: "ingest a set of headers",
+		Long:  "Ingest a set of headers. The headers must be in order, and the header immediately before the first must already be known to the relay",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -45,7 +46,10 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 			// note: unmarshalling json here is undesirable, but necessary
 			// 	     for MarkNewHeaviest we want to accept text instead of json
 			var headers []types.BitcoinHeader
-			json.Unmarshal([]byte(args[0]), &headers)
+			jsonErr := json.Unmarshal([]byte(args[0]), &headers)
+			if jsonErr != nil {
+				return jsonErr
+			}
 
 			msg := types.NewMsgIngestHeaderChain(
 				cliCtx.GetFromAddress(),
