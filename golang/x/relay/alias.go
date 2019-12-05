@@ -19,8 +19,12 @@ var (
 	NewKeeper = keeper.NewKeeper
 	// NewQuerier is what is says on the tin
 	NewQuerier = keeper.NewQuerier
-	// NewMsgSetLink is what is says on the tin
-	NewMsgSetLink = types.NewMsgSetLink
+	// NewMsgIngestHeaderChain is what is says on the tin
+	NewMsgIngestHeaderChain = types.NewMsgIngestHeaderChain
+	// NewMsgIngestDifficultyChange is what is says on the tin
+	NewMsgIngestDifficultyChange = types.NewMsgIngestDifficultyChange
+	// NewMsgMarkNewHeaviest is what is says on the tin
+	NewMsgMarkNewHeaviest = types.NewMsgMarkNewHeaviest
 	// RegisterCodec is what is says on the tin
 	RegisterCodec = types.RegisterCodec
 	// ModuleCdc is what is says on the tin
@@ -30,6 +34,8 @@ var (
 type (
 	// Keeper is what is says on the tin
 	Keeper = keeper.Keeper
+
+	// TODO: add query structs here
 
 	// Hash256Digest 32-byte double-sha2 digest
 	Hash256Digest = types.Hash256Digest

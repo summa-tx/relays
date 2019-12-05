@@ -12,7 +12,8 @@ import (
 func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) {
 	s := r.PathPrefix(fmt.Sprintf("/%s", storeName)).Subrouter()
 
-	// r.HandleFunc(fmt.Sprintf("/%s/link", storeName), setLinkHandler(cliCtx)).Methods("POST")
+	// add new tx msg routes here
+	s.HandleFunc("/ingestheaderchain", ingestHeaderChainHandler(cliCtx)).Methods("POST")
 
 	// add new query routes below
 	// {} denotes variable parts of the url route
