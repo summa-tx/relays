@@ -65,6 +65,32 @@ func isAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handler
 	}
 }
 
+// handler function for getRelayGenesis queries
+func getRelayGenesisHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		res, _, err := cliCtx.QueryWithData("custom/relay/getrelaygenesis", nil)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+// handler function for getLastReorgLCA queries
+func getLastReorgLCAHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		res, _, err := cliCtx.QueryWithData("custom/relay/getlastreorglca", nil)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
 // handler function for findAncestor queries. parses arguments from url string, and passes them through
 // as a QueryParamsFindAncestor struct
 func findAncestorHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
@@ -109,8 +135,8 @@ func findAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handl
 	}
 }
 
-// handler function for isAncestor queries. parses arguments from url string, and passes them through
-// as a different url string because that is apparently how the sdk works
+// handler function for IsMostRecentCommonAncestor queries. parses arguments from url string, and passes them through
+// as a QueryParamsIsMostRecentCommonAncestor struct
 func isMostRecentCommonAncestorHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// mux.Vars holds the variable elements of the URL from rest.go

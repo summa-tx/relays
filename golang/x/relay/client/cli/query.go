@@ -22,6 +22,8 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 	relayQueryCommand.AddCommand(client.GetCommands(
 		GetCmdIsAncestor(queryRoute, cdc),
+		GetCmdGetRelayGenesis(queryRoute, cdc),
+		GetCmdGetLastReorgLCA(queryRoute, cdc),
 		GetCmdFindAncestor(queryRoute, cdc),
 		GetCmdIsMostRecentCommonAncestor(queryRoute, cdc),
 		GetCmdHeaviestFromAncestor(queryRoute, cdc),
@@ -87,6 +89,52 @@ func GetCmdIsAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 
 			var out types.QueryResIsAncestor
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(&out)
+		},
+	}
+}
+
+// GetCmdGetRelayGenesis returns the CLI command struct for GetRelayGenesis
+func GetCmdGetRelayGenesis(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "getrelaygenesis",
+		Example: "getrelaygenesis",
+		Long:    "Get the first digest in the relay",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.QueryWithData("custom/relay/getrelaygenesis", nil)
+
+			if err != nil {
+				fmt.Println("could not get the first digest in the relay")
+				return nil
+			}
+
+			var out types.QueryResGetRelayGenesis
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(&out)
+		},
+	}
+}
+
+// GetCmdIsAncestor returns the CLI command struct for IsAncestor
+func GetCmdGetLastReorgLCA(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "getlastreorglca",
+		Example: "getlastreorglca",
+		Long:    "Returns the best known digest in the relay",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.QueryWithData("custom/relay/getlastreorglca", nil)
+
+			if err != nil {
+				fmt.Println("could not get the last Reorg LCA")
+				return nil
+			}
+
+			var out types.QueryResGetLastReorgLCA
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(&out)
 		},

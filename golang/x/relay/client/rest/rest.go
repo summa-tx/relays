@@ -14,11 +14,13 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) 
 
 	// r.HandleFunc(fmt.Sprintf("/%s/link", storeName), setLinkHandler(cliCtx)).Methods("POST")
 
-	// @Erin add new query routes below
-	//     {} denotes variable parts of the url route
-	//     These are our function arguments
+	// add new query routes below
+	// {} denotes variable parts of the url route
+	// These are our function arguments
 	s.HandleFunc("/isancestor/{digest}/{ancestor}/", isAncestorHandler(cliCtx, storeName)).Methods("GET")
 	s.HandleFunc("/isancestor/{digest}/{ancestor}/{limit}", isAncestorHandler(cliCtx, storeName)).Methods("GET")
+	s.HandleFunc("/getrelaygenesis", getRelayGenesisHandler(cliCtx, storeName)).Methods("GET")
+	s.HandleFunc("/getlastreorglca", getLastReorgLCAHandler(cliCtx, storeName)).Methods("GET")
 	s.HandleFunc("/findancestor/{digest}/{offset}", findAncestorHandler(cliCtx, storeName)).Methods("GET")
 	s.HandleFunc("/ismostrecentcommonancestor/{ancestor}/{left}/{right}/", isMostRecentCommonAncestorHandler(cliCtx, storeName)).Methods("GET")
 	s.HandleFunc("/ismostrecentcommonancestor/{ancestor}/{left}/{right}/{limit}", isMostRecentCommonAncestorHandler(cliCtx, storeName)).Methods("GET")
