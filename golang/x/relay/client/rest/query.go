@@ -65,8 +65,7 @@ func isAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handler
 	}
 }
 
-// handler function for getRelayGenesis queries. parses arguments from url string, and passes them through
-// as a QueryParamsGetRelayGenesis struct
+// handler function for getRelayGenesis queries
 func getRelayGenesisHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		res, _, err := cliCtx.QueryWithData("custom/relay/getrelaygenesis", nil)
@@ -79,8 +78,7 @@ func getRelayGenesisHandler(cliCtx context.CLIContext, storeName string) http.Ha
 	}
 }
 
-// handler function for getLastReorgLCA queries. parses arguments from url string, and passes them through
-// as a QueryParamsGetLastReorgLCA struct
+// handler function for getLastReorgLCA queries
 func getLastReorgLCAHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		res, _, err := cliCtx.QueryWithData("custom/relay/getlastreorglca", nil)
