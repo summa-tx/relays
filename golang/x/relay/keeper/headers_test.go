@@ -1,40 +1,40 @@
 package keeper
 
-func (suite *KeeperSuite) TestValidateHeaderChain() {
-	cases := suite.Fixtures.HeaderTestCases.ValidateChain
+func (s *KeeperSuite) TestValidateHeaderChain() {
+	cases := s.Fixtures.HeaderTestCases.ValidateChain
 
 	for _, tc := range cases {
 		err := validateHeaderChain(tc.Anchor, tc.Headers, tc.Internal, tc.IsMainnet)
 		if tc.Output == 0 {
 			logIfTestCaseError(tc, err)
-			suite.Nil(err)
+			s.Nil(err)
 		} else {
-			suite.NotNil(err)
-			suite.Equal(tc.Output, err.Code())
+			s.NotNil(err)
+			s.Equal(tc.Output, err.Code())
 		}
 	}
 }
 
-func (suite *KeeperSuite) TestValidateDifficultyChange() {
-	cases := suite.Fixtures.HeaderTestCases.ValidateDiffChange
+func (s *KeeperSuite) TestValidateDifficultyChange() {
+	cases := s.Fixtures.HeaderTestCases.ValidateDiffChange
 
 	for _, tc := range cases {
 		err := validateDifficultyChange(tc.Headers, tc.PrevEpochStart, tc.Anchor)
 		if tc.Output == 0 {
 			logIfTestCaseError(tc, err)
-			suite.Nil(err)
+			s.Nil(err)
 		} else {
-			suite.NotNil(err)
-			suite.Equal(tc.Output, err.Code())
+			s.NotNil(err)
+			s.Equal(tc.Output, err.Code())
 		}
 	}
 }
 
-func (suite *KeeperSuite) TestCompareTargets() {
-	cases := suite.Fixtures.HeaderTestCases.CompareTargets
+func (s *KeeperSuite) TestCompareTargets() {
+	cases := s.Fixtures.HeaderTestCases.CompareTargets
 
 	for _, tc := range cases {
 		result := compareTargets(tc.Full, tc.Truncated)
-		suite.Equal(result, tc.Output)
+		s.Equal(result, tc.Output)
 	}
 }
