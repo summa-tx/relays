@@ -32,11 +32,6 @@ func (k Keeper) setDigestByStoreKey(ctx sdk.Context, key string, digest types.Ha
 	store.Set([]byte(key), digest[:])
 }
 
-// GetRelayGenesis returns the first digest in the relay
-func (k Keeper) GetRelayGenesis(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
-	return k.getDigestByStoreKey(ctx, types.RelayGenesisStorage)
-}
-
 // setBestKnownDigest sets the best known chain tip
 func (k Keeper) setBestKnownDigest(ctx sdk.Context, bestKnown types.Hash256Digest) {
 	k.setDigestByStoreKey(ctx, types.BestKnownDigestStorage, bestKnown)

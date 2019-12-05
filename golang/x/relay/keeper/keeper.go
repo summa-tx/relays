@@ -39,6 +39,11 @@ func (k Keeper) setRelayGenesis(ctx sdk.Context, relayGenesis types.Hash256Diges
 	k.setDigestByStoreKey(ctx, types.RelayGenesisStorage, relayGenesis)
 }
 
+// GetRelayGenesis returns the first digest in the relay
+func (k Keeper) GetRelayGenesis(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
+	return k.getDigestByStoreKey(ctx, types.RelayGenesisStorage)
+}
+
 // SetGenesisState sets the genesis state
 func (k Keeper) SetGenesisState(ctx sdk.Context, genesis, epochStart btcspv.BitcoinHeader) sdk.Error {
 	if k.hasRelayGenesis(ctx) {

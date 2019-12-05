@@ -1,6 +1,10 @@
 package types
 
 import (
+	"encoding/hex"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
@@ -19,8 +23,20 @@ type BitcoinHeader = btcspv.BitcoinHeader
 // SPVProof is the base struct for an SPV proof
 type SPVProof = btcspv.SPVProof
 
-// // Link is a link in the chain
-// type Link struct {
-// 	Digest string `json:"digest"`
-// 	Parent string `json:"parent"`
-// }
+// Hash256DigestFromHex converts a hex into a Hash256Digest
+func Hash256DigestFromHex(hexStr string) (Hash256Digest, sdk.Error) {
+	data := hexStr
+	if data[:2] == "0x" {
+		data = data[2:]
+	}
+
+	bytes, decodeErr := hex.DecodeString(data)
+	if decodeErr != nil {
+		return Hash256Digest{}, ErrBadHex(DefaultCodespace)
+	}
+	digest, newDigestErr := btcspv.NewHash256Digest(bytes)
+	if newDigestErr != nil {
+		return Hash256Digest{}, FromBTCSPVError(DefaultCodespace, newDigestErr)
+	}
+	return digest, nil
+}

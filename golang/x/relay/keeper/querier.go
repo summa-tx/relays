@@ -1,46 +1,14 @@
 package keeper
 
 import (
-	"encoding/hex"
+	"fmt"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
-
-// QueryIsAncestor is a query string tag for IsAncestor
-const QueryIsAncestor = "isancestor"
-
-// QueryGetRelayGenesis is a query string tag for GetRelayGenesis
-const QueryGetRelayGenesis = "getrelaygenesis"
-
-// QueryGetLastReorgLCA is a query string tag for GetLastReorgLCA
-const QueryGetLastReorgLCA = "getlastreorglca"
-
-// QueryFindAncestor is a query string tag for FindAncestor
-const QueryFindAncestor = "findancestor"
-
-// QueryHeaviestFromAncestor is a query string tag for HeaviestFromAncestor
-const QueryHeaviestFromAncestor = "heaviestfromancestor"
-
-// QueryIsMostRecentCommonAncestor is a query string tag for IsMostRecentCommonAncestor
-const QueryIsMostRecentCommonAncestor = "ismostrecentcommonancestor"
-
-// hash256DigestFromHex converts a hex into a Hash256Digest
-func hash256DigestFromHex(hexStr string) (types.Hash256Digest, sdk.Error) {
-	bytes, decodeErr := hex.DecodeString(hexStr)
-	if decodeErr != nil {
-		return types.Hash256Digest{}, types.ErrBadHex(types.DefaultCodespace)
-	}
-	digest, newDigestErr := btcspv.NewHash256Digest(bytes)
-	if newDigestErr != nil {
-		return types.Hash256Digest{}, types.FromBTCSPVError(types.DefaultCodespace, newDigestErr)
-	}
-	return digest, nil
-}
 
 func decodeUint32FromPath(path []string, idx int, defaultLimit uint32) (uint32, sdk.Error) {
 	if idx+1 > len(path) {
@@ -58,66 +26,44 @@ func decodeUint32FromPath(path []string, idx int, defaultLimit uint32) (uint32, 
 func NewQuerier(keeper Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
-		case QueryIsAncestor:
-			return queryIsAncestor(ctx, path[1:], req, keeper)
-		case QueryGetRelayGenesis:
+		case types.QueryIsAncestor:
+			return queryIsAncestor(ctx, req, keeper)
+		case types.QueryGetRelayGenesis:
 			return queryGetRelayGenesis(ctx, req, keeper)
-		case QueryGetLastReorgLCA:
+		case types.QueryGetLastReorgLCA:
 			return queryGetLastReorgLCA(ctx, req, keeper)
-		case QueryFindAncestor:
-			return queryFindAncestor(ctx, path[1:], req, keeper)
-		case QueryHeaviestFromAncestor:
-			return queryHeaviestFromAncestor(ctx, path[1:], req, keeper)
-		case QueryIsMostRecentCommonAncestor:
-			return queryIsMostRecentCommonAncestor(ctx, path[1:], req, keeper)
+		case types.QueryFindAncestor:
+			return queryFindAncestor(ctx, req, keeper)
+		case types.QueryHeaviestFromAncestor:
+			return queryHeaviestFromAncestor(ctx, req, keeper)
+		case types.QueryIsMostRecentCommonAncestor:
+			return queryIsMostRecentCommonAncestor(ctx, req, keeper)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown relay query endpoint")
 		}
 	}
 }
 
-func queryIsAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
-	// Take some URL path, parse the arguments out of it, pass it to the keeper,
-	// and format the result as a QueryResIsAncestor
+func queryIsAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+	var params types.QueryParamsIsAncestor
 
-	// The path I expect here looks like this:
-	// /getancestor/abcd1234.../second_digest/limit
-
-	// getAncestor is removed by the handler switch/case block above
-
-	// check that the path is this many items long, error if not
-	if len(path) > 3 {
-		return []byte{}, types.ErrTooManyArguments(types.DefaultCodespace)
-	} else if len(path) < 2 {
-		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if unmarshallErr != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
 	}
 
-	// parse the first path item as hex.
-	digestLE, digestErr := hash256DigestFromHex(path[0])
-	if digestErr != nil {
-		return []byte{}, digestErr
-	}
-
-	// parse the second path item as hex.
-	ancestor, ancestorErr := hash256DigestFromHex(path[1])
-	if ancestorErr != nil {
-		return []byte{}, ancestorErr
-	}
-
-	limit, limitErr := decodeUint32FromPath(path, 2, 15)
-	if limitErr != nil {
-		return []byte{}, limitErr
+	limit := params.Limit
+	if limit == 0 {
+		limit = types.DefaultLookupLimit
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result := keeper.IsAncestor(ctx, ancestor, digestLE, uint32(limit))
+	result := keeper.IsAncestor(ctx, params.DigestLE, params.ProspectiveAncestor, limit)
 
 	// Now we format the answer as a response
 	response := types.QueryResIsAncestor{
-		Digest:              digestLE,
-		ProspectiveAncestor: ancestor,
-		Limit:               limit,
-		Res:                 result,
+		Params: params,
+		Res:    result,
 	}
 
 	// And we serialize that response as JSON
@@ -168,36 +114,24 @@ func queryGetLastReorgLCA(ctx sdk.Context, req abci.RequestQuery, keeper Keeper)
 	return res, nil
 }
 
-func queryFindAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
-	// check that the path is this many items long, error if not
-	if len(path) > 2 {
-		return []byte{}, types.ErrTooManyArguments(types.DefaultCodespace)
-	} else if len(path) < 2 {
-		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
-	}
+func queryFindAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+	var params types.QueryParamsFindAncestor
 
-	digestLE, digestErr := hash256DigestFromHex(path[0])
-	if digestErr != nil {
-		return []byte{}, digestErr
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if unmarshallErr != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
 	}
-
-	offset, convErr := strconv.ParseUint(path[1], 0, 32)
-	if convErr != nil {
-		return []byte{}, types.ErrExternal(types.DefaultCodespace, convErr)
-	}
-	newOffset := uint32(offset)
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result, err := keeper.FindAncestor(ctx, digestLE, newOffset)
+	result, err := keeper.FindAncestor(ctx, params.DigestLE, params.Offset)
 	if err != nil {
 		return []byte{}, err
 	}
 
 	// Now we format the answer as a response
 	response := types.QueryResFindAncestor{
-		DigestLE: digestLE,
-		Offset:   newOffset,
-		Res:      result,
+		Params: params,
+		Res:    result,
 	}
 
 	// And we serialize that response as JSON
@@ -208,48 +142,29 @@ func queryFindAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, ke
 	return res, nil
 }
 
-func queryHeaviestFromAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
-	// check that the path is this many items long, error if not
-	if len(path) > 4 {
-		return []byte{}, types.ErrTooManyArguments(types.DefaultCodespace)
-	} else if len(path) < 3 {
-		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
+func queryHeaviestFromAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+	var params types.QueryParamsHeaviestFromAncestor
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if unmarshallErr != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
 	}
 
-	ancestor, ancestorErr := hash256DigestFromHex(path[0])
-	if ancestorErr != nil {
-		return []byte{}, ancestorErr
-	}
-
-	// parse the second path item as hex.
-	currentBestDigest, currentBestErr := hash256DigestFromHex(path[1])
-	if currentBestErr != nil {
-		return []byte{}, currentBestErr
-	}
-
-	newBestDigest, newBestErr := hash256DigestFromHex(path[2])
-	if newBestErr != nil {
-		return []byte{}, newBestErr
-	}
-
-	limit, limitErr := decodeUint32FromPath(path, 3, 15)
-	if limitErr != nil {
-		return []byte{}, limitErr
+	limit := params.Limit
+	if limit == 0 {
+		limit = types.DefaultLookupLimit
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result, err := keeper.HeaviestFromAncestor(ctx, ancestor, currentBestDigest, newBestDigest, limit)
+	result, err := keeper.HeaviestFromAncestor(ctx, params.Ancestor, params.CurrentBest, params.NewBest, limit)
 	if err != nil {
 		return []byte{}, err
 	}
 
 	// Now we format the answer as a response
 	response := types.QueryResHeaviestFromAncestor{
-		Ancestor:    ancestor,
-		CurrentBest: currentBestDigest,
-		NewBest:     newBestDigest,
-		Limit:       limit,
-		Res:         result,
+		Params: params,
+		Res:    result,
 	}
 
 	// And we serialize that response as JSON
@@ -260,44 +175,26 @@ func queryHeaviestFromAncestor(ctx sdk.Context, path []string, req abci.RequestQ
 	return res, nil
 }
 
-func queryIsMostRecentCommonAncestor(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
-	// check that the path is this many items long, error if not
-	if len(path) > 4 {
-		return []byte{}, types.ErrTooManyArguments(types.DefaultCodespace)
-	} else if len(path) < 3 {
-		return []byte{}, types.ErrNotEnoughArguments(types.DefaultCodespace)
+func queryIsMostRecentCommonAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+	var params types.QueryParamsIsMostRecentCommonAncestor
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if unmarshallErr != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
 	}
 
-	ancestor, ancestorErr := hash256DigestFromHex(path[0])
-	if ancestorErr != nil {
-		return []byte{}, ancestorErr
-	}
-
-	leftDigest, leftErr := hash256DigestFromHex(path[1])
-	if leftErr != nil {
-		return []byte{}, leftErr
-	}
-
-	rightDigest, rightErr := hash256DigestFromHex(path[2])
-	if rightErr != nil {
-		return []byte{}, rightErr
-	}
-
-	limit, limitErr := decodeUint32FromPath(path, 3, 15)
-	if limitErr != nil {
-		return []byte{}, limitErr
+	limit := params.Limit
+	if limit == 0 {
+		limit = types.DefaultLookupLimit
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result := keeper.IsMostRecentCommonAncestor(ctx, ancestor, leftDigest, rightDigest, limit)
+	result := keeper.IsMostRecentCommonAncestor(ctx, params.Ancestor, params.Left, params.Right, limit)
 
 	// Now we format the answer as a response
 	response := types.QueryResIsMostRecentCommonAncestor{
-		Ancestor: ancestor,
-		Left:     leftDigest,
-		Right:    rightDigest,
-		Limit:    limit,
-		Res:      result,
+		Params: params,
+		Res:    result,
 	}
 
 	// And we serialize that response as JSON
