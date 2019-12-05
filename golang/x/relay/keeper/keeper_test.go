@@ -126,6 +126,10 @@ func (s *KeeperSuite) InitTestContext(mainnet, isCheckTx bool) {
 	s.Keeper = keeper
 }
 
+func (s *KeeperSuite) SetupTest() {
+	s.InitTestContext(true, false)
+}
+
 // Runs the whole test suite
 func TestKeeper(t *testing.T) {
 	jsonFile, err := os.Open("../../../../testVectors.json")
@@ -146,7 +150,6 @@ func TestKeeper(t *testing.T) {
 }
 
 func (s *KeeperSuite) TestGetPrefixStore() {
-	s.InitTestContext(true, false)
 	prefStore := s.Keeper.getPrefixStore(s.Context, "toast-")
 	store := s.Context.KVStore(s.Keeper.storeKey)
 
@@ -159,8 +162,6 @@ func (s *KeeperSuite) TestGetPrefixStore() {
 }
 
 func (s *KeeperSuite) TestSetGenesisState() {
-	s.InitTestContext(true, false)
-
 	genesis := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].Anchor
 	epochStart := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].PrevEpochStart
 	err := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
