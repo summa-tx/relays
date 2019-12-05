@@ -37,7 +37,7 @@ func (k Keeper) FindAncestor(ctx sdk.Context, digestLE types.Hash256Digest, offs
 	}
 
 	for i := uint32(0); i < offset; i++ {
-		current := k.getLink(ctx, current)
+		current = k.getLink(ctx, current)
 		if !k.hasLink(ctx, current) {
 			return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
 		}
@@ -54,7 +54,7 @@ func (k Keeper) IsAncestor(ctx sdk.Context, digestLE, ancestor types.Hash256Dige
 		if !k.hasLink(ctx, current) {
 			return false
 		}
-		current := k.getLink(ctx, current)
+		current = k.getLink(ctx, current)
 		if current == ancestor {
 			return true
 		}

@@ -13,7 +13,7 @@ import (
 )
 
 // handler function for isAncestor queries. parses arguments from url string, and passes them through
-// as a QueryResIsAncestor struct
+// as a QueryParamsIsAncestor struct
 func isAncestorHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// mux.Vars holds the variable elements of the URL from rest.go
@@ -66,7 +66,7 @@ func isAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handler
 }
 
 // handler function for getRelayGenesis queries. parses arguments from url string, and passes them through
-// as a QueryResGetRelayGenesis struct
+// as a QueryParamsGetRelayGenesis struct
 func getRelayGenesisHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		res, _, err := cliCtx.QueryWithData("custom/relay/getrelaygenesis", nil)
@@ -80,7 +80,7 @@ func getRelayGenesisHandler(cliCtx context.CLIContext, storeName string) http.Ha
 }
 
 // handler function for getLastReorgLCA queries. parses arguments from url string, and passes them through
-// as a QueryResGetLastReorgLCA struct
+// as a QueryParamsGetLastReorgLCA struct
 func getLastReorgLCAHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		res, _, err := cliCtx.QueryWithData("custom/relay/getlastreorglca", nil)
@@ -126,6 +126,67 @@ func findAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handl
 
 		// run the query. the routeString is passed as strings to our querier switch/case in `keeper/querier.go`
 		res, _, err := cliCtx.QueryWithData("custom/relay/findancestor", queryData)
+
+		// below this is boilerplate
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+// handler function for IsMostRecentCommonAncestor queries. parses arguments from url string, and passes them through
+// as a QueryParamsIsMostRecentCommonAncestor struct
+func isMostRecentCommonAncestorHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// mux.Vars holds the variable elements of the URL from rest.go
+		vars := mux.Vars(r)
+
+		ancestor, sdkErr := types.Hash256DigestFromHex(vars["ancestor"])
+		if sdkErr != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
+			return
+		}
+
+		left, sdkErr := types.Hash256DigestFromHex(vars["left"])
+		if sdkErr != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
+			return
+		}
+
+		right, sdkErr := types.Hash256DigestFromHex(vars["right"])
+		if sdkErr != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
+			return
+		}
+
+		var limit uint32
+		if val, ok := vars["limit"]; ok {
+			lim, err := strconv.ParseUint(val, 0, 32)
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
+				return
+			}
+			limit = uint32(lim)
+		}
+
+		params := types.QueryParamsIsMostRecentCommonAncestor{
+			Ancestor: ancestor,
+			Left:     left,
+			Right:    right,
+			Limit:    limit,
+		}
+
+		queryData, err := json.Marshal(params)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		// run the query. the routeString is passed as strings to our querier switch/case in `keeper/querier.go`
+		res, _, err := cliCtx.QueryWithData("custom/relay/ismostrecentcommonancestor", queryData)
 
 		// below this is boilerplate
 		if err != nil {
