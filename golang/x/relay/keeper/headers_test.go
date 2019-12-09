@@ -1,5 +1,14 @@
 package keeper
 
+func (s *KeeperSuite) TestEmitExtension() {
+	headers := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers
+	s.Keeper.emitExtension(s.Context, headers[0], headers[1])
+
+	events := s.Context.EventManager().Events()
+	e := events[0]
+	s.Equal(e.Type, "extension")
+}
+
 func (s *KeeperSuite) TestValidateHeaderChain() {
 	cases := s.Fixtures.HeaderTestCases.ValidateChain
 
