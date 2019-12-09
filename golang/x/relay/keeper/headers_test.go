@@ -32,6 +32,25 @@ func (s *KeeperSuite) TestIngestHeaders() {
 	}
 }
 
+func (s *KeeperSuite) TestIngestHeaderChain() {
+	cases := s.Fixtures.HeaderTestCases.ValidateChain
+
+	for _, tc := range cases {
+		if tc.Internal == false {
+			s.InitTestContext(tc.IsMainnet, false)
+			s.Keeper.ingestHeader(s.Context, tc.Anchor)
+			err := s.Keeper.IngestHeaderChain(s.Context, tc.Headers)
+			if tc.Output == 0 {
+				logIfTestCaseError(tc, err)
+				s.Nil(err)
+			} else {
+				s.NotNil(err)
+				s.Equal(tc.Output, err.Code())
+			}
+		}
+	}
+}
+
 // TestIngestHeader tests ingestHeader, HasHeader, and GetHeader
 func (s *KeeperSuite) TestIngestHeader() {
 	cases := s.Fixtures.HeaderTestCases.ValidateChain
@@ -65,14 +84,11 @@ func (s *KeeperSuite) TestIngestDifficultyChange() {
 	cases := s.Fixtures.HeaderTestCases.ValidateDiffChange
 
 	for _, tc := range cases {
-		// s.Keeper.ingestHeader(s.Context, tc.PrevEpochStart)
-		// s.Keeper.ingestHeader(s.Context, tc.Headers[0])
 		s.Keeper.ingestHeader(s.Context, tc.PrevEpochStart)
 		s.Keeper.ingestHeader(s.Context, tc.Anchor)
 		err := s.Keeper.IngestDifficultyChange(s.Context, tc.PrevEpochStart.HashLE, tc.Headers)
 		if tc.Output == 0 {
 			logIfTestCaseError(tc, err)
-			// Getting error here
 			s.Nil(err)
 		} else {
 			s.NotNil(err)
