@@ -15,6 +15,37 @@ func (s *KeeperSuite) TestValidateHeaderChain() {
 	}
 }
 
+func (s *KeeperSuite) TestIngestHeaders() {
+	cases := s.Fixtures.HeaderTestCases.ValidateChain
+
+	for _, tc := range cases {
+		s.InitTestContext(tc.IsMainnet, false)
+		s.Keeper.ingestHeader(s.Context, tc.Anchor)
+		err := s.Keeper.ingestHeaders(s.Context, tc.Headers, tc.Internal)
+		if tc.Output == 0 {
+			logIfTestCaseError(tc, err)
+			s.Nil(err)
+		} else {
+			s.NotNil(err)
+			s.Equal(tc.Output, err.Code())
+		}
+	}
+}
+
+// TestIngestHeader tests ingestHeader, HasHeader, and GetHeader
+func (s *KeeperSuite) TestIngestHeader() {
+	cases := s.Fixtures.HeaderTestCases.ValidateChain
+
+	for _, tc := range cases {
+		s.Keeper.ingestHeader(s.Context, tc.Headers[0])
+		hasHeader := s.Keeper.HasHeader(s.Context, tc.Headers[0].HashLE)
+		s.Equal(hasHeader, true)
+		header, err := s.Keeper.GetHeader(s.Context, tc.Headers[0].HashLE)
+		s.Nil(err)
+		s.Equal(header, tc.Headers[0])
+	}
+}
+
 func (s *KeeperSuite) TestValidateDifficultyChange() {
 	cases := s.Fixtures.HeaderTestCases.ValidateDiffChange
 
@@ -29,6 +60,24 @@ func (s *KeeperSuite) TestValidateDifficultyChange() {
 		}
 	}
 }
+
+// func (s *KeeperSuite) TestIngestDifficultyChange() {
+// 	cases := s.Fixtures.HeaderTestCases.ValidateDiffChange
+
+// 	for _, tc := range cases {
+// 		s.Keeper.ingestHeader(s.Context, tc.PrevEpochStart)
+// 		s.Keeper.ingestHeader(s.Context, tc.Headers[0])
+// 		err := s.Keeper.IngestDifficultyChange(s.Context, tc.PrevEpochStart.HashLE, tc.Headers)
+// 		if tc.Output == 0 {
+// 			logIfTestCaseError(tc, err)
+// 			// Getting error here
+// 			s.Nil(err)
+// 		} else {
+// 			s.NotNil(err)
+// 			s.Equal(tc.Output, err.Code())
+// 		}
+// 	}
+// }
 
 func (s *KeeperSuite) TestCompareTargets() {
 	cases := s.Fixtures.HeaderTestCases.CompareTargets

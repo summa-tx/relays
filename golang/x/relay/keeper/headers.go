@@ -113,7 +113,7 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 
 	anchor, err := k.GetHeader(ctx, headers[0].PrevHashLE)
 	if err != nil {
-		return types.ErrUnknownBlock(types.DefaultCodespace)
+		return err
 	}
 
 	err = validateHeaderChain(anchor, headers, internal, k.IsMainNet)
