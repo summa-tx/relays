@@ -61,23 +61,25 @@ func (s *KeeperSuite) TestValidateDifficultyChange() {
 	}
 }
 
-// func (s *KeeperSuite) TestIngestDifficultyChange() {
-// 	cases := s.Fixtures.HeaderTestCases.ValidateDiffChange
+func (s *KeeperSuite) TestIngestDifficultyChange() {
+	cases := s.Fixtures.HeaderTestCases.ValidateDiffChange
 
-// 	for _, tc := range cases {
-// 		s.Keeper.ingestHeader(s.Context, tc.PrevEpochStart)
-// 		s.Keeper.ingestHeader(s.Context, tc.Headers[0])
-// 		err := s.Keeper.IngestDifficultyChange(s.Context, tc.PrevEpochStart.HashLE, tc.Headers)
-// 		if tc.Output == 0 {
-// 			logIfTestCaseError(tc, err)
-// 			// Getting error here
-// 			s.Nil(err)
-// 		} else {
-// 			s.NotNil(err)
-// 			s.Equal(tc.Output, err.Code())
-// 		}
-// 	}
-// }
+	for _, tc := range cases {
+		// s.Keeper.ingestHeader(s.Context, tc.PrevEpochStart)
+		// s.Keeper.ingestHeader(s.Context, tc.Headers[0])
+		s.Keeper.ingestHeader(s.Context, tc.PrevEpochStart)
+		s.Keeper.ingestHeader(s.Context, tc.Anchor)
+		err := s.Keeper.IngestDifficultyChange(s.Context, tc.PrevEpochStart.HashLE, tc.Headers)
+		if tc.Output == 0 {
+			logIfTestCaseError(tc, err)
+			// Getting error here
+			s.Nil(err)
+		} else {
+			s.NotNil(err)
+			s.Equal(tc.Output, err.Code())
+		}
+	}
+}
 
 func (s *KeeperSuite) TestCompareTargets() {
 	cases := s.Fixtures.HeaderTestCases.CompareTargets
