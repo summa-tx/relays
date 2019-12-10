@@ -43,8 +43,8 @@ func (k Keeper) GetBestKnownDigest(ctx sdk.Context) (types.Hash256Digest, sdk.Er
 }
 
 // setLastReorgLCA sets the latest common ancestor of the last reorg
-func (k Keeper) setLastReorgLCA(ctx sdk.Context, bestKnown types.Hash256Digest) {
-	k.setDigestByStoreKey(ctx, types.LastReorgLCAStorage, bestKnown)
+func (k Keeper) setLastReorgLCA(ctx sdk.Context, lca types.Hash256Digest) {
+	k.setDigestByStoreKey(ctx, types.LastReorgLCAStorage, lca)
 }
 
 // GetLastReorgLCA returns the best known digest in the relay
