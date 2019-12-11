@@ -69,7 +69,7 @@ type HeaderTestCases struct {
 type KeeperTestCases struct {
 	LinkTestCases   []LinkTest      `json:"link"`
 	HeaderTestCases HeaderTestCases `json:"header"`
-	ChainTestCases  []ChainTest     `json:"chain"`
+	ChainTestCases  ChainTest       `json:"chain"`
 }
 
 type KeeperSuite struct {

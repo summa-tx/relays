@@ -27,7 +27,6 @@ func (k Keeper) getDigestByStoreKey(ctx sdk.Context, key string) (types.Hash256D
 }
 
 func (k Keeper) setDigestByStoreKey(ctx sdk.Context, key string, digest types.Hash256Digest) {
-	// TODO: Remove this in favor of Genesis state
 	store := k.getChainStore(ctx)
 	store.Set([]byte(key), digest[:])
 }
