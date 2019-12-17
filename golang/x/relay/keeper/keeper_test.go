@@ -34,7 +34,17 @@ type Case struct {
 
 type LinkTest struct{}
 
-type ChainTest struct{}
+type IsMostRecentCA struct {
+	Orphan            types.BitcoinHeader   `json:"orphan"`
+	OldPeriodStart    types.BitcoinHeader   `json:"oldPeriodStart"`
+	Genesis           types.BitcoinHeader   `json:"genesis"`
+	PreRetargetChain  []types.BitcoinHeader `json:"preRetargetChain"`
+	PostRetargetChain []types.BitcoinHeader `json:"postRetargetChain"`
+}
+
+type ChainTestCases struct {
+	IsMostRecentCA IsMostRecentCA `json:"isMostRecentCommonAncestor"`
+}
 
 type IngestCase struct {
 	Case
@@ -69,7 +79,7 @@ type HeaderTestCases struct {
 type KeeperTestCases struct {
 	LinkTestCases   []LinkTest      `json:"link"`
 	HeaderTestCases HeaderTestCases `json:"header"`
-	ChainTestCases  ChainTest       `json:"chain"`
+	ChainTestCases  ChainTestCases  `json:"chain"`
 }
 
 type KeeperSuite struct {
