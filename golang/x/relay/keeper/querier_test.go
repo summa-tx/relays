@@ -114,9 +114,9 @@ func (s *KeeperSuite) TestQueryGetRelayGenesis() {
 	err := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
 	s.Nil(err)
 
-	gen, err := s.Keeper.GetRelayGenesis(s.Context)
-	s.Nil(err)
-	s.Equal(genesis.HashLE, gen)
+	// gen, err := s.Keeper.GetRelayGenesis(s.Context)
+	// s.Nil(err)
+	// s.Equal(genesis.HashLE, gen)
 
 	path := []string{"getrelaygenesis"}
 
@@ -133,4 +133,62 @@ func (s *KeeperSuite) TestQueryGetRelayGenesis() {
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
 	s.Equal(result.Res, genesis.HashLE)
+}
+
+func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
+	genesis := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].Anchor
+	epochStart := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].PrevEpochStart
+	querier := NewQuerier(s.Keeper)
+
+	err := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
+	s.Nil(err)
+
+	path := []string{"getlastreorglca"}
+
+	req := abci.RequestQuery{
+		Path: "custom/relay/getlastreorglca",
+		Data: []byte{},
+	}
+
+	res, err := querier(s.Context, path, req)
+	s.Nil(err)
+
+	var result types.QueryResGetLastReorgLCA
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, genesis.HashLE)
+}
+
+func (s *KeeperSuite) TestQueryFindAncestor() {
+	headers := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers
+	anchor := s.Fixtures.HeaderTestCases.ValidateChain[0].Anchor
+	querier := NewQuerier(s.Keeper)
+
+	s.Keeper.ingestHeader(s.Context, anchor)
+	s.Keeper.IngestHeaderChain(s.Context, headers)
+
+	params := types.QueryParamsFindAncestor{
+		DigestLE: headers[4].HashLE,
+		Offset:   2,
+	}
+
+	marshalledParams, marshalErr := json.Marshal(params)
+	s.Nil(marshalErr)
+
+	path := []string{"findancestor"}
+
+	req := abci.RequestQuery{
+		Path: "custom/relay/findancestor",
+		Data: marshalledParams,
+	}
+
+	res, err := querier(s.Context, path, req)
+	s.Nil(err)
+
+	var result types.QueryResFindAncestor
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, headers[2].HashLE)
 }
