@@ -105,3 +105,32 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 	s.Nil(unmarshallErr)
 	s.Equal(result.Res, true)
 }
+
+func (s *KeeperSuite) TestQueryGetRelayGenesis() {
+	genesis := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].Anchor
+	epochStart := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].PrevEpochStart
+	querier := NewQuerier(s.Keeper)
+
+	err := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
+	s.Nil(err)
+
+	gen, err := s.Keeper.GetRelayGenesis(s.Context)
+	s.Nil(err)
+	s.Equal(genesis.HashLE, gen)
+
+	path := []string{"getrelaygenesis"}
+
+	req := abci.RequestQuery{
+		Path: "custom/relay/getrelaygenesis",
+		Data: []byte{},
+	}
+
+	res, err := querier(s.Context, path, req)
+	s.Nil(err)
+
+	var result types.QueryResGetRelayGenesis
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, genesis.HashLE)
+}
