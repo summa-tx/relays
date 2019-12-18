@@ -40,18 +40,15 @@ func (s *KeeperSuite) TestGetLastReorgLCA() {
 	s.Equal(digest, lca)
 }
 
-func (s *KeeperSuite) TestIsMostRecentCommonAncestor() {
-	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
+// func (s *KeeperSuite) TestIsMostRecentCommonAncestor() {
+// 	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
 
-	err := s.Keeper.SetGenesisState(s.Context, tv.Genesis, tv.OldPeriodStart)
-	s.Nil(err)
+// 	err := s.Keeper.SetGenesisState(s.Context, tv.Genesis, tv.OldPeriodStart)
+// 	s.Nil(err)
 
-	s.Keeper.ingestHeader(s.Context, tv.Genesis)
-	// s.Keeper.ingestHeader(s.Context, tv.OldPeriodStart)
-	// s.Keeper.ingestHeader(s.Context, tv.PreRetargetChain[0])
-	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.Hash, tv.PreRetargetChain)
-	s.Nil(err)
-}
+// 	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, tv.PreRetargetChain)
+// 	s.Nil(err)
+// }
 
 // describe('#isMostRecentAncestor', async () => {
 // 	const PRE_CHAIN = REORG_AND_RETARGET_CHAIN.preRetargetChain;
