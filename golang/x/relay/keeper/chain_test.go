@@ -3,8 +3,8 @@ package keeper
 import (
 	"bytes"
 
-	"github.com/cosmos/cosmos-sdk/types"
-	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
 func (s *KeeperSuite) TestEmitReorg() {
@@ -24,7 +24,7 @@ func (s *KeeperSuite) TestGetDigestByStoreKey() {
 	store.Set([]byte(key), wrongLenDigest)
 
 	_, err := s.Keeper.getDigestByStoreKey(s.Context, key)
-	s.Equal(types.CodeType(105), err.Code())
+	s.Equal(sdk.CodeType(105), err.Code())
 }
 
 func (s *KeeperSuite) TestGetBestKnownDigest() {
@@ -45,7 +45,9 @@ func (s *KeeperSuite) TestIsMostRecentCommonAncestor() {
 	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
 	pre := tv.PreRetargetChain
 	post := tv.PostRetargetChain
-	postWithOrphan := append(post[len(post)-2:], []btcspv.BitcoinHeader{tv.Orphan}...)
+	var postWithOrphan []types.BitcoinHeader
+	postWithOrphan = append(postWithOrphan, post[:len(post)-2]...)
+	postWithOrphan = append(postWithOrphan, tv.Orphan)
 
 	err := s.Keeper.SetGenesisState(s.Context, tv.Genesis, tv.OldPeriodStart)
 	s.SDKNil(err)
@@ -56,34 +58,22 @@ func (s *KeeperSuite) TestIsMostRecentCommonAncestor() {
 	s.SDKNil(err)
 	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
 	s.SDKNil(err)
-	// err = s.Keeper.IngestHeaderChain(s.Context, postWithoutOrphan)
-	// s.Nil(err)
-	// err = s.Keeper.IngestHeaderChain(s.Context, postWithOrphan)
-	// s.Nil(err)
 
-	// // Not passing
-	// isMostRecent := s.Keeper.IsMostRecentCommonAncestor(s.Context, post[2].HashLE, post[3].HashLE, post[2].HashLE, 5)
-	// s.Equal(true, isMostRecent)
+	isMostRecent := s.Keeper.IsMostRecentCommonAncestor(s.Context, post[2].HashLE, post[3].HashLE, post[2].HashLE, 5)
+	s.Equal(true, isMostRecent)
 
-	// // Passing
-	// isMostRecent = s.Keeper.IsMostRecentCommonAncestor(s.Context, post[5].HashLE, post[6].HashLE, tv.Orphan.HashLE, 5)
-	// s.Equal(true, isMostRecent)
+	isMostRecent = s.Keeper.IsMostRecentCommonAncestor(s.Context, post[5].HashLE, post[6].HashLE, tv.Orphan.HashLE, 5)
+	s.Equal(true, isMostRecent)
 
-	// // Passing
-	// isMostRecent = s.Keeper.IsMostRecentCommonAncestor(s.Context, post[3].HashLE, post[3].HashLE, post[3].HashLE, 5)
-	// s.Equal(true, isMostRecent)
+	isMostRecent = s.Keeper.IsMostRecentCommonAncestor(s.Context, post[3].HashLE, post[3].HashLE, post[3].HashLE, 5)
+	s.Equal(true, isMostRecent)
 
-	// // Not passing
-	// isMostRecent := s.Keeper.IsMostRecentCommonAncestor(s.Context, post[0].HashLE, post[3].HashLE, post[2].HashLE, 5)
-	// s.Equal(false, isMostRecent)
+	isMostRecent = s.Keeper.IsMostRecentCommonAncestor(s.Context, post[0].HashLE, post[3].HashLE, post[2].HashLE, 5)
+	s.Equal(false, isMostRecent)
 
-	// // Not passing
-	// isMostRecent := s.Keeper.IsMostRecentCommonAncestor(s.Context, post[1].HashLE, post[3].HashLE, post[2].HashLE, 1)
-	// s.Equal(false, isMostRecent)
+	isMostRecent = s.Keeper.IsMostRecentCommonAncestor(s.Context, post[1].HashLE, post[3].HashLE, post[2].HashLE, 1)
+	s.Equal(false, isMostRecent)
 }
-
-// err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, tv.PreRetargetChain)
-// s.Nil(err)
 
 func (s *KeeperSuite) TestHeaviestFromAncestor() {
 
