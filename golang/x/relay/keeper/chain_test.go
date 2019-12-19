@@ -76,122 +76,48 @@ func (s *KeeperSuite) TestIsMostRecentCommonAncestor() {
 }
 
 func (s *KeeperSuite) TestHeaviestFromAncestor() {
+	tv := s.Fixtures.ChainTestCases.HeaviestFromAncestor
+	headers := tv.Headers[0:8]
+	headersWithMain := tv.Headers[0:9]
 
+	var headersWithOrphan []types.BitcoinHeader
+	headersWithOrphan = append(headersWithOrphan, headers...)
+	headersWithOrphan = append(headersWithOrphan, tv.Orphan)
+
+	s.Keeper.ingestHeader(s.Context, tv.Genesis)
+	err := s.Keeper.IngestHeaderChain(s.Context, headersWithMain)
+	s.SDKNil(err)
+	err = s.Keeper.IngestHeaderChain(s.Context, headersWithOrphan)
+	s.SDKNil(err)
+
+	_, err = s.Keeper.HeaviestFromAncestor(s.Context, tv.Headers[10].HashLE, headers[3].HashLE, headers[4].HashLE, 20)
+	s.Equal(err.Code(), sdk.CodeType(103))
+
+	_, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, tv.Headers[10].HashLE, headers[4].HashLE, 20)
+	s.Equal(err.Code(), sdk.CodeType(103))
+
+	_, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, headers[4].HashLE, tv.Headers[10].HashLE, 20)
+	s.Equal(err.Code(), sdk.CodeType(103))
+
+	_, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, headers[2].HashLE, headers[4].HashLE, 20)
+	s.Equal(err.Code(), sdk.CodeType(104))
+
+	_, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, headers[4].HashLE, headers[2].HashLE, 20)
+	s.Equal(err.Code(), sdk.CodeType(104))
+
+	heaviest, err := s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, headers[5].HashLE, headers[4].HashLE, 20)
+	s.SDKNil(err)
+	s.Equal(heaviest, headers[5].HashLE)
+
+	heaviest, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, headers[4].HashLE, headers[5].HashLE, 20)
+	s.SDKNil(err)
+	s.Equal(heaviest, headers[5].HashLE)
+
+	heaviest, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, tv.Headers[8].HashLE, tv.Orphan.HashLE, 20)
+	s.SDKNil(err)
+	s.Equal(heaviest, tv.Headers[8].HashLE)
+
+	heaviest, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, tv.Orphan.HashLE, tv.Headers[8].HashLE, 20)
+	s.SDKNil(err)
+	s.Equal(heaviest, tv.Orphan.HashLE)
 }
-
-// describe('#heaviestFromAncestor', async () => {
-// 	const { chain, genesis } = REGULAR_CHAIN;
-// 	const headerHex = chain.map(header => header.hex);
-// 	const headers = utils.concatenateHexStrings(headerHex.slice(0, 8));
-// 	const headersWithMain = utils.concatenateHexStrings([headers, chain[8].hex]);
-// 	const headersWithOrphan = utils.concatenateHexStrings(
-// 		[headers, REGULAR_CHAIN.orphan_562630.hex]
-// 	);
-
-// 	before(async () => {
-// 		instance = await Relay.new(
-// 			genesis.hex,
-// 			genesis.height,
-// 			genesis.digest_le
-// 		);
-// 		await instance.addHeaders(genesis.hex, headersWithMain);
-// 		await instance.addHeaders(genesis.hex, headersWithOrphan);
-// 	});
-
-// 	it('errors if ancestor is unknown', async () => {
-// 		try {
-// 			await instance.heaviestFromAncestor(
-// 				chain[10].digest_le,
-// 				headerHex[3],
-// 				headerHex[4]
-// 			);
-// 			assert(false, 'expected an error');
-// 		} catch (e) {
-// 			assert.include(e.message, 'Unknown block');
-// 		}
-// 	});
-
-// 	it('errors if left is unknown', async () => {
-// 		try {
-// 			await instance.heaviestFromAncestor(
-// 				chain[3].digest_le,
-// 				chain[10].hex,
-// 				headerHex[4]
-// 			);
-// 			assert(false, 'expected an error');
-// 		} catch (e) {
-// 			assert.include(e.message, 'Unknown block');
-// 		}
-// 	});
-
-// 	it('errors if right is unknown', async () => {
-// 		try {
-// 			await instance.heaviestFromAncestor(
-// 				chain[3].digest_le,
-// 				headerHex[4],
-// 				chain[10].hex
-// 			);
-// 			assert(false, 'expected an error');
-// 		} catch (e) {
-// 			assert.include(e.message, 'Unknown block');
-// 		}
-// 	});
-
-// 	it('errors if either block is below the ancestor', async () => {
-// 		try {
-// 			await instance.heaviestFromAncestor(
-// 				chain[3].digest_le,
-// 				headerHex[2],
-// 				headerHex[4]
-// 			);
-// 			assert(false, 'expected an error');
-// 		} catch (e) {
-// 			assert.include(e.message, 'A descendant height is below the ancestor height');
-// 		}
-
-// 		try {
-// 			await instance.heaviestFromAncestor(
-// 				chain[3].digest_le,
-// 				headerHex[4],
-// 				headerHex[2]
-// 			);
-// 			assert(false, 'expected an error');
-// 		} catch (e) {
-// 			assert.include(e.message, 'A descendant height is below the ancestor height');
-// 		}
-// 	});
-
-// 	it('returns left if left is heavier', async () => {
-// 		const res = await instance.heaviestFromAncestor(
-// 			chain[3].digest_le,
-// 			headerHex[5],
-// 			headerHex[4]
-// 		);
-// 		assert.equal(res, chain[5].digest_le);
-// 	});
-
-// 	it('returns right if right is heavier', async () => {
-// 		const res = await instance.heaviestFromAncestor(
-// 			chain[3].digest_le,
-// 			headerHex[4],
-// 			headerHex[5]
-// 		);
-// 		assert.equal(res, chain[5].digest_le);
-// 	});
-
-// 	it('returns left if the weights are equal', async () => {
-// 		let res = await instance.heaviestFromAncestor(
-// 			chain[3].digest_le,
-// 			chain[8].hex,
-// 			REGULAR_CHAIN.orphan_562630.hex
-// 		);
-// 		assert.equal(res, chain[8].digest_le);
-
-// 		res = await instance.heaviestFromAncestor(
-// 			chain[3].digest_le,
-// 			REGULAR_CHAIN.orphan_562630.hex,
-// 			chain[8].hex
-// 		);
-// 		assert.equal(res, REGULAR_CHAIN.orphan_562630.digest_le);
-// 	});
-// });

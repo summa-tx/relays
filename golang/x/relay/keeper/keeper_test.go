@@ -42,8 +42,16 @@ type IsMostRecentCA struct {
 	PostRetargetChain []types.BitcoinHeader `json:"postRetargetChain"`
 }
 
+type HeaviestFromAncestor struct {
+	Orphan    types.BitcoinHeader   `json:"orphan"`
+	BadHeader types.BitcoinHeader   `json:"badHeader"`
+	Genesis   types.BitcoinHeader   `json:"genesis"`
+	Headers   []types.BitcoinHeader `json:"headers"`
+}
+
 type ChainTestCases struct {
-	IsMostRecentCA IsMostRecentCA `json:"isMostRecentCommonAncestor"`
+	IsMostRecentCA       IsMostRecentCA       `json:"isMostRecentCommonAncestor"`
+	HeaviestFromAncestor HeaviestFromAncestor `json:"heaviestFromAncestor"`
 }
 
 type IngestCase struct {

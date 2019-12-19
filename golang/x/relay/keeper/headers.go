@@ -78,6 +78,7 @@ func validateHeaderChain(anchor types.BitcoinHeader, headers []types.BitcoinHead
 		_, err := header.Validate()
 		if err != nil {
 			return types.FromBTCSPVError(types.DefaultCodespace, err)
+			// return types.FromBTCSPVError(types.DefaultCodespace, errors.New(fmt.Sprintf("%d err: %d", i, err)))
 		}
 
 		// ensure height changes as expected
