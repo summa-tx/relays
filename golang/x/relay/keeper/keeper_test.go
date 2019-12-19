@@ -159,6 +159,14 @@ func TestKeeper(t *testing.T) {
 	suite.Run(t, keeperSuite)
 }
 
+func (suite *KeeperSuite) SDKNil(e sdk.Error) {
+	var msg string
+	if e != nil {
+		msg = e.Error()
+	}
+	suite.Nil(e, msg)
+}
+
 func (s *KeeperSuite) TestGetPrefixStore() {
 	prefStore := s.Keeper.getPrefixStore(s.Context, "toast-")
 	store := s.Context.KVStore(s.Keeper.storeKey)
@@ -175,18 +183,18 @@ func (s *KeeperSuite) TestSetGenesisState() {
 	genesis := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].Anchor
 	epochStart := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].PrevEpochStart
 	err := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
-	s.Nil(err)
+	s.SDKNil(err)
 
 	gen, err := s.Keeper.GetRelayGenesis(s.Context)
-	s.Nil(err)
+	s.SDKNil(err)
 	s.Equal(genesis.HashLE, gen)
 
 	lca, err := s.Keeper.GetLastReorgLCA(s.Context)
-	s.Nil(err)
+	s.SDKNil(err)
 	s.Equal(genesis.HashLE, lca)
 
 	best, err := s.Keeper.GetBestKnownDigest(s.Context)
-	s.Nil(err)
+	s.SDKNil(err)
 	s.Equal(genesis.HashLE, best)
 
 	err = s.Keeper.SetGenesisState(s.Context, genesis, epochStart)

@@ -47,7 +47,7 @@ func (suite *KeeperSuite) TestDecodeUint32FromPath() {
 		index := DecodeUintPass[i].Idx
 		limit := DecodeUintPass[i].DefaultLimit
 		num, err := decodeUint32FromPath(path, index, limit)
-		suite.Nil(err)
+		suite.SDKNil(err)
 		suite.Equal(num, DecodeUintPass[i].Output)
 	}
 	for i := range DecodeUintFail {
@@ -99,7 +99,7 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 	}
 
 	res, err := querier(s.Context, path, req)
-	s.Nil(err)
+	s.SDKNil(err)
 
 	var result types.QueryResIsAncestor
 
@@ -121,7 +121,7 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 	}
 
 	res, err = querier(s.Context, path, req)
-	s.Nil(err)
+	s.SDKNil(err)
 
 	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
@@ -147,11 +147,11 @@ func (s *KeeperSuite) TestQueryGetRelayGenesis() {
 
 	// Set Genesis state
 	err = s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
-	s.Nil(err)
+	s.SDKNil(err)
 
 	// Use querier handler to get RelayGenesis
 	res, err := querier(s.Context, path, req)
-	s.Nil(err)
+	s.SDKNil(err)
 
 	// Unmarshall the result and test
 	var result types.QueryResGetRelayGenesis
@@ -178,10 +178,10 @@ func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
 	s.Equal(err.Code(), sdk.CodeType(105))
 
 	setStateErr := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
-	s.Nil(setStateErr)
+	s.SDKNil(setStateErr)
 
 	res, getLCAErr := querier(s.Context, path, req)
-	s.Nil(getLCAErr)
+	s.SDKNil(getLCAErr)
 
 	var result types.QueryResGetLastReorgLCA
 
@@ -218,11 +218,12 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 
 	// test that it retrieves the correct ancestor
 	res, err := querier(s.Context, path, req)
-	s.Nil(err)
+	s.SDKNil(err)
 
 	var result types.QueryResFindAncestor
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	// s.SDKNil(unmarshallErr)
 	s.Nil(unmarshallErr)
 	s.Equal(result.Res, headers[2].HashLE)
 }

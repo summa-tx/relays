@@ -4,6 +4,7 @@ import (
 	"bytes"
 
 	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
 func (s *KeeperSuite) TestEmitReorg() {
@@ -40,96 +41,167 @@ func (s *KeeperSuite) TestGetLastReorgLCA() {
 	s.Equal(digest, lca)
 }
 
-// func (s *KeeperSuite) TestIsMostRecentCommonAncestor() {
-// 	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
+func (s *KeeperSuite) TestIsMostRecentCommonAncestor() {
+	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
+	pre := tv.PreRetargetChain
+	post := tv.PostRetargetChain
+	postWithOrphan := append(post[len(post)-2:], []btcspv.BitcoinHeader{tv.Orphan}...)
 
-// 	err := s.Keeper.SetGenesisState(s.Context, tv.Genesis, tv.OldPeriodStart)
-// 	s.Nil(err)
+	err := s.Keeper.SetGenesisState(s.Context, tv.Genesis, tv.OldPeriodStart)
+	s.SDKNil(err)
 
-// 	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, tv.PreRetargetChain)
-// 	s.Nil(err)
-// }
+	err = s.Keeper.IngestHeaderChain(s.Context, pre)
+	s.SDKNil(err)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, post)
+	s.SDKNil(err)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
+	s.SDKNil(err)
+	// err = s.Keeper.IngestHeaderChain(s.Context, postWithoutOrphan)
+	// s.Nil(err)
+	// err = s.Keeper.IngestHeaderChain(s.Context, postWithOrphan)
+	// s.Nil(err)
 
-// describe('#isMostRecentAncestor', async () => {
-// 	const PRE_CHAIN = REORG_AND_RETARGET_CHAIN.preRetargetChain;
-// 	const POST_CHAIN = REORG_AND_RETARGET_CHAIN.postRetargetChain;
+	// // Not passing
+	// isMostRecent := s.Keeper.IsMostRecentCommonAncestor(s.Context, post[2].HashLE, post[3].HashLE, post[2].HashLE, 5)
+	// s.Equal(true, isMostRecent)
 
-// 	const orphan = REORG_AND_RETARGET_CHAIN.orphan_437478;
-// 	const preHex = PRE_CHAIN.map(header => header.hex);
-// 	const pre = utils.concatenateHexStrings(preHex);
-// 	const postHex = POST_CHAIN.map(header => header.hex);
-// 	const post = utils.concatenateHexStrings(postHex.slice(0, -2));
-// 	const postWithOrphan = utils.concatenateHexStrings([post, orphan.hex]);
-// 	const lastTwo = POST_CHAIN.slice(-2);
-// 	const postWithoutOrphan = utils.concatenateHexStrings([post, lastTwo[0].hex, lastTwo[1].hex]);
+	// // Passing
+	// isMostRecent = s.Keeper.IsMostRecentCommonAncestor(s.Context, post[5].HashLE, post[6].HashLE, tv.Orphan.HashLE, 5)
+	// s.Equal(true, isMostRecent)
+
+	// // Passing
+	// isMostRecent = s.Keeper.IsMostRecentCommonAncestor(s.Context, post[3].HashLE, post[3].HashLE, post[3].HashLE, 5)
+	// s.Equal(true, isMostRecent)
+
+	// // Not passing
+	// isMostRecent := s.Keeper.IsMostRecentCommonAncestor(s.Context, post[0].HashLE, post[3].HashLE, post[2].HashLE, 5)
+	// s.Equal(false, isMostRecent)
+
+	// // Not passing
+	// isMostRecent := s.Keeper.IsMostRecentCommonAncestor(s.Context, post[1].HashLE, post[3].HashLE, post[2].HashLE, 1)
+	// s.Equal(false, isMostRecent)
+}
+
+// err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, tv.PreRetargetChain)
+// s.Nil(err)
+
+func (s *KeeperSuite) TestHeaviestFromAncestor() {
+
+}
+
+// describe('#heaviestFromAncestor', async () => {
+// 	const { chain, genesis } = REGULAR_CHAIN;
+// 	const headerHex = chain.map(header => header.hex);
+// 	const headers = utils.concatenateHexStrings(headerHex.slice(0, 8));
+// 	const headersWithMain = utils.concatenateHexStrings([headers, chain[8].hex]);
+// 	const headersWithOrphan = utils.concatenateHexStrings(
+// 		[headers, REGULAR_CHAIN.orphan_562630.hex]
+// 	);
 
 // 	before(async () => {
 // 		instance = await Relay.new(
-// 			REORG_AND_RETARGET_CHAIN.genesis.hex,
-// 			REORG_AND_RETARGET_CHAIN.genesis.height,
-// 			REORG_AND_RETARGET_CHAIN.oldPeriodStart.digest_le
+// 			genesis.hex,
+// 			genesis.height,
+// 			genesis.digest_le
 // 		);
-// 		await instance.addHeaders(
-// 			REORG_AND_RETARGET_CHAIN.genesis.hex,
-// 			pre
-// 		);
-// 		await instance.addHeadersWithRetarget(
-// 			REORG_AND_RETARGET_CHAIN.oldPeriodStart.hex,
-// 			preHex.slice(-1)[0],
-// 			postWithoutOrphan
-// 		);
-// 		await instance.addHeadersWithRetarget(
-// 			REORG_AND_RETARGET_CHAIN.oldPeriodStart.hex,
-// 			preHex.slice(-1)[0],
-// 			postWithOrphan
-// 		);
+// 		await instance.addHeaders(genesis.hex, headersWithMain);
+// 		await instance.addHeaders(genesis.hex, headersWithOrphan);
 // 	});
 
-// 	it('returns false if it found a more recent ancestor', async () => {
-// 		const res = await instance.isMostRecentAncestor(
-// 			POST_CHAIN[0].digest_le,
-// 			POST_CHAIN[3].digest_le,
-// 			POST_CHAIN[2].digest_le,
-// 			5
-// 		);
-// 		assert.isFalse(res);
+// 	it('errors if ancestor is unknown', async () => {
+// 		try {
+// 			await instance.heaviestFromAncestor(
+// 				chain[10].digest_le,
+// 				headerHex[3],
+// 				headerHex[4]
+// 			);
+// 			assert(false, 'expected an error');
+// 		} catch (e) {
+// 			assert.include(e.message, 'Unknown block');
+// 		}
 // 	});
 
-// 	it('returns false if it did not find the specified common ancestor within the limit', async () => {
-// 		const res = await instance.isMostRecentAncestor(
-// 			POST_CHAIN[1].digest_le,
-// 			POST_CHAIN[3].digest_le,
-// 			POST_CHAIN[2].digest_le,
-// 			1
-// 		);
-// 		assert.isFalse(res);
+// 	it('errors if left is unknown', async () => {
+// 		try {
+// 			await instance.heaviestFromAncestor(
+// 				chain[3].digest_le,
+// 				chain[10].hex,
+// 				headerHex[4]
+// 			);
+// 			assert(false, 'expected an error');
+// 		} catch (e) {
+// 			assert.include(e.message, 'Unknown block');
+// 		}
 // 	});
 
-// 	it('returns true if the provided digest is the most recent common ancestor', async () => {
-// 		let res = await instance.isMostRecentAncestor(
-// 			POST_CHAIN[2].digest_le,
-// 			POST_CHAIN[3].digest_le,
-// 			POST_CHAIN[2].digest_le,
-// 			5
-// 		);
-// 		assert.isTrue(res);
-
-// 		res = await instance.isMostRecentAncestor(
-// 			POST_CHAIN[5].digest_le,
-// 			POST_CHAIN[6].digest_le,
-// 			orphan.digest_le,
-// 			5
-// 		);
-// 		assert.isTrue(res);
+// 	it('errors if right is unknown', async () => {
+// 		try {
+// 			await instance.heaviestFromAncestor(
+// 				chain[3].digest_le,
+// 				headerHex[4],
+// 				chain[10].hex
+// 			);
+// 			assert(false, 'expected an error');
+// 		} catch (e) {
+// 			assert.include(e.message, 'Unknown block');
+// 		}
 // 	});
 
-// 	it('shortcuts the trivial case (ancestor is left is right)', async () => {
-// 		const res = await instance.isMostRecentAncestor(
-// 			POST_CHAIN[3].digest_le,
-// 			POST_CHAIN[3].digest_le,
-// 			POST_CHAIN[3].digest_le,
-// 			5
+// 	it('errors if either block is below the ancestor', async () => {
+// 		try {
+// 			await instance.heaviestFromAncestor(
+// 				chain[3].digest_le,
+// 				headerHex[2],
+// 				headerHex[4]
+// 			);
+// 			assert(false, 'expected an error');
+// 		} catch (e) {
+// 			assert.include(e.message, 'A descendant height is below the ancestor height');
+// 		}
+
+// 		try {
+// 			await instance.heaviestFromAncestor(
+// 				chain[3].digest_le,
+// 				headerHex[4],
+// 				headerHex[2]
+// 			);
+// 			assert(false, 'expected an error');
+// 		} catch (e) {
+// 			assert.include(e.message, 'A descendant height is below the ancestor height');
+// 		}
+// 	});
+
+// 	it('returns left if left is heavier', async () => {
+// 		const res = await instance.heaviestFromAncestor(
+// 			chain[3].digest_le,
+// 			headerHex[5],
+// 			headerHex[4]
 // 		);
-// 		assert.isTrue(res);
+// 		assert.equal(res, chain[5].digest_le);
+// 	});
+
+// 	it('returns right if right is heavier', async () => {
+// 		const res = await instance.heaviestFromAncestor(
+// 			chain[3].digest_le,
+// 			headerHex[4],
+// 			headerHex[5]
+// 		);
+// 		assert.equal(res, chain[5].digest_le);
+// 	});
+
+// 	it('returns left if the weights are equal', async () => {
+// 		let res = await instance.heaviestFromAncestor(
+// 			chain[3].digest_le,
+// 			chain[8].hex,
+// 			REGULAR_CHAIN.orphan_562630.hex
+// 		);
+// 		assert.equal(res, chain[8].digest_le);
+
+// 		res = await instance.heaviestFromAncestor(
+// 			chain[3].digest_le,
+// 			REGULAR_CHAIN.orphan_562630.hex,
+// 			chain[8].hex
+// 		);
+// 		assert.equal(res, REGULAR_CHAIN.orphan_562630.digest_le);
 // 	});
 // });

@@ -107,11 +107,6 @@ func validateHeaderChain(anchor types.BitcoinHeader, headers []types.BitcoinHead
 }
 
 func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, internal bool) sdk.Error {
-	// Not needed because GetHeader does this check for us
-	// if !k.HasHeader(ctx, headers[0].PrevHashLE) {
-	// 	return types.ErrUnknownBlock(types.DefaultCodespace)
-	// }
-
 	anchor, err := k.GetHeader(ctx, headers[0].PrevHashLE)
 	if err != nil {
 		return err
@@ -159,14 +154,6 @@ func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anc
 }
 
 func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.Hash256Digest, headers []types.BitcoinHeader) sdk.Error {
-	// Not needed because GetHeader does this check for us
-	// if !k.HasHeader(ctx, prevEpochStartLE) {
-	// 	return types.ErrUnknownBlock(types.DefaultCodespace)
-	// }
-	// if !k.HasHeader(ctx, headers[0].PrevHashLE) {
-	// 	return types.ErrUnknownBlock(types.DefaultCodespace)
-	// }
-
 	// Find the anchor in our store
 	prevEpochStart, err := k.GetHeader(ctx, prevEpochStartLE)
 	if err != nil {

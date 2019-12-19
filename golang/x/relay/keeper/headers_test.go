@@ -26,7 +26,7 @@ func (s *KeeperSuite) TestValidateHeaderChain() {
 		err := validateHeaderChain(tc.Anchor, tc.Headers, tc.Internal, tc.IsMainnet)
 		if tc.Output == 0 {
 			logIfTestCaseError(tc, err)
-			s.Nil(err)
+			s.SDKNil(err)
 		} else {
 			s.NotNil(err)
 			s.Equal(tc.Output, err.Code())
@@ -47,7 +47,7 @@ func (s *KeeperSuite) TestIngestHeaders() {
 		err := s.Keeper.ingestHeaders(s.Context, tc.Headers, tc.Internal)
 		if tc.Output == 0 {
 			logIfTestCaseError(tc, err)
-			s.Nil(err)
+			s.SDKNil(err)
 		} else {
 			s.NotNil(err)
 			s.Equal(tc.Output, err.Code())
@@ -65,7 +65,7 @@ func (s *KeeperSuite) TestIngestHeaderChain() {
 			err := s.Keeper.IngestHeaderChain(s.Context, tc.Headers)
 			if tc.Output == 0 {
 				logIfTestCaseError(tc, err)
-				s.Nil(err)
+				s.SDKNil(err)
 			} else {
 				s.NotNil(err)
 				s.Equal(tc.Output, err.Code())
@@ -83,7 +83,7 @@ func (s *KeeperSuite) TestIngestHeader() {
 		hasHeader := s.Keeper.HasHeader(s.Context, tc.Headers[0].HashLE)
 		s.Equal(hasHeader, true)
 		header, err := s.Keeper.GetHeader(s.Context, tc.Headers[0].HashLE)
-		s.Nil(err)
+		s.SDKNil(err)
 		s.Equal(header, tc.Headers[0])
 	}
 }
@@ -95,7 +95,7 @@ func (s *KeeperSuite) TestValidateDifficultyChange() {
 		err := validateDifficultyChange(tc.Headers, tc.PrevEpochStart, tc.Anchor)
 		if tc.Output == 0 {
 			logIfTestCaseError(tc, err)
-			s.Nil(err)
+			s.SDKNil(err)
 		} else {
 			s.NotNil(err)
 			s.Equal(tc.Output, err.Code())
@@ -121,7 +121,7 @@ func (s *KeeperSuite) TestIngestDifficultyChange() {
 		err := s.Keeper.IngestDifficultyChange(s.Context, tc.PrevEpochStart.HashLE, tc.Headers)
 		if tc.Output == 0 {
 			logIfTestCaseError(tc, err)
-			s.Nil(err)
+			s.SDKNil(err)
 		} else {
 			s.NotNil(err)
 			s.Equal(tc.Output, err.Code())

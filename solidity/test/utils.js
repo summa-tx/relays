@@ -12,4 +12,8 @@ module.exports = {
     }
     return current;
   },
+  concatenateHeadersHexes: function concatenateHeadersHexes(arr) {
+    const hexes = arr.map(arr => arr.hex);
+    return this.concatenateHexStrings(hexes);
+  }
 };

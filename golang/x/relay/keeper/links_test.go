@@ -29,7 +29,7 @@ func (s *KeeperSuite) TestFindAncestor() {
 
 	// successfully retrieves ancestor
 	ancestor, err := s.Keeper.FindAncestor(s.Context, headers[4].HashLE, 2)
-	s.Nil(err)
+	s.SDKNil(err)
 	s.Equal(headers[2].HashLE, ancestor)
 
 	// errors if link is not found
