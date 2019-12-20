@@ -34,12 +34,30 @@ type Case struct {
 
 type LinkTest struct{}
 
+type MostRecentCATestCase struct {
+	Ancestor types.Hash256Digest `json:"ancestor"`
+	Left     types.Hash256Digest `json:"left"`
+	Right    types.Hash256Digest `json:"right"`
+	Limit    uint32              `json:"limit"`
+	Output   bool                `json:"output"`
+}
+
 type IsMostRecentCA struct {
-	Orphan            types.BitcoinHeader   `json:"orphan"`
-	OldPeriodStart    types.BitcoinHeader   `json:"oldPeriodStart"`
-	Genesis           types.BitcoinHeader   `json:"genesis"`
-	PreRetargetChain  []types.BitcoinHeader `json:"preRetargetChain"`
-	PostRetargetChain []types.BitcoinHeader `json:"postRetargetChain"`
+	Orphan            types.BitcoinHeader    `json:"orphan"`
+	OldPeriodStart    types.BitcoinHeader    `json:"oldPeriodStart"`
+	Genesis           types.BitcoinHeader    `json:"genesis"`
+	PreRetargetChain  []types.BitcoinHeader  `json:"preRetargetChain"`
+	PostRetargetChain []types.BitcoinHeader  `json:"postRetargetChain"`
+	TestCases         []MostRecentCATestCase `json:"testCases"`
+}
+
+type HeaviestTestCase struct {
+	Ancestor    types.Hash256Digest `json:"ancestor"`
+	CurrentBest types.Hash256Digest `json:"currentBest"`
+	NewBest     types.Hash256Digest `json:"newBest"`
+	Limit       uint32              `json:"limit"`
+	Error       int                 `json:"error"`
+	Output      types.Hash256Digest `json:"output"`
 }
 
 type HeaviestFromAncestor struct {
@@ -47,11 +65,26 @@ type HeaviestFromAncestor struct {
 	BadHeader types.BitcoinHeader   `json:"badHeader"`
 	Genesis   types.BitcoinHeader   `json:"genesis"`
 	Headers   []types.BitcoinHeader `json:"headers"`
+	TestCases []HeaviestTestCase    `json:"testCases"`
+}
+
+type NewHeaviestTestCase struct {
+	Ancestor    types.Hash256Digest `json:"ancestor"`
+	CurrentBest types.RawHeader     `json:"currentBest"`
+	NewBest     types.RawHeader     `json:"newBest"`
+	Limit       uint32              `json:"limit"`
+	Error       int                 `json:"error"`
+	Output      string              `json:"output"`
+}
+
+type MarkNewHeaviest struct {
+	TestCases []NewHeaviestTestCase `json:"testCases"`
 }
 
 type ChainTestCases struct {
 	IsMostRecentCA       IsMostRecentCA       `json:"isMostRecentCommonAncestor"`
 	HeaviestFromAncestor HeaviestFromAncestor `json:"heaviestFromAncestor"`
+	MarkNewHeaviest      MarkNewHeaviest      `json:"markNewHeaviest"`
 }
 
 type IngestCase struct {

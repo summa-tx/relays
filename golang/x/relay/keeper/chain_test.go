@@ -60,20 +60,15 @@ func (s *KeeperSuite) TestIsMostRecentCommonAncestor() {
 	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
 	s.SDKNil(err)
 
-	isMostRecent := s.Keeper.IsMostRecentCommonAncestor(s.Context, post[2].HashLE, post[3].HashLE, post[2].HashLE, 5)
-	s.Equal(true, isMostRecent)
-
-	isMostRecent = s.Keeper.IsMostRecentCommonAncestor(s.Context, post[5].HashLE, post[6].HashLE, tv.Orphan.HashLE, 5)
-	s.Equal(true, isMostRecent)
-
-	isMostRecent = s.Keeper.IsMostRecentCommonAncestor(s.Context, post[3].HashLE, post[3].HashLE, post[3].HashLE, 5)
-	s.Equal(true, isMostRecent)
-
-	isMostRecent = s.Keeper.IsMostRecentCommonAncestor(s.Context, post[0].HashLE, post[3].HashLE, post[2].HashLE, 5)
-	s.Equal(false, isMostRecent)
-
-	isMostRecent = s.Keeper.IsMostRecentCommonAncestor(s.Context, post[1].HashLE, post[3].HashLE, post[2].HashLE, 1)
-	s.Equal(false, isMostRecent)
+	for i := range tv.TestCases {
+		isMostRecent := s.Keeper.IsMostRecentCommonAncestor(
+			s.Context,
+			tv.TestCases[i].Ancestor,
+			tv.TestCases[i].Left,
+			tv.TestCases[i].Right,
+			tv.TestCases[i].Limit)
+		s.Equal(tv.TestCases[i].Output, isMostRecent)
+	}
 }
 
 func (s *KeeperSuite) TestHeaviestFromAncestor() {
@@ -91,40 +86,31 @@ func (s *KeeperSuite) TestHeaviestFromAncestor() {
 	err = s.Keeper.IngestHeaderChain(s.Context, headersWithOrphan)
 	s.SDKNil(err)
 
-	_, err = s.Keeper.HeaviestFromAncestor(s.Context, tv.Headers[10].HashLE, headers[3].HashLE, headers[4].HashLE, 20)
-	s.Equal(err.Code(), sdk.CodeType(103))
-
-	_, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, tv.Headers[10].HashLE, headers[4].HashLE, 20)
-	s.Equal(err.Code(), sdk.CodeType(103))
-
-	_, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, headers[4].HashLE, tv.Headers[10].HashLE, 20)
-	s.Equal(err.Code(), sdk.CodeType(103))
-
-	_, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, headers[2].HashLE, headers[4].HashLE, 20)
-	s.Equal(err.Code(), sdk.CodeType(104))
-
-	_, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, headers[4].HashLE, headers[2].HashLE, 20)
-	s.Equal(err.Code(), sdk.CodeType(104))
-
-	heaviest, err := s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, headers[5].HashLE, headers[4].HashLE, 20)
-	s.SDKNil(err)
-	s.Equal(heaviest, headers[5].HashLE)
-
-	heaviest, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, headers[4].HashLE, headers[5].HashLE, 20)
-	s.SDKNil(err)
-	s.Equal(heaviest, headers[5].HashLE)
-
-	heaviest, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, tv.Headers[8].HashLE, tv.Orphan.HashLE, 20)
-	s.SDKNil(err)
-	s.Equal(heaviest, tv.Headers[8].HashLE)
-
-	heaviest, err = s.Keeper.HeaviestFromAncestor(s.Context, headers[3].HashLE, tv.Orphan.HashLE, tv.Headers[8].HashLE, 20)
-	s.SDKNil(err)
-	s.Equal(heaviest, tv.Orphan.HashLE)
+	for i := range tv.TestCases {
+		if tv.TestCases[i].Error == 0 {
+			heaviest, err := s.Keeper.HeaviestFromAncestor(
+				s.Context,
+				tv.TestCases[i].Ancestor,
+				tv.TestCases[i].CurrentBest,
+				tv.TestCases[i].NewBest,
+				tv.TestCases[i].Limit)
+			s.SDKNil(err)
+			s.Equal(heaviest, tv.TestCases[i].Output)
+		} else {
+			_, err = s.Keeper.HeaviestFromAncestor(
+				s.Context,
+				tv.TestCases[i].Ancestor,
+				tv.TestCases[i].CurrentBest,
+				tv.TestCases[i].NewBest,
+				tv.TestCases[i].Limit)
+			s.Equal(err.Code(), sdk.CodeType(tv.TestCases[i].Error))
+		}
+	}
 }
 
 func (s *KeeperSuite) TestMarkNewHeaviest() {
 	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
+	tc := s.Fixtures.ChainTestCases.MarkNewHeaviest.TestCases
 	pre := tv.PreRetargetChain
 	post := tv.PostRetargetChain
 	var postWithOrphan []types.BitcoinHeader
@@ -141,23 +127,30 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
 	s.SDKNil(err)
 
-	err = s.Keeper.MarkNewHeaviest(
-		s.Context,
-		tv.OldPeriodStart.HashLE,
-		tv.OldPeriodStart.Raw,
-		tv.OldPeriodStart.Raw,
-		10,
-	)
-	s.Equal(err.Code(), sdk.CodeType(403))
-
-	err = s.Keeper.MarkNewHeaviest(
-		s.Context,
-		tv.Genesis.HashLE,
-		tv.Genesis.Raw,
-		types.RawHeader{153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153},
-		10,
-	)
-	s.Equal(err.Code(), sdk.CodeType(103))
+	for i := range tc {
+		if tc[i].Error == 0 {
+			// updates the best known and emits an event
+			err = s.Keeper.MarkNewHeaviest(
+				s.Context,
+				tc[i].Ancestor,
+				tc[i].CurrentBest,
+				tc[i].NewBest,
+				tc[i].Limit,
+			)
+			events := s.Context.EventManager().Events()
+			e := events[0]
+			s.Equal(e.Type, tc[i].Output)
+		} else {
+			err = s.Keeper.MarkNewHeaviest(
+				s.Context,
+				tc[i].Ancestor,
+				tc[i].CurrentBest,
+				tc[i].NewBest,
+				tc[i].Limit,
+			)
+			s.Equal(err.Code(), sdk.CodeType(tc[i].Error))
+		}
+	}
 
 	// errors if the ancestor is not the heaviest common ancestor
 	err = s.Keeper.MarkNewHeaviest(
@@ -176,26 +169,4 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 		10,
 	)
 	s.Equal(err.Code(), sdk.CodeType(404))
-
-	// updates the best known and emits an event
-	err = s.Keeper.MarkNewHeaviest(
-		s.Context,
-		pre[0].HashLE,
-		pre[0].Raw,
-		tv.Orphan.Raw,
-		20,
-	)
-	events := s.Context.EventManager().Events()
-	e := events[0]
-	s.Equal(e.Type, "extension")
-
-	// errors if the new best hash is not better
-	err = s.Keeper.MarkNewHeaviest(
-		s.Context,
-		post[len(post)-3].HashLE,
-		tv.Orphan.Raw,
-		post[len(post)-2].Raw,
-		10,
-	)
-	s.Equal(err.Code(), sdk.CodeType(405))
 }
