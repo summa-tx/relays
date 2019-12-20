@@ -227,3 +227,91 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 	s.Nil(unmarshallErr)
 	s.Equal(result.Res, headers[2].HashLE)
 }
+
+func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
+	tv := s.Fixtures.ChainTestCases.HeaviestFromAncestor
+	headers := tv.Headers[0:8]
+	headersWithMain := tv.Headers[0:9]
+	querier := NewQuerier(s.Keeper)
+
+	var headersWithOrphan []types.BitcoinHeader
+	headersWithOrphan = append(headersWithOrphan, headers...)
+	headersWithOrphan = append(headersWithOrphan, tv.Orphan)
+
+	s.Keeper.ingestHeader(s.Context, tv.Genesis)
+	err := s.Keeper.IngestHeaderChain(s.Context, headersWithMain)
+	s.SDKNil(err)
+	err = s.Keeper.IngestHeaderChain(s.Context, headersWithOrphan)
+	s.SDKNil(err)
+
+	params := types.QueryParamsHeaviestFromAncestor{
+		Ancestor:    headers[3].HashLE,
+		CurrentBest: headers[5].HashLE,
+		NewBest:     headers[4].HashLE,
+		Limit:       20,
+	}
+	marshalledParams, marshalErr := json.Marshal(params)
+	s.Nil(marshalErr)
+
+	path := []string{"heaviestfromancestor"}
+
+	req := abci.RequestQuery{
+		Path: "custom/relay/heaviestfromancestor",
+		Data: marshalledParams,
+	}
+
+	res, err := querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	var result types.QueryResHeaviestFromAncestor
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, headers[5].HashLE)
+}
+
+func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
+	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
+	pre := tv.PreRetargetChain
+	post := tv.PostRetargetChain
+	querier := NewQuerier(s.Keeper)
+
+	var postWithOrphan []types.BitcoinHeader
+	postWithOrphan = append(postWithOrphan, post[:len(post)-2]...)
+	postWithOrphan = append(postWithOrphan, tv.Orphan)
+
+	err := s.Keeper.SetGenesisState(s.Context, tv.Genesis, tv.OldPeriodStart)
+	s.SDKNil(err)
+
+	err = s.Keeper.IngestHeaderChain(s.Context, pre)
+	s.SDKNil(err)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, post)
+	s.SDKNil(err)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
+	s.SDKNil(err)
+
+	params := types.QueryParamsIsMostRecentCommonAncestor{
+		Ancestor: post[2].HashLE,
+		Left:     post[3].HashLE,
+		Right:    post[2].HashLE,
+		Limit:    5,
+	}
+	marshalledParams, marshalErr := json.Marshal(params)
+	s.Nil(marshalErr)
+
+	path := []string{"ismostrecentcommonancestor"}
+
+	req := abci.RequestQuery{
+		Path: "custom/relay/ismostrecentcommonancestor",
+		Data: marshalledParams,
+	}
+
+	res, err := querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	var result types.QueryResIsMostRecentCommonAncestor
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, true)
+}

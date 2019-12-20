@@ -45,6 +45,7 @@ func (s *KeeperSuite) TestIsMostRecentCommonAncestor() {
 	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
 	pre := tv.PreRetargetChain
 	post := tv.PostRetargetChain
+
 	var postWithOrphan []types.BitcoinHeader
 	postWithOrphan = append(postWithOrphan, post[:len(post)-2]...)
 	postWithOrphan = append(postWithOrphan, tv.Orphan)
