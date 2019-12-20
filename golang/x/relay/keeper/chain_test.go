@@ -121,3 +121,80 @@ func (s *KeeperSuite) TestHeaviestFromAncestor() {
 	s.SDKNil(err)
 	s.Equal(heaviest, tv.Orphan.HashLE)
 }
+
+func (s *KeeperSuite) TestMarkNewHeaviest() {
+	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
+	pre := tv.PreRetargetChain
+	post := tv.PostRetargetChain
+	var postWithOrphan []types.BitcoinHeader
+	postWithOrphan = append(postWithOrphan, post[:len(post)-2]...)
+	postWithOrphan = append(postWithOrphan, tv.Orphan)
+
+	err := s.Keeper.SetGenesisState(s.Context, tv.Genesis, tv.OldPeriodStart)
+	s.SDKNil(err)
+
+	err = s.Keeper.IngestHeaderChain(s.Context, pre)
+	s.SDKNil(err)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, post)
+	s.SDKNil(err)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
+	s.SDKNil(err)
+
+	err = s.Keeper.MarkNewHeaviest(
+		s.Context,
+		tv.OldPeriodStart.HashLE,
+		tv.OldPeriodStart.Raw,
+		tv.OldPeriodStart.Raw,
+		10,
+	)
+	s.Equal(err.Code(), sdk.CodeType(403))
+
+	err = s.Keeper.MarkNewHeaviest(
+		s.Context,
+		tv.Genesis.HashLE,
+		tv.Genesis.Raw,
+		types.RawHeader{153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153, 153},
+		10,
+	)
+	s.Equal(err.Code(), sdk.CodeType(103))
+
+	// errors if the ancestor is not the heaviest common ancestor
+	err = s.Keeper.MarkNewHeaviest(
+		s.Context,
+		tv.Genesis.HashLE,
+		tv.Genesis.Raw,
+		pre[0].Raw,
+		10,
+	)
+	s.SDKNil(err)
+	err = s.Keeper.MarkNewHeaviest(
+		s.Context,
+		tv.Genesis.HashLE,
+		pre[0].Raw,
+		pre[1].Raw,
+		10,
+	)
+	s.Equal(err.Code(), sdk.CodeType(404))
+
+	// updates the best known and emits an event
+	err = s.Keeper.MarkNewHeaviest(
+		s.Context,
+		pre[0].HashLE,
+		pre[0].Raw,
+		tv.Orphan.Raw,
+		20,
+	)
+	events := s.Context.EventManager().Events()
+	e := events[0]
+	s.Equal(e.Type, "extension")
+
+	// errors if the new best hash is not better
+	err = s.Keeper.MarkNewHeaviest(
+		s.Context,
+		post[len(post)-3].HashLE,
+		tv.Orphan.Raw,
+		post[len(post)-2].Raw,
+		10,
+	)
+	s.Equal(err.Code(), sdk.CodeType(405))
+}
