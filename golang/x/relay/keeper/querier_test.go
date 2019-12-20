@@ -126,6 +126,15 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
 	s.Equal(result.Res, true)
+
+	// Test unmarshall error
+	req = abci.RequestQuery{
+		Path: "custom/relay/isancestor",
+		Data: []byte{1, 1, 1, 1},
+	}
+
+	_, err = querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(1))
 }
 
 func (s *KeeperSuite) TestQueryGetRelayGenesis() {
@@ -226,6 +235,15 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 	// s.SDKNil(unmarshallErr)
 	s.Nil(unmarshallErr)
 	s.Equal(result.Res, headers[2].HashLE)
+
+	// Test unmarshall error
+	req = abci.RequestQuery{
+		Path: "custom/relay/findancestor",
+		Data: []byte{1, 1, 1, 1},
+	}
+
+	_, err = querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(1))
 }
 
 func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
@@ -268,6 +286,55 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
 	s.Equal(result.Res, headers[5].HashLE)
+
+	// Test that it errors if HeaviestFromAncestorErrors
+	params = types.QueryParamsHeaviestFromAncestor{
+		Ancestor:    tv.Headers[10].HashLE,
+		CurrentBest: headers[3].HashLE,
+		NewBest:     headers[4].HashLE,
+		Limit:       20,
+	}
+	marshalledParams, marshalErr = json.Marshal(params)
+	s.Nil(marshalErr)
+
+	req = abci.RequestQuery{
+		Path: "custom/relay/heaviestfromancestor",
+		Data: marshalledParams,
+	}
+
+	res, err = querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(103))
+
+	// Test that default limit is used if limit is set to zero
+	params = types.QueryParamsHeaviestFromAncestor{
+		Ancestor:    headers[3].HashLE,
+		CurrentBest: headers[5].HashLE,
+		NewBest:     headers[4].HashLE,
+		Limit:       0,
+	}
+	marshalledParams, marshalErr = json.Marshal(params)
+	s.Nil(marshalErr)
+
+	req = abci.RequestQuery{
+		Path: "custom/relay/heaviestfromancestor",
+		Data: marshalledParams,
+	}
+
+	res, err = querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, headers[5].HashLE)
+
+	// Test unmarshall error
+	req = abci.RequestQuery{
+		Path: "custom/relay/heaviestfromancestor",
+		Data: []byte{1, 1, 1, 1},
+	}
+
+	_, err = querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(1))
 }
 
 func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
@@ -314,4 +381,35 @@ func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
 	s.Equal(result.Res, true)
+
+	// Test that it looks up the default limit if limit is set to zero
+	params = types.QueryParamsIsMostRecentCommonAncestor{
+		Ancestor: post[2].HashLE,
+		Left:     post[3].HashLE,
+		Right:    post[2].HashLE,
+		Limit:    0,
+	}
+	marshalledParams, marshalErr = json.Marshal(params)
+	s.Nil(marshalErr)
+
+	req = abci.RequestQuery{
+		Path: "custom/relay/ismostrecentcommonancestor",
+		Data: marshalledParams,
+	}
+
+	res, err = querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, true)
+
+	// Test unmarshall error
+	req = abci.RequestQuery{
+		Path: "custom/relay/ismostrecentcommonancestor",
+		Data: []byte{1, 1, 1, 1},
+	}
+
+	_, err = querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(1))
 }
