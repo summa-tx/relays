@@ -19,41 +19,39 @@ func (s *KeeperSuite) TestGetLink() {
 func (s *KeeperSuite) TestFindAncestor() {
 	headers := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers
 	anchor := s.Fixtures.HeaderTestCases.ValidateChain[0].Anchor
+	tc := s.Fixtures.LinkTestCases.FindAncestor.TestCases
 
 	// errors if link is not found
-	_, err := s.Keeper.FindAncestor(s.Context, headers[4].HashLE, 2)
-	s.Equal(err.Code(), types.CodeType(103))
+	_, err := s.Keeper.FindAncestor(s.Context, tc[0].Digest, tc[0].Offset)
+	s.Equal(err.Code(), types.CodeType(tc[0].Error))
 
 	s.Keeper.ingestHeader(s.Context, anchor)
 	s.Keeper.IngestHeaderChain(s.Context, headers)
 
-	// successfully retrieves ancestor
-	ancestor, err := s.Keeper.FindAncestor(s.Context, headers[4].HashLE, 2)
-	s.SDKNil(err)
-	s.Equal(headers[2].HashLE, ancestor)
-
-	// errors if link is not found
-	// this occurs when the offset overflows the length of the header chain
-	_, err = s.Keeper.FindAncestor(s.Context, headers[1].HashLE, 3)
-	s.Equal(err.Code(), types.CodeType(103))
+	for i := 1; i < len(tc); i++ {
+		if tc[i].Error == 0 {
+			// successfully retrieves ancestor
+			ancestor, err := s.Keeper.FindAncestor(s.Context, tc[i].Digest, tc[i].Offset)
+			s.SDKNil(err)
+			s.Equal(tc[i].Output, ancestor)
+		} else {
+			// errors if link is not found
+			_, err = s.Keeper.FindAncestor(s.Context, tc[i].Digest, tc[i].Offset)
+			s.Equal(err.Code(), types.CodeType(tc[i].Error))
+		}
+	}
 }
 
 func (s *KeeperSuite) TestIsAncestor() {
 	headers := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers
 	anchor := s.Fixtures.HeaderTestCases.ValidateChain[0].Anchor
+	tc := s.Fixtures.LinkTestCases.IsAncestor.TestCases
 
 	s.Keeper.ingestHeader(s.Context, anchor)
 	s.Keeper.IngestHeaderChain(s.Context, headers)
 
-	// is ancestor
-	isAncestor := s.Keeper.IsAncestor(s.Context, headers[4].HashLE, headers[1].HashLE, 15)
-	s.Equal(true, isAncestor)
-
-	// is not ancestor
-	isAncestor = s.Keeper.IsAncestor(s.Context, headers[1].HashLE, headers[4].HashLE, 15)
-	s.Equal(false, isAncestor)
-
-	// is not ancestor
-	isAncestor = s.Keeper.IsAncestor(s.Context, headers[1].HashLE, headers[4].HashLE, 0)
-	s.Equal(false, isAncestor)
+	for i := range tc {
+		isAncestor := s.Keeper.IsAncestor(s.Context, tc[i].Digest, tc[i].Ancestor, tc[i].Limit)
+		s.Equal(tc[i].Output, isAncestor)
+	}
 }

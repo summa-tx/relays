@@ -32,8 +32,35 @@ type Case struct {
 	Comment string `json:"comment"`
 }
 
-type LinkTest struct{}
+/***** LINK TEST CASES *****/
+type IsAncestorTestCase struct {
+	Digest   types.Hash256Digest `json:"digest"`
+	Ancestor types.Hash256Digest `json:"ancestor"`
+	Limit    uint32              `json:"limit"`
+	Output   bool                `json:"output"`
+}
 
+type IsAncestor struct {
+	TestCases []IsAncestorTestCase `json:"testCases"`
+}
+
+type FindAncestorTestCase struct {
+	Digest types.Hash256Digest `json:"digest"`
+	Offset uint32              `json:"offset"`
+	Error  int                 `json:"error"`
+	Output types.Hash256Digest `json:"output"`
+}
+
+type FindAncestor struct {
+	TestCases []FindAncestorTestCase `json:"testCases"`
+}
+
+type LinkTestCases struct {
+	IsAncestor   IsAncestor   `json:"isAncestor"`
+	FindAncestor FindAncestor `json:"findAncestor"`
+}
+
+/***** CHAIN TEST CASES *****/
 type MostRecentCATestCase struct {
 	Ancestor types.Hash256Digest `json:"ancestor"`
 	Left     types.Hash256Digest `json:"left"`
@@ -87,6 +114,7 @@ type ChainTestCases struct {
 	MarkNewHeaviest      MarkNewHeaviest      `json:"markNewHeaviest"`
 }
 
+/***** HEADER TEST CASES *****/
 type IngestCase struct {
 	Case
 	Headers   []types.BitcoinHeader `json:"headers"`
@@ -117,8 +145,9 @@ type HeaderTestCases struct {
 	CompareTargets     []CompareCase    `json:"compareTargets"`
 }
 
+/***** KEEPER TEST CASES *****/
 type KeeperTestCases struct {
-	LinkTestCases   []LinkTest      `json:"link"`
+	LinkTestCases   LinkTestCases   `json:"link"`
 	HeaderTestCases HeaderTestCases `json:"header"`
 	ChainTestCases  ChainTestCases  `json:"chain"`
 }

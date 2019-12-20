@@ -1,7 +1,42 @@
 {
-  "link": [
-    {}
-  ],
+  "link": {
+    "isAncestor": {
+      "testCases": [{
+        "digest": "0x96f25d34d30a1bf4e280d6bb38b228e8993c8b28222d2b000000000000000000",
+        "ancestor": "0xf549a985f656ab3416afa5734917d8bb7339829e536620000000000000000000",
+        "limit": 15,
+        "output": true
+      }, {
+        "digest": "0xf549a985f656ab3416afa5734917d8bb7339829e536620000000000000000000",
+        "ancestor": "0x96f25d34d30a1bf4e280d6bb38b228e8993c8b28222d2b000000000000000000",
+        "limit": 15,
+        "output": false
+      }, {
+        "digest": "0xf549a985f656ab3416afa5734917d8bb7339829e536620000000000000000000",
+        "ancestor": "0x96f25d34d30a1bf4e280d6bb38b228e8993c8b28222d2b000000000000000000",
+        "limit": 0,
+        "output": false
+      }]
+    },
+    "findAncestor": {
+      "testCases": [{
+        "digest": "0x96f25d34d30a1bf4e280d6bb38b228e8993c8b28222d2b000000000000000000",
+        "offset": 2,
+        "error": 103,
+        "output": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      }, {
+        "digest": "0x96f25d34d30a1bf4e280d6bb38b228e8993c8b28222d2b000000000000000000",
+        "offset": 2,
+        "error": 0,
+        "output": "0xfee20039fe494f7408c090e03970ec9b132366066f380d000000000000000000"
+      }, {
+        "digest": "0x8bfff9ae28af2aa90adfdb92b218829727886488dcc914000000000000000000",
+        "offset": 3,
+        "error": 103,
+        "output": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      }]
+    }
+  },
   "header": {
     "validateDifficultyChange": [
       {
