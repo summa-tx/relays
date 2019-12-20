@@ -75,3 +75,34 @@ func (s *KeeperSuite) TestHandleMsgMarkNewHeaviest() {
 	res := handler(s.Context, newMsg)
 	s.Equal(res.Events[0].Type, "extension")
 }
+
+func (s *KeeperSuite) TestHandleMarkNewHeaviest() {
+	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
+	pre := tv.PreRetargetChain
+	post := tv.PostRetargetChain
+	handler := NewHandler(s.Keeper)
+
+	var postWithOrphan []types.BitcoinHeader
+	postWithOrphan = append(postWithOrphan, post[:len(post)-2]...)
+	postWithOrphan = append(postWithOrphan, tv.Orphan)
+
+	err := s.Keeper.SetGenesisState(s.Context, tv.Genesis, tv.OldPeriodStart)
+	s.SDKNil(err)
+
+	err = s.Keeper.IngestHeaderChain(s.Context, pre)
+	s.SDKNil(err)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, post)
+	s.SDKNil(err)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
+	s.SDKNil(err)
+
+	// returns correct error
+	newMsg := types.NewMsgMarkNewHeaviest(getAccAddress(), tv.OldPeriodStart.HashLE, tv.OldPeriodStart.Raw, tv.OldPeriodStart.Raw, 10)
+	res := handler(s.Context, newMsg)
+	s.Equal(res.Code, sdk.CodeType(403))
+
+	// Successfully marks new heaviest
+	newMsg = types.NewMsgMarkNewHeaviest(getAccAddress(), tv.Genesis.HashLE, tv.Genesis.Raw, pre[0].Raw, 10)
+	res = handler(s.Context, newMsg)
+	s.Equal(res.Events[0].Type, "extension")
+}
