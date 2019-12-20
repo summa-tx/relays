@@ -120,6 +120,15 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 	err := s.Keeper.SetGenesisState(s.Context, tv.Genesis, tv.OldPeriodStart)
 	s.SDKNil(err)
 
+	err = s.Keeper.MarkNewHeaviest(
+		s.Context,
+		tv.Genesis.HashLE,
+		pre[0].Raw,
+		pre[1].Raw,
+		10,
+	)
+	s.EqualError(err, 103)
+
 	err = s.Keeper.IngestHeaderChain(s.Context, pre)
 	s.SDKNil(err)
 	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, post)

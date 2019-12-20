@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -235,6 +236,14 @@ func (suite *KeeperSuite) SDKNil(e sdk.Error) {
 		msg = e.Error()
 	}
 	suite.Nil(e, msg)
+}
+
+func (suite *KeeperSuite) EqualError(e sdk.Error, code int) {
+	var msg string
+	if e.Code() != sdk.CodeType(code) {
+		msg = fmt.Sprintf("%sExpected: %d\n", e.Error(), code)
+	}
+	suite.Equal(e.Code(), sdk.CodeType(code), msg)
 }
 
 func (s *KeeperSuite) TestGetPrefixStore() {
