@@ -15,7 +15,6 @@ func (s *KeeperSuite) TestGetLink() {
 	s.Equal(getHeader, parent.HashLE)
 }
 
-// TODO: Add test cases: add to JSON, loop over
 func (s *KeeperSuite) TestFindAncestor() {
 	headers := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers
 	anchor := s.Fixtures.HeaderTestCases.ValidateChain[0].Anchor

@@ -146,11 +146,23 @@ type HeaderTestCases struct {
 	CompareTargets     []CompareCase    `json:"compareTargets"`
 }
 
+/***** Validator TEST CASES *****/
+type ValidateProofTestCase struct {
+	Proof  types.SPVProof `json:"input"`
+	Error  int            `json:"error"`
+	Output bool           `json:"output"`
+}
+
+type ValidatorTestCases struct {
+	ValidateProof ValidateProofTestCase `json:"validateProof"`
+}
+
 /***** KEEPER TEST CASES *****/
 type KeeperTestCases struct {
-	LinkTestCases   LinkTestCases   `json:"link"`
-	HeaderTestCases HeaderTestCases `json:"header"`
-	ChainTestCases  ChainTestCases  `json:"chain"`
+	LinkTestCases      LinkTestCases      `json:"link"`
+	HeaderTestCases    HeaderTestCases    `json:"header"`
+	ChainTestCases     ChainTestCases     `json:"chain"`
+	ValidatorTestCases ValidatorTestCases `json:"validator"`
 }
 
 type KeeperSuite struct {
