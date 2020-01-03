@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -32,10 +33,89 @@ type Case struct {
 	Comment string `json:"comment"`
 }
 
-type LinkTest struct{}
+/***** LINK TEST CASES *****/
+type IsAncestorTestCase struct {
+	Digest   types.Hash256Digest `json:"digest"`
+	Ancestor types.Hash256Digest `json:"ancestor"`
+	Limit    uint32              `json:"limit"`
+	Output   bool                `json:"output"`
+}
 
-type ChainTest struct{}
+type IsAncestor struct {
+	TestCases []IsAncestorTestCase `json:"testCases"`
+}
 
+type FindAncestorTestCase struct {
+	Digest types.Hash256Digest `json:"digest"`
+	Offset uint32              `json:"offset"`
+	Error  int                 `json:"error"`
+	Output types.Hash256Digest `json:"output"`
+}
+
+type FindAncestor struct {
+	TestCases []FindAncestorTestCase `json:"testCases"`
+}
+
+type LinkTestCases struct {
+	IsAncestor   IsAncestor   `json:"isAncestor"`
+	FindAncestor FindAncestor `json:"findAncestor"`
+}
+
+/***** CHAIN TEST CASES *****/
+type MostRecentCATestCase struct {
+	Ancestor types.Hash256Digest `json:"ancestor"`
+	Left     types.Hash256Digest `json:"left"`
+	Right    types.Hash256Digest `json:"right"`
+	Limit    uint32              `json:"limit"`
+	Output   bool                `json:"output"`
+}
+
+type IsMostRecentCA struct {
+	Orphan            types.BitcoinHeader    `json:"orphan"`
+	OldPeriodStart    types.BitcoinHeader    `json:"oldPeriodStart"`
+	Genesis           types.BitcoinHeader    `json:"genesis"`
+	PreRetargetChain  []types.BitcoinHeader  `json:"preRetargetChain"`
+	PostRetargetChain []types.BitcoinHeader  `json:"postRetargetChain"`
+	TestCases         []MostRecentCATestCase `json:"testCases"`
+}
+
+type HeaviestTestCase struct {
+	Ancestor    types.Hash256Digest `json:"ancestor"`
+	CurrentBest types.Hash256Digest `json:"currentBest"`
+	NewBest     types.Hash256Digest `json:"newBest"`
+	Limit       uint32              `json:"limit"`
+	Error       int                 `json:"error"`
+	Output      types.Hash256Digest `json:"output"`
+}
+
+type HeaviestFromAncestor struct {
+	Orphan    types.BitcoinHeader   `json:"orphan"`
+	BadHeader types.BitcoinHeader   `json:"badHeader"`
+	Genesis   types.BitcoinHeader   `json:"genesis"`
+	Headers   []types.BitcoinHeader `json:"headers"`
+	TestCases []HeaviestTestCase    `json:"testCases"`
+}
+
+type NewHeaviestTestCase struct {
+	Ancestor    types.Hash256Digest `json:"ancestor"`
+	CurrentBest types.RawHeader     `json:"currentBest"`
+	NewBest     types.RawHeader     `json:"newBest"`
+	Limit       uint32              `json:"limit"`
+	Error       int                 `json:"error"`
+	Output      string              `json:"output"`
+}
+
+type MarkNewHeaviest struct {
+	TestCases []NewHeaviestTestCase `json:"testCases"`
+}
+
+type ChainTestCases struct {
+	IsMostRecentCA       IsMostRecentCA       `json:"isMostRecentCommonAncestor"`
+	HeaviestFromAncestor HeaviestFromAncestor `json:"heaviestFromAncestor"`
+	MarkNewHeaviest      MarkNewHeaviest      `json:"markNewHeaviest"`
+}
+
+/***** HEADER TEST CASES *****/
 type IngestCase struct {
 	Case
 	Headers   []types.BitcoinHeader `json:"headers"`
@@ -66,10 +146,11 @@ type HeaderTestCases struct {
 	CompareTargets     []CompareCase    `json:"compareTargets"`
 }
 
+/***** KEEPER TEST CASES *****/
 type KeeperTestCases struct {
-	LinkTestCases   []LinkTest      `json:"link"`
+	LinkTestCases   LinkTestCases   `json:"link"`
 	HeaderTestCases HeaderTestCases `json:"header"`
-	ChainTestCases  []ChainTest     `json:"chain"`
+	ChainTestCases  ChainTestCases  `json:"chain"`
 }
 
 type KeeperSuite struct {
@@ -149,6 +230,22 @@ func TestKeeper(t *testing.T) {
 	suite.Run(t, keeperSuite)
 }
 
+func (suite *KeeperSuite) SDKNil(e sdk.Error) {
+	var msg string
+	if e != nil {
+		msg = e.Error()
+	}
+	suite.Nil(e, msg)
+}
+
+func (suite *KeeperSuite) EqualError(e sdk.Error, code int) {
+	var msg string
+	if e.Code() != sdk.CodeType(code) {
+		msg = fmt.Sprintf("%sExpected: %d\n", e.Error(), code)
+	}
+	suite.Equal(e.Code(), sdk.CodeType(code), msg)
+}
+
 func (s *KeeperSuite) TestGetPrefixStore() {
 	prefStore := s.Keeper.getPrefixStore(s.Context, "toast-")
 	store := s.Context.KVStore(s.Keeper.storeKey)
@@ -165,18 +262,18 @@ func (s *KeeperSuite) TestSetGenesisState() {
 	genesis := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].Anchor
 	epochStart := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].PrevEpochStart
 	err := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
-	s.Nil(err)
+	s.SDKNil(err)
 
 	gen, err := s.Keeper.GetRelayGenesis(s.Context)
-	s.Nil(err)
+	s.SDKNil(err)
 	s.Equal(genesis.HashLE, gen)
 
 	lca, err := s.Keeper.GetLastReorgLCA(s.Context)
-	s.Nil(err)
+	s.SDKNil(err)
 	s.Equal(genesis.HashLE, lca)
 
 	best, err := s.Keeper.GetBestKnownDigest(s.Context)
-	s.Nil(err)
+	s.SDKNil(err)
 	s.Equal(genesis.HashLE, best)
 
 	err = s.Keeper.SetGenesisState(s.Context, genesis, epochStart)

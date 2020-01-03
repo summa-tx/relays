@@ -27,7 +27,6 @@ func (k Keeper) getDigestByStoreKey(ctx sdk.Context, key string) (types.Hash256D
 }
 
 func (k Keeper) setDigestByStoreKey(ctx sdk.Context, key string, digest types.Hash256Digest) {
-	// TODO: Remove this in favor of Genesis state
 	store := k.getChainStore(ctx)
 	store.Set([]byte(key), digest[:])
 }
@@ -43,8 +42,8 @@ func (k Keeper) GetBestKnownDigest(ctx sdk.Context) (types.Hash256Digest, sdk.Er
 }
 
 // setLastReorgLCA sets the latest common ancestor of the last reorg
-func (k Keeper) setLastReorgLCA(ctx sdk.Context, bestKnown types.Hash256Digest) {
-	k.setDigestByStoreKey(ctx, types.LastReorgLCAStorage, bestKnown)
+func (k Keeper) setLastReorgLCA(ctx sdk.Context, lca types.Hash256Digest) {
+	k.setDigestByStoreKey(ctx, types.LastReorgLCAStorage, lca)
 }
 
 // GetLastReorgLCA returns the best known digest in the relay
@@ -151,13 +150,13 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 	newBestDigest := btcspv.Hash256(newBest[:])
 	currentBestDigest := btcspv.Hash256(currentBest[:])
 
+	if !k.HasHeader(ctx, newBestDigest) {
+		return types.ErrUnknownBlock(types.DefaultCodespace)
+	}
+
 	knownBestDigest, err := k.GetBestKnownDigest(ctx)
 	if err != nil || currentBestDigest != knownBestDigest {
 		return types.ErrNotBestKnown(types.DefaultCodespace)
-	}
-
-	if !k.HasHeader(ctx, newBestDigest) {
-		return types.ErrUnknownBlock(types.DefaultCodespace)
 	}
 
 	if !k.IsMostRecentCommonAncestor(ctx, ancestor, knownBestDigest, newBestDigest, limit) {

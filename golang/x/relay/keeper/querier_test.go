@@ -1,8 +1,11 @@
 package keeper
 
 import (
+	"encoding/json"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/summa-tx/relays/golang/x/relay/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 func (suite *KeeperSuite) TestDecodeUint32FromPath() {
@@ -44,7 +47,7 @@ func (suite *KeeperSuite) TestDecodeUint32FromPath() {
 		index := DecodeUintPass[i].Idx
 		limit := DecodeUintPass[i].DefaultLimit
 		num, err := decodeUint32FromPath(path, index, limit)
-		suite.Nil(err)
+		suite.SDKNil(err)
 		suite.Equal(num, DecodeUintPass[i].Output)
 	}
 	for i := range DecodeUintFail {
@@ -54,4 +57,359 @@ func (suite *KeeperSuite) TestDecodeUint32FromPath() {
 		_, err := decodeUint32FromPath(path, index, limit)
 		suite.Equal(DecodeUintFail[i].Err, err.Code())
 	}
+}
+
+func (s *KeeperSuite) TestNewQuerier() {
+	querier := NewQuerier(s.Keeper)
+
+	// Set up neccessary params with a bad path
+	path := []string{"badpath"}
+
+	req := abci.RequestQuery{
+		Path: "custom/relay/badpath",
+		Data: []byte{},
+	}
+
+	// Test that NewQuerier errors when given a bad path
+	_, err := querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(6))
+}
+
+func (s *KeeperSuite) TestQueryIsAncestor() {
+	headers := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers
+	anchor := s.Fixtures.HeaderTestCases.ValidateChain[0].Anchor
+	querier := NewQuerier(s.Keeper)
+
+	s.Keeper.ingestHeader(s.Context, anchor)
+	s.Keeper.IngestHeaderChain(s.Context, headers)
+
+	params := types.QueryParamsIsAncestor{
+		DigestLE:            headers[4].HashLE,
+		ProspectiveAncestor: headers[1].HashLE,
+		Limit:               15,
+	}
+	marshalledParams, marshalErr := json.Marshal(params)
+	s.Nil(marshalErr)
+
+	path := []string{"isancestor"}
+
+	req := abci.RequestQuery{
+		Path: "custom/relay/isancestor",
+		Data: marshalledParams,
+	}
+
+	res, err := querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	var result types.QueryResIsAncestor
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, true)
+
+	// If Limit is 0, it will use default limit
+	params = types.QueryParamsIsAncestor{
+		DigestLE:            headers[4].HashLE,
+		ProspectiveAncestor: headers[1].HashLE,
+		Limit:               0,
+	}
+	marshalledParams, marshalErr = json.Marshal(params)
+	s.Nil(marshalErr)
+	req = abci.RequestQuery{
+		Path: "custom/relay/isancestor",
+		Data: marshalledParams,
+	}
+
+	res, err = querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, true)
+
+	// Test unmarshall error
+	req = abci.RequestQuery{
+		Path: "custom/relay/isancestor",
+		Data: []byte{1, 1, 1, 1},
+	}
+
+	_, err = querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(1))
+}
+
+func (s *KeeperSuite) TestQueryGetRelayGenesis() {
+	genesis := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].Anchor
+	epochStart := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].PrevEpochStart
+	// Make a new querier
+	querier := NewQuerier(s.Keeper)
+
+	path := []string{"getrelaygenesis"}
+
+	req := abci.RequestQuery{
+		Path: "custom/relay/getrelaygenesis",
+		Data: []byte{},
+	}
+
+	// Test that GetRelayGenesis errors if RelayGenesis is not found
+	_, err := querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(105))
+
+	// Set Genesis state
+	err = s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
+	s.SDKNil(err)
+
+	// Use querier handler to get RelayGenesis
+	res, err := querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	// Unmarshall the result and test
+	var result types.QueryResGetRelayGenesis
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, genesis.HashLE)
+}
+
+func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
+	genesis := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].Anchor
+	epochStart := s.Fixtures.HeaderTestCases.ValidateDiffChange[0].PrevEpochStart
+	querier := NewQuerier(s.Keeper)
+
+	path := []string{"getlastreorglca"}
+
+	req := abci.RequestQuery{
+		Path: "custom/relay/getlastreorglca",
+		Data: []byte{},
+	}
+
+	// Test that it errors if it doesn't find LastReorgLCA
+	_, err := querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(105))
+
+	setStateErr := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
+	s.SDKNil(setStateErr)
+
+	res, getLCAErr := querier(s.Context, path, req)
+	s.SDKNil(getLCAErr)
+
+	var result types.QueryResGetLastReorgLCA
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, genesis.HashLE)
+}
+
+func (s *KeeperSuite) TestQueryFindAncestor() {
+	headers := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers
+	anchor := s.Fixtures.HeaderTestCases.ValidateChain[0].Anchor
+	querier := NewQuerier(s.Keeper)
+
+	params := types.QueryParamsFindAncestor{
+		DigestLE: headers[4].HashLE,
+		Offset:   2,
+	}
+	marshalledParams, marshalErr := json.Marshal(params)
+	s.Nil(marshalErr)
+
+	path := []string{"findancestor"}
+	req := abci.RequestQuery{
+		Path: "custom/relay/findancestor",
+		Data: marshalledParams,
+	}
+
+	// Test that it errors if ancestor is not found
+	_, findAncestorErr := querier(s.Context, path, req)
+	s.Equal(findAncestorErr.Code(), sdk.CodeType(103))
+
+	// initialize data
+	s.Keeper.ingestHeader(s.Context, anchor)
+	s.Keeper.IngestHeaderChain(s.Context, headers)
+
+	// test that it retrieves the correct ancestor
+	res, err := querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	var result types.QueryResFindAncestor
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	// s.SDKNil(unmarshallErr)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, headers[2].HashLE)
+
+	// Test unmarshall error
+	req = abci.RequestQuery{
+		Path: "custom/relay/findancestor",
+		Data: []byte{1, 1, 1, 1},
+	}
+
+	_, err = querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(1))
+}
+
+func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
+	tv := s.Fixtures.ChainTestCases.HeaviestFromAncestor
+	headers := tv.Headers[0:8]
+	headersWithMain := tv.Headers[0:9]
+	querier := NewQuerier(s.Keeper)
+
+	var headersWithOrphan []types.BitcoinHeader
+	headersWithOrphan = append(headersWithOrphan, headers...)
+	headersWithOrphan = append(headersWithOrphan, tv.Orphan)
+
+	s.Keeper.ingestHeader(s.Context, tv.Genesis)
+	err := s.Keeper.IngestHeaderChain(s.Context, headersWithMain)
+	s.SDKNil(err)
+	err = s.Keeper.IngestHeaderChain(s.Context, headersWithOrphan)
+	s.SDKNil(err)
+
+	params := types.QueryParamsHeaviestFromAncestor{
+		Ancestor:    headers[3].HashLE,
+		CurrentBest: headers[5].HashLE,
+		NewBest:     headers[4].HashLE,
+		Limit:       20,
+	}
+	marshalledParams, marshalErr := json.Marshal(params)
+	s.Nil(marshalErr)
+
+	path := []string{"heaviestfromancestor"}
+
+	req := abci.RequestQuery{
+		Path: "custom/relay/heaviestfromancestor",
+		Data: marshalledParams,
+	}
+
+	res, err := querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	var result types.QueryResHeaviestFromAncestor
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, headers[5].HashLE)
+
+	// Test that it errors if HeaviestFromAncestorErrors
+	params = types.QueryParamsHeaviestFromAncestor{
+		Ancestor:    tv.Headers[10].HashLE,
+		CurrentBest: headers[3].HashLE,
+		NewBest:     headers[4].HashLE,
+		Limit:       20,
+	}
+	marshalledParams, marshalErr = json.Marshal(params)
+	s.Nil(marshalErr)
+
+	req = abci.RequestQuery{
+		Path: "custom/relay/heaviestfromancestor",
+		Data: marshalledParams,
+	}
+
+	res, err = querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(103))
+
+	// Test that default limit is used if limit is set to zero
+	params = types.QueryParamsHeaviestFromAncestor{
+		Ancestor:    headers[3].HashLE,
+		CurrentBest: headers[5].HashLE,
+		NewBest:     headers[4].HashLE,
+		Limit:       0,
+	}
+	marshalledParams, marshalErr = json.Marshal(params)
+	s.Nil(marshalErr)
+
+	req = abci.RequestQuery{
+		Path: "custom/relay/heaviestfromancestor",
+		Data: marshalledParams,
+	}
+
+	res, err = querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, headers[5].HashLE)
+
+	// Test unmarshall error
+	req = abci.RequestQuery{
+		Path: "custom/relay/heaviestfromancestor",
+		Data: []byte{1, 1, 1, 1},
+	}
+
+	_, err = querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(1))
+}
+
+func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
+	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
+	pre := tv.PreRetargetChain
+	post := tv.PostRetargetChain
+	querier := NewQuerier(s.Keeper)
+
+	var postWithOrphan []types.BitcoinHeader
+	postWithOrphan = append(postWithOrphan, post[:len(post)-2]...)
+	postWithOrphan = append(postWithOrphan, tv.Orphan)
+
+	err := s.Keeper.SetGenesisState(s.Context, tv.Genesis, tv.OldPeriodStart)
+	s.SDKNil(err)
+
+	err = s.Keeper.IngestHeaderChain(s.Context, pre)
+	s.SDKNil(err)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, post)
+	s.SDKNil(err)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
+	s.SDKNil(err)
+
+	params := types.QueryParamsIsMostRecentCommonAncestor{
+		Ancestor: post[2].HashLE,
+		Left:     post[3].HashLE,
+		Right:    post[2].HashLE,
+		Limit:    5,
+	}
+	marshalledParams, marshalErr := json.Marshal(params)
+	s.Nil(marshalErr)
+
+	path := []string{"ismostrecentcommonancestor"}
+
+	req := abci.RequestQuery{
+		Path: "custom/relay/ismostrecentcommonancestor",
+		Data: marshalledParams,
+	}
+
+	res, err := querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	var result types.QueryResIsMostRecentCommonAncestor
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, true)
+
+	// Test that it looks up the default limit if limit is set to zero
+	params = types.QueryParamsIsMostRecentCommonAncestor{
+		Ancestor: post[2].HashLE,
+		Left:     post[3].HashLE,
+		Right:    post[2].HashLE,
+		Limit:    0,
+	}
+	marshalledParams, marshalErr = json.Marshal(params)
+	s.Nil(marshalErr)
+
+	req = abci.RequestQuery{
+		Path: "custom/relay/ismostrecentcommonancestor",
+		Data: marshalledParams,
+	}
+
+	res, err = querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, true)
+
+	// Test unmarshall error
+	req = abci.RequestQuery{
+		Path: "custom/relay/ismostrecentcommonancestor",
+		Data: []byte{1, 1, 1, 1},
+	}
+
+	_, err = querier(s.Context, path, req)
+	s.Equal(err.Code(), sdk.CodeType(1))
 }

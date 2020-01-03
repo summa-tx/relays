@@ -466,13 +466,10 @@ contract('Relay', async () => {
     const POST_CHAIN = REORG_AND_RETARGET_CHAIN.postRetargetChain;
 
     const orphan = REORG_AND_RETARGET_CHAIN.orphan_437478;
-    const preHex = PRE_CHAIN.map(header => header.hex);
-    const pre = utils.concatenateHexStrings(preHex);
-    const postHex = POST_CHAIN.map(header => header.hex);
-    const post = utils.concatenateHexStrings(postHex.slice(0, -2));
-    const postWithOrphan = utils.concatenateHexStrings([post, orphan.hex]);
-    const lastTwo = POST_CHAIN.slice(-2);
-    const postWithoutOrphan = utils.concatenateHexStrings([post, lastTwo[0].hex, lastTwo[1].hex]);
+    const pre = utils.concatenateHeadersHexes(PRE_CHAIN)
+    const post = utils.concatenateHeadersHexes(POST_CHAIN)
+    const shortPost = utils.concatenateHeadersHexes(POST_CHAIN.slice(0, POST_CHAIN.length - 2))
+    const postWithOrphan = utils.concatenateHexStrings([shortPost, orphan.hex]);
 
     before(async () => {
       instance = await Relay.new(
@@ -486,12 +483,12 @@ contract('Relay', async () => {
       );
       await instance.addHeadersWithRetarget(
         REORG_AND_RETARGET_CHAIN.oldPeriodStart.hex,
-        preHex.slice(-1)[0],
-        postWithoutOrphan
+        PRE_CHAIN[PRE_CHAIN.length - 1].hex,
+        post
       );
       await instance.addHeadersWithRetarget(
         REORG_AND_RETARGET_CHAIN.oldPeriodStart.hex,
-        preHex.slice(-1)[0],
+        PRE_CHAIN[PRE_CHAIN.length - 1].hex,
         postWithOrphan
       );
     });
@@ -500,13 +497,13 @@ contract('Relay', async () => {
       let res = await instance.heaviestFromAncestor.call(
         REORG_AND_RETARGET_CHAIN.genesis.digest_le,
         orphan.hex,
-        preHex[3]
+        PRE_CHAIN[3].hex
       );
       assert.equal(res, orphan.digest_le);
 
       res = await instance.heaviestFromAncestor.call(
         REORG_AND_RETARGET_CHAIN.genesis.digest_le,
-        preHex[3],
+        PRE_CHAIN[3].hex,
         orphan.hex
       );
       assert.equal(res, orphan.digest_le);
@@ -516,13 +513,13 @@ contract('Relay', async () => {
       let res = await instance.heaviestFromAncestor.call(
         REORG_AND_RETARGET_CHAIN.genesis.digest_le,
         orphan.hex,
-        postHex[3]
+        POST_CHAIN[3].hex
       );
       assert.equal(res, orphan.digest_le);
 
       res = await instance.heaviestFromAncestor.call(
         REORG_AND_RETARGET_CHAIN.genesis.digest_le,
-        postHex[3],
+        POST_CHAIN[3].hex,
         orphan.hex
       );
       assert.equal(res, orphan.digest_le);
@@ -534,13 +531,10 @@ contract('Relay', async () => {
     const POST_CHAIN = REORG_AND_RETARGET_CHAIN.postRetargetChain;
 
     const orphan = REORG_AND_RETARGET_CHAIN.orphan_437478;
-    const preHex = PRE_CHAIN.map(header => header.hex);
-    const pre = utils.concatenateHexStrings(preHex);
-    const postHex = POST_CHAIN.map(header => header.hex);
-    const post = utils.concatenateHexStrings(postHex.slice(0, -2));
-    const postWithOrphan = utils.concatenateHexStrings([post, orphan.hex]);
-    const lastTwo = POST_CHAIN.slice(-2);
-    const postWithoutOrphan = utils.concatenateHexStrings([post, lastTwo[0].hex, lastTwo[1].hex]);
+    const pre = utils.concatenateHeadersHexes(PRE_CHAIN)
+    const post = utils.concatenateHeadersHexes(POST_CHAIN)
+    const shortPost = utils.concatenateHeadersHexes(POST_CHAIN.slice(0, POST_CHAIN.length - 2))
+    const postWithOrphan = utils.concatenateHexStrings([shortPost, orphan.hex]);
 
     before(async () => {
       instance = await Relay.new(
@@ -554,12 +548,12 @@ contract('Relay', async () => {
       );
       await instance.addHeadersWithRetarget(
         REORG_AND_RETARGET_CHAIN.oldPeriodStart.hex,
-        preHex.slice(-1)[0],
-        postWithoutOrphan
+        PRE_CHAIN[PRE_CHAIN.length - 1].hex,
+        post
       );
       await instance.addHeadersWithRetarget(
         REORG_AND_RETARGET_CHAIN.oldPeriodStart.hex,
-        preHex.slice(-1)[0],
+        PRE_CHAIN[PRE_CHAIN.length - 1].hex,
         postWithOrphan
       );
     });
@@ -618,13 +612,10 @@ contract('Relay', async () => {
     const POST_CHAIN = REORG_AND_RETARGET_CHAIN.postRetargetChain;
 
     const orphan = REORG_AND_RETARGET_CHAIN.orphan_437478;
-    const preHex = PRE_CHAIN.map(header => header.hex);
-    const pre = utils.concatenateHexStrings(preHex);
-    const postHex = POST_CHAIN.map(header => header.hex);
-    const post = utils.concatenateHexStrings(postHex.slice(0, -2));
-    const postWithOrphan = utils.concatenateHexStrings([post, orphan.hex]);
-    const lastTwo = POST_CHAIN.slice(-2);
-    const postWithoutOrphan = utils.concatenateHexStrings([post, lastTwo[0].hex, lastTwo[1].hex]);
+    const pre = utils.concatenateHeadersHexes(PRE_CHAIN)
+    const post = utils.concatenateHeadersHexes(POST_CHAIN)
+    const shortPost = utils.concatenateHeadersHexes(POST_CHAIN.slice(0, POST_CHAIN.length - 2))
+    const postWithOrphan = utils.concatenateHexStrings([shortPost, orphan.hex]);
 
     before(async () => {
       instance = await Relay.new(
@@ -638,12 +629,12 @@ contract('Relay', async () => {
       );
       await instance.addHeadersWithRetarget(
         REORG_AND_RETARGET_CHAIN.oldPeriodStart.hex,
-        preHex.slice(-1)[0],
-        postWithoutOrphan
+        PRE_CHAIN[PRE_CHAIN.length - 1].hex,
+        post
       );
       await instance.addHeadersWithRetarget(
         REORG_AND_RETARGET_CHAIN.oldPeriodStart.hex,
-        preHex.slice(-1)[0],
+        PRE_CHAIN[PRE_CHAIN.length - 1].hex,
         postWithOrphan
       );
     });
