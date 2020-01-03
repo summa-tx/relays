@@ -1,27 +1,34 @@
 package keeper
 
+import sdk "github.com/cosmos/cosmos-sdk/types"
+
 func (s *KeeperSuite) TestValidateProof() {
-	// headers := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers
-	// anchor := s.Fixtures.HeaderTestCases.ValidateChain[0].Anchor
-	// tc := s.Fixtures.LinkTestCases.FindAncestor.TestCases
+	proofCases := s.Fixtures.ValidatorTestCases.ValidateProof
 
-	// // errors if link is not found
-	// _, err := s.Keeper.FindAncestor(s.Context, tc[0].Digest, tc[0].Offset)
-	// s.Equal(err.Code(), types.CodeType(tc[0].Error))
+	// errors if LCA is not found
+	valid, err := validateProof(s.Context, s.Keeper, proofCases[0].Proof)
+	s.Equal(err.Code(), sdk.CodeType(105))
+	s.Equal(false, valid)
 
-	// s.Keeper.ingestHeader(s.Context, anchor)
-	// s.Keeper.IngestHeaderChain(s.Context, headers)
+	// errors if link is not found
+	s.Keeper.setLastReorgLCA(s.Context, proofCases[0].LCA)
+	valid, err = validateProof(s.Context, s.Keeper, proofCases[0].Proof)
+	s.Nil(err)
+	s.Equal(false, valid)
 
-	// for i := 1; i < len(tc); i++ {
-	// 	if tc[i].Error == 0 {
-	// 		// successfully retrieves ancestor
-	// 		ancestor, err := s.Keeper.FindAncestor(s.Context, tc[i].Digest, tc[i].Offset)
-	// 		s.SDKNil(err)
-	// 		s.Equal(tc[i].Output, ancestor)
-	// 	} else {
-	// 		// errors if link is not found
-	// 		_, err = s.Keeper.FindAncestor(s.Context, tc[i].Digest, tc[i].Offset)
-	// 		s.Equal(err.Code(), types.CodeType(tc[i].Error))
-	// 	}
-	// }
+	for i := range proofCases {
+		s.Keeper.setLastReorgLCA(s.Context, proofCases[i].LCA)
+		s.Keeper.ingestHeader(s.Context, proofCases[i].Proof.ConfirmingHeader)
+		s.Keeper.setLink(s.Context, proofCases[i].Proof.ConfirmingHeader)
+
+		if proofCases[i].Error != 0 {
+			valid, err := validateProof(s.Context, s.Keeper, proofCases[i].Proof)
+			s.Equal(err.Code(), sdk.CodeType(proofCases[i].Error))
+			s.Equal(proofCases[i].Output, valid)
+		} else {
+			valid, err := validateProof(s.Context, s.Keeper, proofCases[i].Proof)
+			s.Nil(err)
+			s.Equal(proofCases[i].Output, valid)
+		}
+	}
 }

@@ -148,13 +148,14 @@ type HeaderTestCases struct {
 
 /***** Validator TEST CASES *****/
 type ValidateProofTestCase struct {
-	Proof  types.SPVProof `json:"input"`
-	Error  int            `json:"error"`
-	Output bool           `json:"output"`
+	Proof  types.SPVProof      `json:"proof"`
+	LCA    types.Hash256Digest `json:"lca"`
+	Error  int                 `json:"error"`
+	Output bool                `json:"output"`
 }
 
 type ValidatorTestCases struct {
-	ValidateProof ValidateProofTestCase `json:"validateProof"`
+	ValidateProof []ValidateProofTestCase `json:"validateProof"`
 }
 
 /***** KEEPER TEST CASES *****/

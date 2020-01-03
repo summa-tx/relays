@@ -5,7 +5,7 @@ import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
-func validateProof(proof types.SPVProof, keeper Keeper, ctx sdk.Context) (bool, error) {
+func validateProof(ctx sdk.Context, keeper Keeper, proof types.SPVProof) (bool, sdk.Error) {
 	valid, err := proof.Validate()
 	if err != nil {
 		return false, types.FromBTCSPVError(types.DefaultCodespace, err)
@@ -14,11 +14,11 @@ func validateProof(proof types.SPVProof, keeper Keeper, ctx sdk.Context) (bool, 
 		return false, nil
 	}
 
-	lca, err := keeper.GetLastReorgLCA(ctx)
-	if err != nil {
-		return false, err
+	lca, lcaErr := keeper.GetLastReorgLCA(ctx)
+	if lcaErr != nil {
+		return false, lcaErr
 	}
-	isAncestor := keeper.IsAncestor(ctx, proof.ConfirmingHeader.Hash, lca, 240)
+	isAncestor := keeper.IsAncestor(ctx, proof.ConfirmingHeader.HashLE, lca, 240)
 	if !isAncestor {
 		return false, nil
 	}
