@@ -5,6 +5,16 @@ import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
+// TODO: write getConfs
+// findHeight(bestKnownDigest) - findHeight(header)
+func getConfs(ctx sdk.Context, keeper Keeper, header types.BitcoinHeader) (int, sdk.Error) {
+	// bestKnown, err := keeper.GetBestKnownDigest(ctx)
+	// if err != nil {
+	// 	return 0, err
+	// }
+	return 0, nil
+}
+
 func validateProof(ctx sdk.Context, keeper Keeper, proof types.SPVProof) (bool, sdk.Error) {
 	valid, err := proof.Validate()
 	if err != nil {
@@ -22,5 +32,7 @@ func validateProof(ctx sdk.Context, keeper Keeper, proof types.SPVProof) (bool, 
 	if !isAncestor {
 		return false, nil
 	}
+
+	// TODO: Add confirmation check here
 	return true, nil
 }
