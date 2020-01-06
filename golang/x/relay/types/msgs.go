@@ -123,3 +123,34 @@ func (msg MsgMarkNewHeaviest) GetSignBytes() []byte {
 }
 
 func (msg MsgMarkNewHeaviest) Route() string { return RouterKey }
+
+/***** NewRequest *****/
+
+// MsgNewRequest defines a NewRequest message
+type MsgNewRequest struct {
+	Signer  sdk.AccAddress `json:"signer"`
+	Request ProofRequest   `json:"request"`
+}
+
+func NewMsgNewRequest(address sdk.AccAddress, request ProofRequest) MsgNewRequest {
+	return MsgNewRequest{
+		address,
+		request,
+	}
+}
+
+func (msg MsgNewRequest) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.Signer}
+}
+
+func (msg MsgNewRequest) Type() string { return "new_request" }
+
+func (msg MsgNewRequest) ValidateBasic() sdk.Error {
+	return nil
+}
+
+func (msg MsgNewRequest) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgNewRequest) Route() string { return RouterKey }
