@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 
 	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
@@ -19,10 +20,14 @@ func (k Keeper) hasRequest(ctx sdk.Context, id []byte) bool {
 	return store.Has(id)
 }
 
-func (k Keeper) setRequest(ctx sdk.Context, id []byte, request types.ProofRequest) {
+func (k Keeper) setRequest(ctx sdk.Context, request types.ProofRequest) {
 	store := k.getRequestStore(ctx)
 	buf, _ := json.Marshal(request)
+	// When a new request comes in, get the id and use it to store request
+	id := k.getID(ctx)
 	store.Set(id, buf)
+	// Increment the ID
+	k.incrementID(ctx)
 }
 
 func (k Keeper) getRequest(ctx sdk.Context, id []byte) types.ProofRequest {
@@ -31,6 +36,28 @@ func (k Keeper) getRequest(ctx sdk.Context, id []byte) types.ProofRequest {
 	var request []types.ProofRequest
 	json.Unmarshal(buf, &request)
 	return request[0]
+}
+
+func (k Keeper) incrementID(ctx sdk.Context) {
+	// TODO: Is there a better way of incrementing this? Have to store as bytes...
+	store := k.getRequestStore(ctx)
+	// get id
+	id := k.getID(ctx)
+	// convert id to uint64 and add 1
+	newID := binary.BigEndian.Uint64(id) + 1
+	// convert back to bytes and store
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, newID)
+	store.Set([]byte("id"), b)
+}
+
+func (k Keeper) getID(ctx sdk.Context) []byte {
+	store := k.getRequestStore(ctx)
+	id := []byte("id")
+	if !store.Has(id) {
+		store.Set(id, []byte{0})
+	}
+	return store.Get(id)
 }
 
 func (k Keeper) checkRequests(ctx sdk.Context, reqIndices uint16, vin []byte, vout []byte, requestID []byte) bool {
