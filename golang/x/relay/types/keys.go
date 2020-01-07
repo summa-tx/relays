@@ -16,6 +16,9 @@ const (
 	// RequestStorePrefix to be used when making requests
 	RequestStorePrefix = ModuleName + "-requests-"
 
+	// RequestIDStore
+	RequestIDStorePrefix = ModuleName + "-requestid-"
+
 	// ChainStorePrefix to be used when accessing chain metadata
 	ChainStorePrefix = ModuleName + "-chain-"
 

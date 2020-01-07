@@ -123,7 +123,7 @@ const (
 	// MarshalJSONMessage is the corresponding message
 	MarshalJSONMessage = "Could not marshal result to JSON"
 
-	// 600-block Queries
+	// 600-block Proof Requests
 
 	// InvalidRequest means the request was not formatted properly
 	InvalidRequest sdk.CodeType = 601

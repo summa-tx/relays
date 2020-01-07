@@ -19,6 +19,10 @@ func (k Keeper) getRequestStore(ctx sdk.Context) sdk.KVStore {
 	return k.getPrefixStore(ctx, types.RequestStorePrefix)
 }
 
+func (k Keeper) getRequestIDStore(ctx sdk.Context) sdk.KVStore {
+	return k.getPrefixStore(ctx, types.RequestIDStorePrefix)
+}
+
 func (k Keeper) hasRequest(ctx sdk.Context, id []byte) bool {
 	store := k.getRequestStore(ctx)
 	return store.Has(id)
@@ -71,7 +75,7 @@ func (k Keeper) getRequest(ctx sdk.Context, id []byte) types.ProofRequest {
 
 func (k Keeper) incrementID(ctx sdk.Context) {
 	// TODO: Is there a better way of incrementing this? Have to store as bytes...
-	store := k.getRequestStore(ctx)
+	store := k.getRequestIDStore(ctx)
 	// get id
 	id := k.getID(ctx)
 	// convert id to uint64 and add 1
@@ -83,7 +87,7 @@ func (k Keeper) incrementID(ctx sdk.Context) {
 }
 
 func (k Keeper) getID(ctx sdk.Context) []byte {
-	store := k.getRequestStore(ctx)
+	store := k.getRequestIDStore(ctx)
 	id := []byte("id")
 	if !store.Has(id) {
 		store.Set(id, []byte{0})
