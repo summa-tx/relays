@@ -20,14 +20,37 @@ func (k Keeper) hasRequest(ctx sdk.Context, id []byte) bool {
 	return store.Has(id)
 }
 
-func (k Keeper) setRequest(ctx sdk.Context, request types.ProofRequest) {
+func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValue uint64, numConfs uint8) sdk.Error {
 	store := k.getRequestStore(ctx)
-	buf, _ := json.Marshal(request)
+
+	valid := k.validateRequests(spends, pays)
+	if !valid {
+		return types.ErrInvalidRequest(types.DefaultCodespace)
+	}
+
+	spendsDigest := btcspv.Hash256(spends)
+	paysDigest := btcspv.Hash256(pays)
+
+	request := types.ProofRequest{
+		Spends:      spendsDigest,
+		Pays:        paysDigest,
+		PaysValue:   paysValue,
+		ActiveState: true,
+		NumConfs:    numConfs,
+	}
+
 	// When a new request comes in, get the id and use it to store request
 	id := k.getID(ctx)
+
+	buf, err := json.Marshal(request)
+	if err != nil {
+		return types.ErrMarshalJSON(types.DefaultCodespace)
+	}
 	store.Set(id, buf)
+
 	// Increment the ID
 	k.incrementID(ctx)
+	return nil
 }
 
 func (k Keeper) getRequest(ctx sdk.Context, id []byte) types.ProofRequest {
@@ -58,6 +81,16 @@ func (k Keeper) getID(ctx sdk.Context) []byte {
 		store.Set(id, []byte{0})
 	}
 	return store.Get(id)
+}
+
+func (k Keeper) validateRequests(spends []byte, pays []byte) bool {
+	if len(spends) != 36 {
+		return false
+	}
+	if len(pays) > 50 {
+		return false
+	}
+	return true
 }
 
 func (k Keeper) checkRequests(ctx sdk.Context, reqIndices uint16, vin []byte, vout []byte, requestID []byte) bool {

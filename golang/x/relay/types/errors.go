@@ -123,9 +123,16 @@ const (
 	// MarshalJSONMessage is the corresponding message
 	MarshalJSONMessage = "Could not marshal result to JSON"
 
-	// 600-block External
+	// 600-block Queries
 
-	ExternalError sdk.CodeType = 601
+	// InvalidRequest means the request was not formatted properly
+	InvalidRequest sdk.CodeType = 601
+	// InvalidRequestMessage is the corresponding message
+	InvalidRequestMessage = "Invalid request"
+
+	// 700-block External
+
+	ExternalError sdk.CodeType = 701
 )
 
 // ErrUnknownError throws an error
@@ -231,6 +238,11 @@ func ErrMarshalJSON(codespace sdk.CodespaceType) sdk.Error {
 // FromBTCSPVError converts a btcutils error into an sdk error
 func FromBTCSPVError(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, BitcoinSPV, err.Error())
+}
+
+// ErrInvalidRequest throws an error
+func ErrInvalidRequest(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, InvalidRequest, InvalidRequestMessage)
 }
 
 // ErrExternal converts any external error into an sdk error
