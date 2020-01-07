@@ -2,14 +2,16 @@ package types
 
 import (
 	"encoding/hex"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Relay module event types
 const (
-	EventTypeExtension = "extension"
-	EventTypeReorg     = "reorg"
+	EventTypeExtension    = "extension"
+	EventTypeReorg        = "reorg"
+	EventTypeProofRequest = "proof_request"
 
 	AttributeKeyFirstBlock = "first_block"
 	AttributeKeyLastBlock  = "last_block"
@@ -17,6 +19,11 @@ const (
 	AttributeKeyPreviousBest = "previous_best"
 	AttributeKeyNewBest      = "new_best"
 	AttributeKeyLatestCommon = "latest_common_ancestor"
+
+	AttributeKeyRequestID = "request_id"
+	AttributeKeyPays      = "pays"
+	AttributeKeySpends    = "spends"
+	AttributeKeyPaysValue = "value"
 )
 
 // NewReorgEvent instantiates a reorg event
@@ -35,5 +42,16 @@ func NewExtensionEvent(first, last BitcoinHeader) sdk.Event {
 		EventTypeExtension,
 		sdk.NewAttribute(AttributeKeyFirstBlock, "0x"+hex.EncodeToString(first.HashLE[:])),
 		sdk.NewAttribute(AttributeKeyLastBlock, "0x"+hex.EncodeToString(last.HashLE[:])),
+	)
+}
+
+// NewExtensionEvent instantiates a proof request event
+func NewProofRequestEvent(pays, spends Hash256Digest, paysValue, id uint64) sdk.Event {
+	return sdk.NewEvent(
+		EventTypeProofRequest,
+		sdk.NewAttribute(AttributeKeyRequestID, fmt.Sprintf("%d", id)),
+		sdk.NewAttribute(AttributeKeyPays, "0x"+hex.EncodeToString(pays[:])),
+		sdk.NewAttribute(AttributeKeySpends, "0x"+hex.EncodeToString(spends[:])),
+		sdk.NewAttribute(AttributeKeyPaysValue, fmt.Sprintf("%d", paysValue)),
 	)
 }

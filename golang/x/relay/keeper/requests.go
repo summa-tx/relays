@@ -11,6 +11,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+func (k Keeper) emitProofRequest(ctx sdk.Context, pays, spends types.Hash256Digest, paysValue, id uint64) {
+	ctx.EventManager().EmitEvent(types.NewProofRequestEvent(pays, spends, paysValue, id))
+}
+
 func (k Keeper) getRequestStore(ctx sdk.Context) sdk.KVStore {
 	return k.getPrefixStore(ctx, types.RequestStorePrefix)
 }
@@ -50,6 +54,10 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 
 	// Increment the ID
 	k.incrementID(ctx)
+
+	// Emit Proof Request event
+	numID := binary.BigEndian.Uint64(id)
+	k.emitProofRequest(ctx, request.Pays, request.Spends, request.PaysValue, numID)
 	return nil
 }
 
