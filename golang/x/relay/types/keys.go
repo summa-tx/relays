@@ -27,4 +27,6 @@ const (
 
 	// LastReorgLCAStorage is the storage key for the last reorg LCA
 	LastReorgLCAStorage = "LastReorgLCA"
+
+	RequestID = "id"
 )

@@ -70,7 +70,6 @@ func (k Keeper) getRequest(ctx sdk.Context, id []byte) types.ProofRequest {
 }
 
 func (k Keeper) incrementID(ctx sdk.Context) {
-	// TODO: Is there a better way of incrementing this? Have to store as bytes...
 	store := k.getRequestStore(ctx)
 	// get id
 	id := k.getID(ctx)
@@ -79,12 +78,12 @@ func (k Keeper) incrementID(ctx sdk.Context) {
 	// convert back to bytes and store
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, newID)
-	store.Set([]byte("id"), b)
+	store.Set([]byte(types.RequestID), b)
 }
 
 func (k Keeper) getID(ctx sdk.Context) []byte {
 	store := k.getRequestStore(ctx)
-	id := []byte("id")
+	id := []byte(types.RequestID)
 	if !store.Has(id) {
 		store.Set(id, []byte{0})
 	}
@@ -101,7 +100,7 @@ func (k Keeper) validateRequests(spends []byte, pays []byte) bool {
 	return true
 }
 
-func (k Keeper) checkRequests(ctx sdk.Context, reqIndices uint16, vin []byte, vout []byte, requestID []byte) bool {
+func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vin []byte, vout []byte, requestID []byte) bool {
 	// TODO: Add errors
 	if !btcspv.ValidateVin(vin) {
 		return false
@@ -110,11 +109,10 @@ func (k Keeper) checkRequests(ctx sdk.Context, reqIndices uint16, vin []byte, vo
 		return false
 	}
 
-	inputIndex := uint8(reqIndices >> 8)
-	outputIndex := uint8(reqIndices & 0xff)
+	// inputIndex := uint8(reqIndices >> 8)
+	// outputIndex := uint8(reqIndices & 0xff)
 
-	id := []byte{0, 0, 0}
-	req := k.getRequest(ctx, id)
+	req := k.getRequest(ctx, requestID)
 
 	if !req.ActiveState {
 		return false
