@@ -140,3 +140,22 @@ func (r QueryResIsMostRecentCommonAncestor) String() string {
 		"Ancestor: %s, Left: %s, Right: %s, Limit: %d, Result: %t",
 		anc, left, right, r.Params.Limit, r.Res)
 }
+
+type QueryParamsGetRequest struct {
+	ID uint64 `json:"id"`
+}
+
+// QueryResIsMostRecentCommonAncestor is the response struct for queryIsMostRecentCommonAncestor
+type QueryResGetRequest struct {
+	Params QueryParamsGetRequest `json:"params"`
+	Res    ProofRequest          `json:"result"`
+}
+
+// String formats a QueryResIsMostRecentCommonAncestor struct
+func (r QueryResGetRequest) String() string {
+	spends := "0x" + hex.EncodeToString(r.Res.Spends[:])
+	pays := "0x" + hex.EncodeToString(r.Res.Pays[:])
+	return fmt.Sprintf(
+		"ID: %d, Spends: %s, Pays: %s, Value: %d, Active: %t, Confirmations: %d",
+		r.Params.ID, spends, pays, r.Res.PaysValue, r.Res.ActiveState, r.Res.NumConfs)
+}
