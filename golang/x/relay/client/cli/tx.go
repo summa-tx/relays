@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -44,7 +45,6 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			// note: unmarshalling json here is undesirable, but necessary
-			// 	     for MarkNewHeaviest we want to accept text instead of json
 			var headers []types.BitcoinHeader
 			jsonErr := json.Unmarshal([]byte(args[0]), &headers)
 			if jsonErr != nil {

@@ -39,7 +39,7 @@
     1. Add new case block to `switch` in `NewHandler()`
 --- DO UP TO HERE FOR NOW ---
 1. Add aliases in `x/relay/alias.go`
-    1. Add alisa in `var` block
+    1. Add alias in `var` block
     1. Add alias in `type` block
 1. Add to CLI  
     1. add to `x/relay/client/cli/tx.go`
