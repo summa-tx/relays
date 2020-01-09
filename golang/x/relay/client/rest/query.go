@@ -256,3 +256,36 @@ func heaviestFromAncestorHandler(cliCtx context.CLIContext, storeName string) ht
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }
+
+// handler function for getRequest queries. parses arguments from url string, and passes them through
+// as a QueryParamsGetReqiest struct
+func getRequestHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		id, err := strconv.ParseUint(vars["id"], 0, 64)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		params := types.QueryParamsGetRequest{
+			ID: id,
+		}
+
+		queryData, err := json.Marshal(params)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		res, _, err := cliCtx.QueryWithData("custom/relay/getRequest", queryData)
+
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}

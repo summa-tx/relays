@@ -318,3 +318,39 @@ func GetCmdHeaviestFromAncestor(queryRoute string, cdc *codec.Codec) *cobra.Comm
 		},
 	}
 }
+
+// GetCmdGetRequest returns the CLI command struct for getRequest
+func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "getrequest <id>",
+		Example: "getrequest 12",
+		Long:    "Get a proof request using the associated ID",
+		Args:    cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			id, err := strconv.ParseUint(args[0], 0, 32)
+
+			params := types.QueryParamsGetRequest{
+				ID: id,
+			}
+
+			queryData, err := cdc.MarshalJSON(params)
+			if err != nil {
+				fmt.Print(err.Error())
+				return nil
+			}
+
+			res, _, err := cliCtx.QueryWithData("custom/relay/getrequest", queryData)
+
+			if err != nil {
+				fmt.Printf("could not find request associated with id: %d... \n", id)
+				return nil
+			}
+
+			var out types.QueryResGetRequest
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(&out)
+		},
+	}
+}
