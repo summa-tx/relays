@@ -130,6 +130,36 @@ const (
 	// InvalidRequestMessage is the corresponding message
 	InvalidRequestMessage = "Invalid request"
 
+	// InvalidVin means the vin is not valid
+	InvalidVin sdk.CodeType = 602
+	// InvalidVinMessage is the corresponding message
+	InvalidVinMessage = "Vin is not valid"
+
+	// InvalidVout means the vout is not valid
+	InvalidVout sdk.CodeType = 603
+	// InvalidVoutMessage is the corresponding message
+	InvalidVoutMessage = "Vout is not valid"
+
+	// ClosedRequest means the request is not active
+	ClosedRequest sdk.CodeType = 604
+	// ClosedRequestMessage is the corresponding message
+	ClosedRequestMessage = "Request is not active"
+
+	// RequestPays means the output does not match the pays request
+	RequestPays sdk.CodeType = 605
+	// RequestPaysMessage is the corresponding message
+	RequestPaysMessage = "Does not match pays request"
+
+	// RequestValue means the pays value and value of the output does not match
+	RequestValue sdk.CodeType = 606
+	// RequestValueMessage is the corresponding message
+	RequestValueMessage = "Does not match value request"
+
+	// RequestSpends means the request spends does not match the input
+	RequestSpends sdk.CodeType = 607
+	// RequestSpendsMessage is the corresponding message
+	RequestSpendsMessage = "Does not match spends request"
+
 	// 700-block External
 
 	ExternalError sdk.CodeType = 701
@@ -243,6 +273,36 @@ func FromBTCSPVError(codespace sdk.CodespaceType, err error) sdk.Error {
 // ErrInvalidRequest throws an error
 func ErrInvalidRequest(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, InvalidRequest, InvalidRequestMessage)
+}
+
+// ErrInvalidVin throws an error
+func ErrInvalidVin(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, InvalidVin, InvalidVinMessage)
+}
+
+// ErrInvalidVout throws an error
+func ErrInvalidVout(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, InvalidVout, InvalidVoutMessage)
+}
+
+// ErrClosedRequest throws an error
+func ErrClosedRequest(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, ClosedRequest, ClosedRequestMessage)
+}
+
+// ErrRequestPays throws an error
+func ErrRequestPays(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, RequestPays, RequestPaysMessage)
+}
+
+// ErrRequestValue throws an error
+func ErrRequestValue(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, RequestValue, RequestValueMessage)
+}
+
+// ErrRequestSpends throws an error
+func ErrRequestSpends(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, RequestSpends, RequestSpendsMessage)
 }
 
 // ErrExternal converts any external error into an sdk error

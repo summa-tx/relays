@@ -100,22 +100,18 @@ func (k Keeper) validateRequests(spends []byte, pays []byte) bool {
 	return true
 }
 
-func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vin []byte, vout []byte, requestID []byte) bool {
+func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vin []byte, vout []byte, requestID []byte) (bool, sdk.Error) {
 	// TODO: Add errors
 	if !btcspv.ValidateVin(vin) {
-		return false
+		return false, types.ErrInvalidVin(types.DefaultCodespace)
 	}
 	if !btcspv.ValidateVout(vout) {
-		return false
+		return false, types.ErrInvalidVout(types.DefaultCodespace)
 	}
 
-	// inputIndex := uint8(reqIndices >> 8)
-	// outputIndex := uint8(reqIndices & 0xff)
-
 	req := k.getRequest(ctx, requestID)
-
 	if !req.ActiveState {
-		return false
+		return false, types.ErrClosedRequest(types.DefaultCodespace)
 	}
 
 	hasPays := !bytes.Equal(req.Pays[:], bytes.Repeat([]byte{0}, 32))
@@ -123,11 +119,11 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 		out, _ := btcspv.ExtractOutputAtIndex(vout, outputIndex)
 		len := btcspv.ExtractOutputScriptLen(out)
 		if !bytes.Equal(out[8:len+1], req.Pays[:]) {
-			return false
+			return false, types.ErrRequestPays(types.DefaultCodespace)
 		}
 		paysValue := req.PaysValue
 		if paysValue != 0 || uint64(btcspv.ExtractValue(out)) <= paysValue {
-			return false
+			return false, types.ErrRequestValue(types.DefaultCodespace)
 		}
 	}
 
@@ -135,8 +131,8 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 	if hasSpends {
 		in := btcspv.ExtractInputAtIndex(vin, inputIndex)
 		if !hasSpends || !bytes.Equal(btcspv.ExtractOutpoint(in), req.Spends[:]) {
-			return false
+			return false, types.ErrRequestSpends(types.DefaultCodespace)
 		}
 	}
-	return true
+	return true, nil
 }
