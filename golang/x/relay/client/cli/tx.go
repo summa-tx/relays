@@ -36,7 +36,7 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "ingestheaders <json list of headers>",
-		Short: "ingest a set of headers",
+		Short: "Ingest a set of headers",
 		Long:  "Ingest a set of headers. The headers must be in order, and the header immediately before the first must already be known to the relay",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -54,6 +54,57 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 			msg := types.NewMsgIngestHeaderChain(
 				cliCtx.GetFromAddress(),
 				headers,
+			)
+			err := msg.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+
+		},
+	}
+}
+
+// GetCmdNewRequest stores a new proof request
+func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "newrequest <spends> <pays> <value> <numConfs",
+		Short: "Stores a new proof request",
+		Long:  "Stores a new proof request",
+		Args:  cobra.ExactArgs(4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			var spends []byte
+			jsonErr := json.Unmarshal([]byte(args[0]), &spends)
+			if jsonErr != nil {
+				return jsonErr
+			}
+			var pays []byte
+			jsonErr = json.Unmarshal([]byte(args[1]), &pays)
+			if jsonErr != nil {
+				return jsonErr
+			}
+			var paysValue uint64
+			jsonErr = json.Unmarshal([]byte(args[2]), &paysValue)
+			if jsonErr != nil {
+				return jsonErr
+			}
+			var numConfs uint8
+			jsonErr = json.Unmarshal([]byte(args[1]), &numConfs)
+			if jsonErr != nil {
+				return jsonErr
+			}
+
+			msg := types.NewMsgNewRequest(
+				cliCtx.GetFromAddress(),
+				spends,
+				pays,
+				paysValue,
+				numConfs,
 			)
 			err := msg.ValidateBasic()
 			if err != nil {
