@@ -26,6 +26,9 @@ const (
 
 	// QueryIsMostRecentCommonAncestor is a query string tag for IsMostRecentCommonAncestor
 	QueryIsMostRecentCommonAncestor = "ismostrecentcommonancestor"
+
+	// QueryGetRequest is a query string tag for getRequest
+	QueryGetRequest = "getrequest"
 )
 
 // QueryParamsIsAncestor represents the parameters for an IsAncestor query
