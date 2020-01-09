@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) emitProofRequest(ctx sdk.Context, pays, spends types.Hash256Digest, paysValue, id uint64) {
+func (k Keeper) emitProofRequest(ctx sdk.Context, pays, spends []byte, paysValue, id uint64) {
 	ctx.EventManager().EmitEvent(types.NewProofRequestEvent(pays, spends, paysValue, id))
 }
 
@@ -27,10 +27,10 @@ func (k Keeper) hasRequest(ctx sdk.Context, id []byte) bool {
 func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValue uint64, numConfs uint8) sdk.Error {
 	store := k.getRequestStore(ctx)
 
-	valid := k.validateRequests(spends, pays)
-	if !valid {
-		return types.ErrInvalidRequest(types.DefaultCodespace)
-	}
+	// valid := k.validateRequests(spends, pays)
+	// if !valid {
+	// 	return types.ErrInvalidRequest(types.DefaultCodespace)
+	// }
 
 	spendsDigest := btcspv.Hash256(spends)
 	paysDigest := btcspv.Hash256(pays)
@@ -57,16 +57,21 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 
 	// Emit Proof Request event
 	numID := binary.BigEndian.Uint64(id)
-	k.emitProofRequest(ctx, request.Pays, request.Spends, request.PaysValue, numID)
+	k.emitProofRequest(ctx, pays, spends, request.PaysValue, numID)
 	return nil
 }
 
-func (k Keeper) getRequest(ctx sdk.Context, id []byte) types.ProofRequest {
+func (k Keeper) getRequest(ctx sdk.Context, id uint64) types.ProofRequest {
 	store := k.getRequestStore(ctx)
-	buf := store.Get(id)
-	var request []types.ProofRequest
+
+	// convert id to bytes
+	idBytes := make([]byte, 8)
+	binary.BigEndian.PutUint64(idBytes, id)
+
+	buf := store.Get(idBytes)
+	var request types.ProofRequest
 	json.Unmarshal(buf, &request)
-	return request[0]
+	return request
 }
 
 func (k Keeper) incrementID(ctx sdk.Context) {
@@ -90,18 +95,7 @@ func (k Keeper) getID(ctx sdk.Context) []byte {
 	return store.Get(id)
 }
 
-func (k Keeper) validateRequests(spends []byte, pays []byte) bool {
-	if len(spends) != 36 {
-		return false
-	}
-	if len(pays) > 50 {
-		return false
-	}
-	return true
-}
-
-func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vin []byte, vout []byte, requestID []byte) (bool, sdk.Error) {
-	// TODO: Add errors
+func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vin []byte, vout []byte, requestID uint64) (bool, sdk.Error) {
 	if !btcspv.ValidateVin(vin) {
 		return false, types.ErrInvalidVin(types.DefaultCodespace)
 	}
@@ -114,11 +108,11 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 		return false, types.ErrClosedRequest(types.DefaultCodespace)
 	}
 
-	hasPays := !bytes.Equal(req.Pays[:], bytes.Repeat([]byte{0}, 32))
+	hasPays := req.Pays != types.Hash256Digest{}
 	if hasPays {
 		out, _ := btcspv.ExtractOutputAtIndex(vout, outputIndex)
-		len := btcspv.ExtractOutputScriptLen(out)
-		if !bytes.Equal(out[8:len+1], req.Pays[:]) {
+		lenOutput := btcspv.ExtractOutputScriptLen(out)
+		if !bytes.Equal(out[8:lenOutput+1], req.Pays[:]) {
 			return false, types.ErrRequestPays(types.DefaultCodespace)
 		}
 		paysValue := req.PaysValue
@@ -127,7 +121,7 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 		}
 	}
 
-	hasSpends := !bytes.Equal(req.Spends[:], bytes.Repeat([]byte{0}, 32))
+	hasSpends := req.Spends != types.Hash256Digest{}
 	if hasSpends {
 		in := btcspv.ExtractInputAtIndex(vin, inputIndex)
 		if !hasSpends || !bytes.Equal(btcspv.ExtractOutpoint(in), req.Spends[:]) {

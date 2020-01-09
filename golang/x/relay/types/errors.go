@@ -125,38 +125,43 @@ const (
 
 	// 600-block Proof Requests
 
-	// InvalidRequest means the request was not formatted properly
-	InvalidRequest sdk.CodeType = 601
-	// InvalidRequestMessage is the corresponding message
-	InvalidRequestMessage = "Invalid request"
+	// SpendsLength means the spend value is not 36 bytes
+	SpendsLength sdk.CodeType = 601
+	// SpendsLengthMessage is the corresponding message
+	SpendsLengthMessage = "Spends value is not 36 bytes"
+
+	// PaysLength means the pays value is greater than 50 bytes
+	PaysLength sdk.CodeType = 602
+	// PaysLengthMessage is the corresponding message
+	PaysLengthMessage = "Pays value is greater than 50 bytes"
 
 	// InvalidVin means the vin is not valid
-	InvalidVin sdk.CodeType = 602
+	InvalidVin sdk.CodeType = 603
 	// InvalidVinMessage is the corresponding message
 	InvalidVinMessage = "Vin is not valid"
 
 	// InvalidVout means the vout is not valid
-	InvalidVout sdk.CodeType = 603
+	InvalidVout sdk.CodeType = 604
 	// InvalidVoutMessage is the corresponding message
 	InvalidVoutMessage = "Vout is not valid"
 
 	// ClosedRequest means the request is not active
-	ClosedRequest sdk.CodeType = 604
+	ClosedRequest sdk.CodeType = 605
 	// ClosedRequestMessage is the corresponding message
 	ClosedRequestMessage = "Request is not active"
 
 	// RequestPays means the output does not match the pays request
-	RequestPays sdk.CodeType = 605
+	RequestPays sdk.CodeType = 606
 	// RequestPaysMessage is the corresponding message
 	RequestPaysMessage = "Does not match pays request"
 
 	// RequestValue means the pays value and value of the output does not match
-	RequestValue sdk.CodeType = 606
+	RequestValue sdk.CodeType = 607
 	// RequestValueMessage is the corresponding message
 	RequestValueMessage = "Does not match value request"
 
 	// RequestSpends means the request spends does not match the input
-	RequestSpends sdk.CodeType = 607
+	RequestSpends sdk.CodeType = 608
 	// RequestSpendsMessage is the corresponding message
 	RequestSpendsMessage = "Does not match spends request"
 
@@ -270,9 +275,14 @@ func FromBTCSPVError(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, BitcoinSPV, err.Error())
 }
 
-// ErrInvalidRequest throws an error
-func ErrInvalidRequest(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, InvalidRequest, InvalidRequestMessage)
+// ErrSpendsLength throws an error
+func ErrSpendsLength(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, SpendsLength, SpendsLengthMessage)
+}
+
+// ErrPaysLength throws an error
+func ErrPaysLength(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, PaysLength, PaysLengthMessage)
 }
 
 // ErrInvalidVin throws an error

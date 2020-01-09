@@ -146,6 +146,13 @@ func (msg MsgNewRequest) GetSigners() []sdk.AccAddress {
 func (msg MsgNewRequest) Type() string { return "new_request" }
 
 func (msg MsgNewRequest) ValidateBasic() sdk.Error {
+	// TODO: validate output types
+	if len(msg.Request.Spends) != 36 {
+		return ErrSpendsLength(DefaultCodespace)
+	}
+	if len(msg.Request.Pays) > 50 {
+		return ErrPaysLength(DefaultCodespace)
+	}
 	return nil
 }
 
