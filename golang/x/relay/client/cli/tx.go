@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
@@ -79,16 +80,8 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 
-			var spends []byte
-			jsonErr := json.Unmarshal([]byte(args[0]), &spends)
-			if jsonErr != nil {
-				return jsonErr
-			}
-			var pays []byte
-			jsonErr = json.Unmarshal([]byte(args[1]), &pays)
-			if jsonErr != nil {
-				return jsonErr
-			}
+			spends := btcspv.DecodeIfHex(args[0])
+			pays := btcspv.DecodeIfHex(args[1])
 			paysValue, valueErr := strconv.ParseUint(args[2], 10, 64)
 			if valueErr != nil {
 				return valueErr
@@ -115,26 +108,3 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 }
-
-// // GetCmdSetLink is the CLI command for sending a SetLink transaction
-// func GetCmdSetLink(cdc *codec.Codec) *cobra.Command {
-// 	return &cobra.Command{
-// 		Use:   "setlink [hex header] [signer address]",
-// 		Short: "Set a link",
-// 		Args:  cobra.ExactArgs(2),
-// 		RunE: func(cmd *cobra.Command, args []string) error {
-// 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-//
-// 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-//
-// 			addr := sdk.AccAddress(args[1])
-// 			msg := types.NewMsgSetLink(addr, args[0], cliCtx.GetFromAddress())
-// 			err := msg.ValidateBasic()
-// 			if err != nil {
-// 				return err
-// 			}
-//
-// 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
-// 		},
-// 	}
-// }
