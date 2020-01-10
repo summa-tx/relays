@@ -5,17 +5,17 @@ import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
-// TODO: write getConfs
-// findHeight(bestKnownDigest) - findHeight(header)
-func getConfs(ctx sdk.Context, keeper Keeper, header types.BitcoinHeader) (int, sdk.Error) {
-	// bestKnown, err := keeper.GetBestKnownDigest(ctx)
-	// if err != nil {
-	// 	return 0, err
-	// }
-	return 0, nil
+func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, sdk.Error) {
+	bestKnown, err := k.GetBestKnownDigest(ctx)
+	if err != nil {
+		return 0, err
+	}
+	bestKnownHeader, err := k.GetHeader(ctx, bestKnown)
+	return bestKnownHeader.Height - header.Height, nil
 }
 
-func validateProof(ctx sdk.Context, keeper Keeper, proof types.SPVProof) (bool, sdk.Error) {
+// TODO: Add errors
+func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof, requestID uint64) (bool, sdk.Error) {
 	valid, err := proof.Validate()
 	if err != nil {
 		return false, types.FromBTCSPVError(types.DefaultCodespace, err)
@@ -24,15 +24,27 @@ func validateProof(ctx sdk.Context, keeper Keeper, proof types.SPVProof) (bool, 
 		return false, nil
 	}
 
-	lca, lcaErr := keeper.GetLastReorgLCA(ctx)
+	lca, lcaErr := k.GetLastReorgLCA(ctx)
 	if lcaErr != nil {
 		return false, lcaErr
 	}
-	isAncestor := keeper.IsAncestor(ctx, proof.ConfirmingHeader.HashLE, lca, 240)
+	isAncestor := k.IsAncestor(ctx, proof.ConfirmingHeader.HashLE, lca, 240)
 	if !isAncestor {
 		return false, nil
 	}
 
-	// TODO: Add confirmation check here
+	request, _ := k.getRequest(ctx, requestID)
+	// TODO: fix these errors
+	// if err != nil {
+	// 	return false, err
+	// }
+	confs, _ := k.getConfs(ctx, proof.ConfirmingHeader)
+	// if err != nil {
+	// 	return false, err
+	// }
+	if confs < uint32(request.NumConfs) {
+		return false, nil
+	}
+
 	return true, nil
 }
