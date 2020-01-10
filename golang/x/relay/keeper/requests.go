@@ -41,7 +41,7 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 		NumConfs:    numConfs,
 	}
 
-	// When a new request comes in, get the next id and use it to store request
+	// When a new request comes in, get the id and use it to store request
 	id := k.getNextID(ctx)
 
 	buf, err := json.Marshal(request)
@@ -49,6 +49,9 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 		return types.ErrMarshalJSON(types.DefaultCodespace)
 	}
 	store.Set(id, buf)
+
+	// Increment the ID
+	k.incrementID(ctx)
 
 	// Emit Proof Request event
 	numID := binary.BigEndian.Uint64(id)
@@ -73,23 +76,26 @@ func (k Keeper) getRequest(ctx sdk.Context, id uint64) (types.ProofRequest, sdk.
 	return request, nil
 }
 
-func (k Keeper) getNextID(ctx sdk.Context) []byte {
+func (k Keeper) incrementID(ctx sdk.Context) {
 	store := k.getRequestStore(ctx)
-	// ID key
-	idKey := []byte(types.RequestID)
-	// if the store does not have an id, initialize one
-	if !store.Has(idKey) {
-		store.Set(idKey, []byte{0})
-	}
-	// get the id
-	id := store.Get(idKey)
+	// get id
+	id := k.getNextID(ctx)
 	// convert id to uint64 and add 1
 	newID := binary.BigEndian.Uint64(id) + 1
 	// convert back to bytes and store
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, newID)
-	store.Set(idKey, b)
-	// return new id
+	store.Set([]byte(types.RequestID), b)
+}
+
+// getNextID retrieves the ID.  The ID is incremented after storing a request,
+// so this returns the next ID to be used.
+func (k Keeper) getNextID(ctx sdk.Context) []byte {
+	store := k.getRequestStore(ctx)
+	id := []byte(types.RequestID)
+	if !store.Has(id) {
+		store.Set(id, []byte{0})
+	}
 	return store.Get(id)
 }
 
