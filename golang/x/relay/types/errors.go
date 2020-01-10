@@ -125,43 +125,48 @@ const (
 
 	// 600-block Proof Requests
 
+	// UnknownRequest means the request was not found
+	UnknownRequest sdk.CodeType = 601
+	// UnknownRequestMessage is the corresponding message
+	UnknownRequestMessage = "Request not found"
+
 	// SpendsLength means the spend value is not 36 bytes
-	SpendsLength sdk.CodeType = 601
+	SpendsLength sdk.CodeType = 602
 	// SpendsLengthMessage is the corresponding message
 	SpendsLengthMessage = "Spends value is not 36 bytes"
 
 	// PaysLength means the pays value is greater than 50 bytes
-	PaysLength sdk.CodeType = 602
+	PaysLength sdk.CodeType = 603
 	// PaysLengthMessage is the corresponding message
 	PaysLengthMessage = "Pays value is greater than 50 bytes"
 
 	// InvalidVin means the vin is not valid
-	InvalidVin sdk.CodeType = 603
+	InvalidVin sdk.CodeType = 604
 	// InvalidVinMessage is the corresponding message
 	InvalidVinMessage = "Vin is not valid"
 
 	// InvalidVout means the vout is not valid
-	InvalidVout sdk.CodeType = 604
+	InvalidVout sdk.CodeType = 605
 	// InvalidVoutMessage is the corresponding message
 	InvalidVoutMessage = "Vout is not valid"
 
 	// ClosedRequest means the request is not active
-	ClosedRequest sdk.CodeType = 605
+	ClosedRequest sdk.CodeType = 606
 	// ClosedRequestMessage is the corresponding message
 	ClosedRequestMessage = "Request is not active"
 
 	// RequestPays means the output does not match the pays request
-	RequestPays sdk.CodeType = 606
+	RequestPays sdk.CodeType = 607
 	// RequestPaysMessage is the corresponding message
 	RequestPaysMessage = "Does not match pays request"
 
 	// RequestValue means the pays value and value of the output does not match
-	RequestValue sdk.CodeType = 607
+	RequestValue sdk.CodeType = 608
 	// RequestValueMessage is the corresponding message
 	RequestValueMessage = "Does not match value request"
 
 	// RequestSpends means the request spends does not match the input
-	RequestSpends sdk.CodeType = 608
+	RequestSpends sdk.CodeType = 609
 	// RequestSpendsMessage is the corresponding message
 	RequestSpendsMessage = "Does not match spends request"
 
@@ -273,6 +278,11 @@ func ErrMarshalJSON(codespace sdk.CodespaceType) sdk.Error {
 // FromBTCSPVError converts a btcutils error into an sdk error
 func FromBTCSPVError(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, BitcoinSPV, err.Error())
+}
+
+// ErrUnknownRequest throws an error
+func ErrUnknownRequest(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, UnknownRequest, UnknownRequestMessage)
 }
 
 // ErrSpendsLength throws an error

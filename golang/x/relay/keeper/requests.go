@@ -19,9 +19,13 @@ func (k Keeper) getRequestStore(ctx sdk.Context) sdk.KVStore {
 	return k.getPrefixStore(ctx, types.RequestStorePrefix)
 }
 
-func (k Keeper) hasRequest(ctx sdk.Context, id []byte) bool {
+func (k Keeper) hasRequest(ctx sdk.Context, id uint64) bool {
+	// convert id to bytes
+	idBytes := make([]byte, 8)
+	binary.BigEndian.PutUint64(idBytes, id)
+
 	store := k.getRequestStore(ctx)
-	return store.Has(id)
+	return store.Has(idBytes)
 }
 
 func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValue uint64, numConfs uint8) sdk.Error {
@@ -56,17 +60,21 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 	return nil
 }
 
-func (k Keeper) getRequest(ctx sdk.Context, id uint64) types.ProofRequest {
+func (k Keeper) getRequest(ctx sdk.Context, id uint64) (types.ProofRequest, sdk.Error) {
 	store := k.getRequestStore(ctx)
 
 	// convert id to bytes
 	idBytes := make([]byte, 8)
 	binary.BigEndian.PutUint64(idBytes, id)
 
+	hasRequest := k.hasRequest(ctx, id)
+	if !hasRequest {
+		return types.ProofRequest{}, types.ErrUnknownRequest(types.DefaultCodespace)
+	}
 	buf := store.Get(idBytes)
 	var request types.ProofRequest
 	json.Unmarshal(buf, &request)
-	return request
+	return request, nil
 }
 
 func (k Keeper) incrementID(ctx sdk.Context) {
@@ -98,7 +106,10 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 		return false, types.ErrInvalidVout(types.DefaultCodespace)
 	}
 
-	req := k.getRequest(ctx, requestID)
+	req, reqErr := k.getRequest(ctx, requestID)
+	if reqErr != nil {
+		return false, reqErr
+	}
 	if !req.ActiveState {
 		return false, types.ErrClosedRequest(types.DefaultCodespace)
 	}

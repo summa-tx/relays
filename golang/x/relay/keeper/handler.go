@@ -63,6 +63,7 @@ func handleMsgNewRequest(ctx sdk.Context, keeper Keeper, msg types.MsgNewRequest
 		return err.Result()
 	}
 
+	// TODO: Add more complex permissioning
 	// Set request
 	err = keeper.setRequest(ctx, msg.Spends, msg.Pays, msg.PaysValue, msg.NumConfs)
 	if err != nil {

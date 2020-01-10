@@ -32,7 +32,7 @@ func isAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handler
 
 		var limit uint32
 		if val, ok := vars["limit"]; ok {
-			lim, err := strconv.ParseUint(val, 0, 32)
+			lim, err := strconv.ParseUint(val, 10, 32)
 			if err != nil {
 				rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
 				return
@@ -104,7 +104,7 @@ func findAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handl
 			return
 		}
 
-		off, err := strconv.ParseUint(vars["offset"], 0, 32)
+		off, err := strconv.ParseUint(vars["offset"], 10, 32)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
 			return
@@ -162,7 +162,7 @@ func isMostRecentCommonAncestorHandler(cliCtx context.CLIContext, storeName stri
 
 		var limit uint32
 		if val, ok := vars["limit"]; ok {
-			lim, err := strconv.ParseUint(val, 0, 32)
+			lim, err := strconv.ParseUint(val, 10, 32)
 			if err != nil {
 				rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
 				return
@@ -223,7 +223,7 @@ func heaviestFromAncestorHandler(cliCtx context.CLIContext, storeName string) ht
 
 		var limit uint32
 		if val, ok := vars["limit"]; ok {
-			lim, err := strconv.ParseUint(val, 0, 32)
+			lim, err := strconv.ParseUint(val, 10, 32)
 			if err != nil {
 				rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
 				return
@@ -263,7 +263,7 @@ func getRequestHandler(cliCtx context.CLIContext, storeName string) http.Handler
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
-		id, err := strconv.ParseUint(vars["id"], 0, 64)
+		id, err := strconv.ParseUint(vars["id"], 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return

@@ -216,7 +216,10 @@ func queryGetRequest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	result := keeper.getRequest(ctx, params.ID)
+	result, resErr := keeper.getRequest(ctx, params.ID)
+	if resErr != nil {
+		return []byte{}, resErr
+	}
 
 	// Now we format the answer as a response
 	response := types.QueryResGetRequest{
