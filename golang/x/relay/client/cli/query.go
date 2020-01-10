@@ -49,7 +49,7 @@ func GetCmdIsAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 			var limit uint32
 			if len(args) == 3 {
-				lim, err := strconv.ParseUint(args[2], 0, 32)
+				lim, err := strconv.ParseUint(args[2], 10, 32)
 				if err != nil {
 					fmt.Print(err.Error())
 					return nil
@@ -157,7 +157,7 @@ func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 
 			var offset uint32
-			off, err := strconv.ParseUint(args[1], 0, 32)
+			off, err := strconv.ParseUint(args[1], 10, 32)
 			if err != nil {
 				fmt.Print(err.Error())
 				return nil
@@ -219,7 +219,7 @@ func GetCmdIsMostRecentCommonAncestor(queryRoute string, cdc *codec.Codec) *cobr
 
 			var limit uint32
 			if len(args) == 4 {
-				lim, err := strconv.ParseUint(args[3], 0, 32)
+				lim, err := strconv.ParseUint(args[3], 10, 32)
 				if err != nil {
 					fmt.Print(err.Error())
 					return nil
@@ -284,7 +284,7 @@ func GetCmdHeaviestFromAncestor(queryRoute string, cdc *codec.Codec) *cobra.Comm
 
 			var limit uint32
 			if len(args) == 4 {
-				lim, err := strconv.ParseUint(args[3], 0, 32)
+				lim, err := strconv.ParseUint(args[3], 10, 32)
 				if err != nil {
 					fmt.Print(err.Error())
 					return nil
@@ -329,7 +329,7 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			id, err := strconv.ParseUint(args[0], 0, 64)
+			id, err := strconv.ParseUint(args[0], 10, 64)
 
 			params := types.QueryParamsGetRequest{
 				ID: id,

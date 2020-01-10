@@ -15,7 +15,7 @@ func decodeUint32FromPath(path []string, idx int, defaultLimit uint32) (uint32, 
 		return defaultLimit, nil
 	}
 	// parse int from path[idx], return error if necessary
-	num, convErr := strconv.ParseUint(path[idx], 0, 32)
+	num, convErr := strconv.ParseUint(path[idx], 10, 32)
 	if convErr != nil {
 		return defaultLimit, types.ErrExternal(types.DefaultCodespace, convErr)
 	}

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -69,7 +70,7 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 // GetCmdNewRequest stores a new proof request
 func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "newrequest <spends> <pays> <value> <numConfs",
+		Use:   "newrequest <spends> <pays> <value> <numConfs>",
 		Short: "Stores a new proof request",
 		Long:  "Stores a new proof request",
 		Args:  cobra.ExactArgs(4),
@@ -88,15 +89,13 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 			if jsonErr != nil {
 				return jsonErr
 			}
-			var paysValue uint64
-			jsonErr = json.Unmarshal([]byte(args[2]), &paysValue)
-			if jsonErr != nil {
-				return jsonErr
+			paysValue, valueErr := strconv.ParseUint(args[2], 10, 64)
+			if valueErr != nil {
+				return valueErr
 			}
-			var numConfs uint8
-			jsonErr = json.Unmarshal([]byte(args[1]), &numConfs)
-			if jsonErr != nil {
-				return jsonErr
+			numConfs, confsErr := strconv.ParseUint(args[3], 10, 8)
+			if confsErr != nil {
+				return confsErr
 			}
 
 			msg := types.NewMsgNewRequest(
@@ -104,7 +103,7 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 				spends,
 				pays,
 				paysValue,
-				numConfs,
+				uint8(numConfs),
 			)
 			err := msg.ValidateBasic()
 			if err != nil {
