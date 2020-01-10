@@ -72,7 +72,10 @@ func (k Keeper) getRequest(ctx sdk.Context, id uint64) (types.ProofRequest, sdk.
 	}
 	buf := store.Get(idBytes)
 	var request types.ProofRequest
-	json.Unmarshal(buf, &request)
+	jsonErr := json.Unmarshal(buf, &request)
+	if jsonErr != nil {
+		return types.ProofRequest{}, types.ErrExternal(types.DefaultCodespace, jsonErr)
+	}
 	return request, nil
 }
 

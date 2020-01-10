@@ -330,6 +330,9 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			id, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return err
+			}
 
 			params := types.QueryParamsGetRequest{
 				ID: id,
