@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"bytes"
 	"encoding/binary"
 	"encoding/json"
 
@@ -116,13 +115,14 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 
 	hasPays := req.Pays != types.Hash256Digest{}
 	if hasPays {
+		// We can ignore this error because we know that ValidateVout passed
 		out, _ := btcspv.ExtractOutputAtIndex(vout, outputIndex)
-		lenOutput := btcspv.ExtractOutputScriptLen(out)
-		if !bytes.Equal(out[8:lenOutput+1], req.Pays[:]) {
+		outDigest := btcspv.Hash256(out[8:])
+		if outDigest != req.Pays {
 			return false, types.ErrRequestPays(types.DefaultCodespace)
 		}
 		paysValue := req.PaysValue
-		if paysValue != 0 || uint64(btcspv.ExtractValue(out)) <= paysValue {
+		if paysValue != 0 || uint64(btcspv.ExtractValue(out)) < paysValue {
 			return false, types.ErrRequestValue(types.DefaultCodespace)
 		}
 	}
@@ -130,7 +130,8 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 	hasSpends := req.Spends != types.Hash256Digest{}
 	if hasSpends {
 		in := btcspv.ExtractInputAtIndex(vin, inputIndex)
-		if !hasSpends || !bytes.Equal(btcspv.ExtractOutpoint(in), req.Spends[:]) {
+		inDigest := btcspv.Hash256(in)
+		if !hasSpends || inDigest != req.Spends {
 			return false, types.ErrRequestSpends(types.DefaultCodespace)
 		}
 	}
