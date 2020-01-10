@@ -14,6 +14,7 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) 
 
 	// add new tx msg routes here
 	s.HandleFunc("/ingestheaderchain", ingestHeaderChainHandler(cliCtx)).Methods("POST")
+	s.HandleFunc("/newrequest", newRequestHandler(cliCtx)).Methods("POST")
 
 	// add new query routes below
 	// {} denotes variable parts of the url route
@@ -27,4 +28,5 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) 
 	s.HandleFunc("/ismostrecentcommonancestor/{ancestor}/{left}/{right}/{limit}", isMostRecentCommonAncestorHandler(cliCtx, storeName)).Methods("GET")
 	s.HandleFunc("/heaviestfromancestor/{ancestor}/{currentbest}/{newbest}/", heaviestFromAncestorHandler(cliCtx, storeName)).Methods("GET")
 	s.HandleFunc("/heaviestfromancestor/{ancestor}/{currentbest}/{newbest}/{limit}", heaviestFromAncestorHandler(cliCtx, storeName)).Methods("GET")
+	s.HandleFunc("/getrequest/{id}", getRequestHandler(cliCtx, storeName)).Methods("GET")
 }

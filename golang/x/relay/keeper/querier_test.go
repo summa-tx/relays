@@ -81,7 +81,8 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 	querier := NewQuerier(s.Keeper)
 
 	s.Keeper.ingestHeader(s.Context, anchor)
-	s.Keeper.IngestHeaderChain(s.Context, headers)
+	err := s.Keeper.IngestHeaderChain(s.Context, headers)
+	s.SDKNil(err)
 
 	params := types.QueryParamsIsAncestor{
 		DigestLE:            headers[4].HashLE,
@@ -223,7 +224,8 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 
 	// initialize data
 	s.Keeper.ingestHeader(s.Context, anchor)
-	s.Keeper.IngestHeaderChain(s.Context, headers)
+	ingestErr := s.Keeper.IngestHeaderChain(s.Context, headers)
+	s.SDKNil(ingestErr)
 
 	// test that it retrieves the correct ancestor
 	res, err := querier(s.Context, path, req)
@@ -302,7 +304,7 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 		Data: marshalledParams,
 	}
 
-	res, err = querier(s.Context, path, req)
+	_, err = querier(s.Context, path, req)
 	s.Equal(err.Code(), sdk.CodeType(103))
 
 	// Test that default limit is used if limit is set to zero

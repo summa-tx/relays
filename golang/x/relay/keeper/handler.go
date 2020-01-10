@@ -17,6 +17,8 @@ func NewHandler(keeper Keeper) sdk.Handler {
 			return handleMsgIngestDifficultyChange(ctx, keeper, msg)
 		case types.MsgMarkNewHeaviest:
 			return handleMsgMarkNewHeaviest(ctx, keeper, msg)
+		case types.MsgNewRequest:
+			return handleMsgNewRequest(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized relay Msg type: %v", msg.Type())
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -49,6 +51,25 @@ func handleMsgMarkNewHeaviest(ctx sdk.Context, keeper Keeper, msg types.MsgMarkN
 	if err != nil {
 		return err.Result()
 	}
+	return sdk.Result{
+		Events: ctx.EventManager().Events(),
+	}
+}
+
+func handleMsgNewRequest(ctx sdk.Context, keeper Keeper, msg types.MsgNewRequest) sdk.Result {
+	// Validate message
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err.Result()
+	}
+
+	// TODO: Add more complex permissioning
+	// Set request
+	err = keeper.setRequest(ctx, msg.Spends, msg.Pays, msg.PaysValue, msg.NumConfs)
+	if err != nil {
+		return err.Result()
+	}
+
 	return sdk.Result{
 		Events: ctx.EventManager().Events(),
 	}
