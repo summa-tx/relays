@@ -27,11 +27,6 @@ func (k Keeper) hasRequest(ctx sdk.Context, id []byte) bool {
 func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValue uint64, numConfs uint8) sdk.Error {
 	store := k.getRequestStore(ctx)
 
-	// valid := k.validateRequests(spends, pays)
-	// if !valid {
-	// 	return types.ErrInvalidRequest(types.DefaultCodespace)
-	// }
-
 	spendsDigest := btcspv.Hash256(spends)
 	paysDigest := btcspv.Hash256(pays)
 
