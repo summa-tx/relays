@@ -32,7 +32,7 @@ func isAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handler
 
 		var limit uint32
 		if val, ok := vars["limit"]; ok {
-			lim, err := strconv.ParseUint(val, 0, 32)
+			lim, err := strconv.ParseUint(val, 10, 32)
 			if err != nil {
 				rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
 				return
@@ -104,7 +104,7 @@ func findAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handl
 			return
 		}
 
-		off, err := strconv.ParseUint(vars["offset"], 0, 32)
+		off, err := strconv.ParseUint(vars["offset"], 10, 32)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
 			return
@@ -162,7 +162,7 @@ func isMostRecentCommonAncestorHandler(cliCtx context.CLIContext, storeName stri
 
 		var limit uint32
 		if val, ok := vars["limit"]; ok {
-			lim, err := strconv.ParseUint(val, 0, 32)
+			lim, err := strconv.ParseUint(val, 10, 32)
 			if err != nil {
 				rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
 				return
@@ -223,7 +223,7 @@ func heaviestFromAncestorHandler(cliCtx context.CLIContext, storeName string) ht
 
 		var limit uint32
 		if val, ok := vars["limit"]; ok {
-			lim, err := strconv.ParseUint(val, 0, 32)
+			lim, err := strconv.ParseUint(val, 10, 32)
 			if err != nil {
 				rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
 				return
@@ -248,6 +248,39 @@ func heaviestFromAncestorHandler(cliCtx context.CLIContext, storeName string) ht
 		res, _, err := cliCtx.QueryWithData("custom/relay/heaviestfromancestor", queryData)
 
 		// below this is boilerplate
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+// handler function for getRequest queries. parses arguments from url string, and passes them through
+// as a QueryParamsGetReqiest struct
+func getRequestHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		id, err := strconv.ParseUint(vars["id"], 10, 64)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		params := types.QueryParamsGetRequest{
+			ID: id,
+		}
+
+		queryData, err := json.Marshal(params)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		res, _, err := cliCtx.QueryWithData("custom/relay/getRequest", queryData)
+
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return

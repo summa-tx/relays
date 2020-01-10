@@ -123,9 +123,56 @@ const (
 	// MarshalJSONMessage is the corresponding message
 	MarshalJSONMessage = "Could not marshal result to JSON"
 
-	// 600-block External
+	// 600-block Proof Requests
 
-	ExternalError sdk.CodeType = 601
+	// UnknownRequest means the request was not found
+	UnknownRequest sdk.CodeType = 601
+	// UnknownRequestMessage is the corresponding message
+	UnknownRequestMessage = "Request not found"
+
+	// SpendsLength means the spend value is not 36 bytes
+	SpendsLength sdk.CodeType = 602
+	// SpendsLengthMessage is the corresponding message
+	SpendsLengthMessage = "Spends value is not 36 bytes"
+
+	// PaysLength means the pays value is greater than 50 bytes
+	PaysLength sdk.CodeType = 603
+	// PaysLengthMessage is the corresponding message
+	PaysLengthMessage = "Pays value is greater than 50 bytes"
+
+	// InvalidVin means the vin is not valid
+	InvalidVin sdk.CodeType = 604
+	// InvalidVinMessage is the corresponding message
+	InvalidVinMessage = "Vin is not valid"
+
+	// InvalidVout means the vout is not valid
+	InvalidVout sdk.CodeType = 605
+	// InvalidVoutMessage is the corresponding message
+	InvalidVoutMessage = "Vout is not valid"
+
+	// ClosedRequest means the request is not active
+	ClosedRequest sdk.CodeType = 606
+	// ClosedRequestMessage is the corresponding message
+	ClosedRequestMessage = "Request is not active"
+
+	// RequestPays means the output does not match the pays request
+	RequestPays sdk.CodeType = 607
+	// RequestPaysMessage is the corresponding message
+	RequestPaysMessage = "Does not match pays request"
+
+	// RequestValue means the pays value and value of the output does not match
+	RequestValue sdk.CodeType = 608
+	// RequestValueMessage is the corresponding message
+	RequestValueMessage = "Does not match value request"
+
+	// RequestSpends means the request spends does not match the input
+	RequestSpends sdk.CodeType = 609
+	// RequestSpendsMessage is the corresponding message
+	RequestSpendsMessage = "Does not match spends request"
+
+	// 700-block External
+
+	ExternalError sdk.CodeType = 701
 )
 
 // ErrUnknownError throws an error
@@ -231,6 +278,51 @@ func ErrMarshalJSON(codespace sdk.CodespaceType) sdk.Error {
 // FromBTCSPVError converts a btcutils error into an sdk error
 func FromBTCSPVError(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, BitcoinSPV, err.Error())
+}
+
+// ErrUnknownRequest throws an error
+func ErrUnknownRequest(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, UnknownRequest, UnknownRequestMessage)
+}
+
+// ErrSpendsLength throws an error
+func ErrSpendsLength(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, SpendsLength, SpendsLengthMessage)
+}
+
+// ErrPaysLength throws an error
+func ErrPaysLength(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, PaysLength, PaysLengthMessage)
+}
+
+// ErrInvalidVin throws an error
+func ErrInvalidVin(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, InvalidVin, InvalidVinMessage)
+}
+
+// ErrInvalidVout throws an error
+func ErrInvalidVout(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, InvalidVout, InvalidVoutMessage)
+}
+
+// ErrClosedRequest throws an error
+func ErrClosedRequest(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, ClosedRequest, ClosedRequestMessage)
+}
+
+// ErrRequestPays throws an error
+func ErrRequestPays(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, RequestPays, RequestPaysMessage)
+}
+
+// ErrRequestValue throws an error
+func ErrRequestValue(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, RequestValue, RequestValueMessage)
+}
+
+// ErrRequestSpends throws an error
+func ErrRequestSpends(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, RequestSpends, RequestSpendsMessage)
 }
 
 // ErrExternal converts any external error into an sdk error

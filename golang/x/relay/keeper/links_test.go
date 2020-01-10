@@ -26,7 +26,8 @@ func (s *KeeperSuite) TestFindAncestor() {
 	s.Equal(err.Code(), types.CodeType(tc[0].Error))
 
 	s.Keeper.ingestHeader(s.Context, anchor)
-	s.Keeper.IngestHeaderChain(s.Context, headers)
+	err = s.Keeper.IngestHeaderChain(s.Context, headers)
+	s.SDKNil(err)
 
 	for i := 1; i < len(tc); i++ {
 		if tc[i].Error == 0 {
@@ -48,7 +49,8 @@ func (s *KeeperSuite) TestIsAncestor() {
 	tc := s.Fixtures.LinkTestCases.IsAncestor.TestCases
 
 	s.Keeper.ingestHeader(s.Context, anchor)
-	s.Keeper.IngestHeaderChain(s.Context, headers)
+	err := s.Keeper.IngestHeaderChain(s.Context, headers)
+	s.SDKNil(err)
 
 	for i := range tc {
 		isAncestor := s.Keeper.IsAncestor(s.Context, tc[i].Digest, tc[i].Ancestor, tc[i].Limit)

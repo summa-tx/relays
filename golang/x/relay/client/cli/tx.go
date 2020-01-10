@@ -39,7 +39,7 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "ingestheaders <json list of headers>",
-		Short: "ingest a set of headers",
+		Short: "Ingest a set of headers",
 		Long:  "Ingest a set of headers. The headers must be in order, and the header immediately before the first must already be known to the relay",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -73,9 +73,10 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "ingestdiffchange <prev epoch start> <json list of headers>",
-		Short: "ingest a difficulty change",
+		Short: "Ingest a difficulty change",
 		Long:  "Ingest a difficulty change",
 		Args:  cobra.ExactArgs(2),
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
@@ -98,6 +99,47 @@ func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
 				headers,
 			)
 			err = msg.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+
+		},
+	}
+}
+
+// GetCmdNewRequest stores a new proof request
+func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "newrequest <spends> <pays> <value> <numConfs>",
+		Short: "Stores a new proof request",
+		Long:  "Stores a new proof request",
+		Args:  cobra.ExactArgs(4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			spends := btcspv.DecodeIfHex(args[0])
+			pays := btcspv.DecodeIfHex(args[1])
+			paysValue, valueErr := strconv.ParseUint(args[2], 10, 64)
+			if valueErr != nil {
+				return valueErr
+			}
+			numConfs, confsErr := strconv.ParseUint(args[3], 10, 8)
+			if confsErr != nil {
+				return confsErr
+			}
+
+			msg := types.NewMsgNewRequest(
+				cliCtx.GetFromAddress(),
+				spends,
+				pays,
+				paysValue,
+				uint8(numConfs),
+			)
+			err := msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
