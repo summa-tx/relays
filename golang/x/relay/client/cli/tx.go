@@ -2,6 +2,8 @@ package cli
 
 import (
 	"encoding/json"
+	"strconv"
+
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -11,6 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
@@ -35,7 +38,7 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "ingestheaders <json list of headers>",
-		Short: "ingest a set of headers",
+		Short: "Ingest a set of headers",
 		Long:  "Ingest a set of headers. The headers must be in order, and the header immediately before the first must already be known to the relay",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -44,7 +47,6 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			// note: unmarshalling json here is undesirable, but necessary
-			// 	     for MarkNewHeaviest we want to accept text instead of json
 			var headers []types.BitcoinHeader
 			jsonErr := json.Unmarshal([]byte(args[0]), &headers)
 			if jsonErr != nil {
@@ -66,25 +68,43 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-// // GetCmdSetLink is the CLI command for sending a SetLink transaction
-// func GetCmdSetLink(cdc *codec.Codec) *cobra.Command {
-// 	return &cobra.Command{
-// 		Use:   "setlink [hex header] [signer address]",
-// 		Short: "Set a link",
-// 		Args:  cobra.ExactArgs(2),
-// 		RunE: func(cmd *cobra.Command, args []string) error {
-// 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-//
-// 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-//
-// 			addr := sdk.AccAddress(args[1])
-// 			msg := types.NewMsgSetLink(addr, args[0], cliCtx.GetFromAddress())
-// 			err := msg.ValidateBasic()
-// 			if err != nil {
-// 				return err
-// 			}
-//
-// 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
-// 		},
-// 	}
-// }
+// GetCmdNewRequest stores a new proof request
+func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "newrequest <spends> <pays> <value> <numConfs>",
+		Short: "Stores a new proof request",
+		Long:  "Stores a new proof request",
+		Args:  cobra.ExactArgs(4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			spends := btcspv.DecodeIfHex(args[0])
+			pays := btcspv.DecodeIfHex(args[1])
+			paysValue, valueErr := strconv.ParseUint(args[2], 10, 64)
+			if valueErr != nil {
+				return valueErr
+			}
+			numConfs, confsErr := strconv.ParseUint(args[3], 10, 8)
+			if confsErr != nil {
+				return confsErr
+			}
+
+			msg := types.NewMsgNewRequest(
+				cliCtx.GetFromAddress(),
+				spends,
+				pays,
+				paysValue,
+				uint8(numConfs),
+			)
+			err := msg.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+
+		},
+	}
+}

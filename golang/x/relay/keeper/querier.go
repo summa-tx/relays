@@ -15,7 +15,7 @@ func decodeUint32FromPath(path []string, idx int, defaultLimit uint32) (uint32, 
 		return defaultLimit, nil
 	}
 	// parse int from path[idx], return error if necessary
-	num, convErr := strconv.ParseUint(path[idx], 0, 32)
+	num, convErr := strconv.ParseUint(path[idx], 10, 32)
 	if convErr != nil {
 		return defaultLimit, types.ErrExternal(types.DefaultCodespace, convErr)
 	}
@@ -38,6 +38,8 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 			return queryHeaviestFromAncestor(ctx, req, keeper)
 		case types.QueryIsMostRecentCommonAncestor:
 			return queryIsMostRecentCommonAncestor(ctx, req, keeper)
+		case types.QueryGetRequest:
+			return queryGetRequest(ctx, req, keeper)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown relay query endpoint")
 		}
@@ -193,6 +195,34 @@ func queryIsMostRecentCommonAncestor(ctx sdk.Context, req abci.RequestQuery, kee
 
 	// Now we format the answer as a response
 	response := types.QueryResIsMostRecentCommonAncestor{
+		Params: params,
+		Res:    result,
+	}
+
+	// And we serialize that response as JSON
+	res, marshalErr := codec.MarshalJSONIndent(keeper.cdc, response)
+	if marshalErr != nil {
+		return []byte{}, types.ErrMarshalJSON(types.DefaultCodespace)
+	}
+	return res, nil
+}
+
+func queryGetRequest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+	var params types.QueryParamsGetRequest
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if unmarshallErr != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
+	}
+
+	// This calls the keeper with the parsed arguments, and gets an answer
+	result, resErr := keeper.getRequest(ctx, params.ID)
+	if resErr != nil {
+		return []byte{}, resErr
+	}
+
+	// Now we format the answer as a response
+	response := types.QueryResGetRequest{
 		Params: params,
 		Res:    result,
 	}

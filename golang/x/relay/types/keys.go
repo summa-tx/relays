@@ -13,6 +13,9 @@ const (
 	// HeaderStorePrefix to be used when accessing headers
 	HeaderStorePrefix = ModuleName + "-headers-"
 
+	// RequestStorePrefix to be used when making requests
+	RequestStorePrefix = ModuleName + "-requests-"
+
 	// ChainStorePrefix to be used when accessing chain metadata
 	ChainStorePrefix = ModuleName + "-chain-"
 
@@ -24,4 +27,6 @@ const (
 
 	// LastReorgLCAStorage is the storage key for the last reorg LCA
 	LastReorgLCAStorage = "LastReorgLCA"
+
+	RequestID = "id"
 )

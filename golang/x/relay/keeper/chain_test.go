@@ -146,6 +146,7 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 				tc[i].NewBest,
 				tc[i].Limit,
 			)
+			s.SDKNil(err)
 			events := s.Context.EventManager().Events()
 			e := events[0]
 			s.Equal(e.Type, tc[i].Output)
