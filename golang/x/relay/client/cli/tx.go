@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -13,6 +14,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
 	"github.com/summa-tx/relays/golang/x/relay/types"
+
+	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
 // GetTxCmd sets up transaction CLI commands
@@ -78,14 +81,13 @@ func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
 
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 
-			var prevEpochStart types.Hash256Digest
-			jsonErr := json.Unmarshal([]byte(args[1]), &prevEpochStart)
-			if jsonErr != nil {
-				return jsonErr
+			prevEpochStart, err := btcspv.NewHash256Digest(btcspv.DecodeIfHex(args[0]))
+			if err != nil {
+				return types.FromBTCSPVError(types.DefaultCodespace, err)
 			}
 
 			var headers []types.BitcoinHeader
-			jsonErr = json.Unmarshal([]byte(args[1]), &headers)
+			jsonErr := json.Unmarshal([]byte(args[1]), &headers)
 			if jsonErr != nil {
 				return jsonErr
 			}
@@ -95,7 +97,7 @@ func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
 				prevEpochStart,
 				headers,
 			)
-			err := msg.ValidateBasic()
+			err = msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
@@ -111,7 +113,7 @@ func GetCmdMarkNewHeaviest(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "marknewheaviest <ancestor> <currentBest> <newBest> [limit]",
 		Short: "Updates best known digest and LCA",
-		Long:  "Updates best known digest and LCA",
+		Long:  "Updates best known digest and LCA. Ancestor, current best, and new best are hex.  Limit is an integer.",
 		Args:  cobra.RangeArgs(3, 4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -120,27 +122,24 @@ func GetCmdMarkNewHeaviest(cdc *codec.Codec) *cobra.Command {
 
 			// TODO: Set default limit if limit is not provided?
 
-			// note: unmarshalling json here is undesirable, but necessary
-			// 	     for MarkNewHeaviest we want to accept text instead of json
-			var ancestor types.Hash256Digest
-			jsonErr := json.Unmarshal([]byte(args[0]), &ancestor)
-			if jsonErr != nil {
-				return jsonErr
+			ancestor, err := btcspv.NewHash256Digest(btcspv.DecodeIfHex(args[0]))
+			if err != nil {
+				return types.FromBTCSPVError(types.DefaultCodespace, err)
 			}
-			var currentBest types.RawHeader
-			jsonErr = json.Unmarshal([]byte(args[1]), &currentBest)
-			if jsonErr != nil {
-				return jsonErr
+
+			currentBest, curBestErr := btcspv.NewRawHeader(btcspv.DecodeIfHex(args[1]))
+			if curBestErr != nil {
+				return types.FromBTCSPVError(types.DefaultCodespace, curBestErr)
 			}
-			var newBest types.RawHeader
-			jsonErr = json.Unmarshal([]byte(args[2]), &newBest)
-			if jsonErr != nil {
-				return jsonErr
+
+			newBest, newBestErr := btcspv.NewRawHeader(btcspv.DecodeIfHex(args[2]))
+			if newBestErr != nil {
+				return types.FromBTCSPVError(types.DefaultCodespace, newBestErr)
 			}
-			var limit uint32
-			jsonErr = json.Unmarshal([]byte(args[3]), &limit)
-			if jsonErr != nil {
-				return jsonErr
+
+			limit, err := strconv.ParseUint(args[3], 10, 32)
+			if err != nil {
+				return err
 			}
 
 			msg := types.NewMsgMarkNewHeaviest(
@@ -148,9 +147,9 @@ func GetCmdMarkNewHeaviest(cdc *codec.Codec) *cobra.Command {
 				ancestor,
 				currentBest,
 				newBest,
-				limit,
+				uint32(limit),
 			)
-			err := msg.ValidateBasic()
+			err = msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
@@ -160,26 +159,3 @@ func GetCmdMarkNewHeaviest(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 }
-
-// // GetCmdSetLink is the CLI command for sending a SetLink transaction
-// func GetCmdSetLink(cdc *codec.Codec) *cobra.Command {
-// 	return &cobra.Command{
-// 		Use:   "setlink [hex header] [signer address]",
-// 		Short: "Set a link",
-// 		Args:  cobra.ExactArgs(2),
-// 		RunE: func(cmd *cobra.Command, args []string) error {
-// 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-//
-// 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-//
-// 			addr := sdk.AccAddress(args[1])
-// 			msg := types.NewMsgSetLink(addr, args[0], cliCtx.GetFromAddress())
-// 			err := msg.ValidateBasic()
-// 			if err != nil {
-// 				return err
-// 			}
-//
-// 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
-// 		},
-// 	}
-// }
