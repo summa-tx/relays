@@ -14,14 +14,11 @@ func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, s
 	return bestKnownHeader.Height - header.Height, nil
 }
 
-// TODO: Add errors
 func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof, requestID uint64) (bool, sdk.Error) {
-	valid, err := proof.Validate()
+	// If it is not valid, it will return an error
+	_, err := proof.Validate()
 	if err != nil {
 		return false, types.FromBTCSPVError(types.DefaultCodespace, err)
-	}
-	if !valid {
-		return false, nil
 	}
 
 	lca, lcaErr := k.GetLastReorgLCA(ctx)
@@ -30,20 +27,19 @@ func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof, requestID u
 	}
 	isAncestor := k.IsAncestor(ctx, proof.ConfirmingHeader.HashLE, lca, 240)
 	if !isAncestor {
-		return false, nil
+		return false, types.ErrNotAncestor(types.DefaultCodespace)
 	}
 
-	request, _ := k.getRequest(ctx, requestID)
-	// TODO: fix these errors
-	// if err != nil {
-	// 	return false, err
-	// }
-	confs, _ := k.getConfs(ctx, proof.ConfirmingHeader)
-	// if err != nil {
-	// 	return false, err
-	// }
+	request, getErr := k.getRequest(ctx, requestID)
+	if getErr != nil {
+		return false, getErr
+	}
+	confs, confsErr := k.getConfs(ctx, proof.ConfirmingHeader)
+	if confsErr != nil {
+		return false, confsErr
+	}
 	if confs < uint32(request.NumConfs) {
-		return false, nil
+		return false, types.ErrNotEnoughConfs(types.DefaultCodespace)
 	}
 
 	return true, nil
