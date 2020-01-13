@@ -54,7 +54,7 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 	k.incrementID(ctx)
 
 	// Emit Proof Request event
-	numID := binary.BigEndian.Uint64(id)
+	numID, _ := binary.Uvarint(id)
 	k.emitProofRequest(ctx, pays, spends, request.PaysValue, numID)
 	return nil
 }
@@ -83,11 +83,11 @@ func (k Keeper) incrementID(ctx sdk.Context) {
 	store := k.getRequestStore(ctx)
 	// get id
 	id := k.getNextID(ctx)
-	// convert id to uint64 and add 1
-	newID := binary.BigEndian.Uint64(id) + 1
-	// convert back to bytes and store
+	// convert id to uint64
+	newID, _ := binary.Uvarint(id)
+	// add 1, convert back to bytes, and store
 	b := make([]byte, 8)
-	binary.BigEndian.PutUint64(b, newID)
+	binary.BigEndian.PutUint64(b, newID+1)
 	store.Set([]byte(types.RequestID), b)
 }
 
