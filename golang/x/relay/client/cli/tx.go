@@ -73,8 +73,8 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "ingestdiffchange <prev epoch start> <json list of headers>",
-		Short: "Ingest a difficulty change",
-		Long:  "Ingest a difficulty change",
+		Short: "Ingest a difficulty change.",
+		Long:  "Ingest a difficulty change. Prev Epoch Start is a hex digest.",
 		Args:  cobra.ExactArgs(2),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -155,7 +155,7 @@ func GetCmdMarkNewHeaviest(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "marknewheaviest <ancestor> <currentBest> <newBest> [limit]",
 		Short: "Updates best known digest and LCA",
-		Long:  "Updates best known digest and LCA. Ancestor, current best, and new best are hex.  Limit is an integer.",
+		Long:  "Updates best known digest and LCA.\nAncestor, current best, and new best are hex.\nLimit is an integer.",
 		Args:  cobra.RangeArgs(3, 4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
