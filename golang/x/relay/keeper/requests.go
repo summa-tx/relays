@@ -55,7 +55,7 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 	k.incrementID(ctx)
 
 	// Emit Proof Request event
-	numID, _ := binary.Uvarint(id)
+	numID := binary.BigEndian.Uint64(id)
 	k.emitProofRequest(ctx, pays, spends, request.PaysValue, numID)
 	return nil
 }
