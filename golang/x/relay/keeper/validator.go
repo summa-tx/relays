@@ -11,6 +11,9 @@ func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, s
 		return 0, err
 	}
 	bestKnownHeader, err := k.GetHeader(ctx, bestKnown)
+	if err != nil {
+		return 0, err
+	}
 	return bestKnownHeader.Height - header.Height, nil
 }
 

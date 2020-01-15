@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/json"
 
@@ -84,7 +85,7 @@ func (k Keeper) incrementID(ctx sdk.Context) {
 	// get id
 	id := k.getNextID(ctx)
 	// convert id to uint64
-	newID, _ := binary.Uvarint(id)
+	newID := binary.BigEndian.Uint64(id)
 	// add 1, convert back to bytes, and store
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, newID+1)
@@ -97,7 +98,7 @@ func (k Keeper) getNextID(ctx sdk.Context) []byte {
 	store := k.getRequestStore(ctx)
 	id := []byte(types.RequestID)
 	if !store.Has(id) {
-		store.Set(id, []byte{0})
+		store.Set(id, bytes.Repeat([]byte{0}, 8))
 	}
 	return store.Get(id)
 }

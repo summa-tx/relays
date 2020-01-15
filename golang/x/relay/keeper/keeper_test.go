@@ -148,10 +148,11 @@ type HeaderTestCases struct {
 
 /***** Validator TEST CASES *****/
 type ValidateProofTestCase struct {
-	Proof  types.SPVProof      `json:"proof"`
-	LCA    types.Hash256Digest `json:"lca"`
-	Error  int                 `json:"error"`
-	Output bool                `json:"output"`
+	Proof     types.SPVProof      `json:"proof"`
+	BestKnown types.BitcoinHeader `json:"bestKnown"`
+	LCA       types.Hash256Digest `json:"lca"`
+	Error     int                 `json:"error"`
+	Output    bool                `json:"output"`
 }
 
 type ValidatorTestCases struct {
