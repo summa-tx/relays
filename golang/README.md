@@ -46,3 +46,22 @@
 1. Add to REST
     1. add to `x/relay/client/rest/tx.go`
     1. add POST route to `x/relay/client/rest/rest.go`
+
+## Messages added to CLI
+| Message | Status |
+| --- | --- |
+| IngestHeaderChain | Completed |
+| IngestDifficultyChange | Completed |
+| MarkNewHeaviest | Completed |
+| NewRequest | Completed |
+
+## Queries added to CLI
+| Query | Status |
+| --- | --- |
+| IsAncestor | Completed |
+| GetRelayGenesis | Completed |
+| GetLastReorgLCA | Completed |
+| FindAncestor | Completed |
+| IsMostRecentCommonAncestor | Completed |
+| HeaviestFromAncestor | Completed |
+| GetRequest | Completed |

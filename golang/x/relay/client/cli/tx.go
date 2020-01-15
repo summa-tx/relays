@@ -13,8 +13,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
-	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	"github.com/summa-tx/relays/golang/x/relay/types"
+
+	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
 // GetTxCmd sets up transaction CLI commands
@@ -68,6 +69,46 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 	}
 }
 
+// GetCmdIngestDifficultyChange creates a CLI command to ingest a difficulty change
+func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "ingestdiffchange <prev epoch start> <json list of headers>",
+		Short: "Ingest a difficulty change.",
+		Long:  "Ingest a difficulty change. Prev Epoch Start is a hex digest.",
+		Args:  cobra.ExactArgs(2),
+
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			prevEpochStart, err := btcspv.NewHash256Digest(btcspv.DecodeIfHex(args[0]))
+			if err != nil {
+				return types.FromBTCSPVError(types.DefaultCodespace, err)
+			}
+
+			var headers []types.BitcoinHeader
+			jsonErr := json.Unmarshal([]byte(args[1]), &headers)
+			if jsonErr != nil {
+				return jsonErr
+			}
+
+			msg := types.NewMsgIngestDifficultyChange(
+				cliCtx.GetFromAddress(),
+				prevEpochStart,
+				headers,
+			)
+			err = msg.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+
+		},
+	}
+}
+
 // GetCmdNewRequest stores a new proof request
 func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
@@ -99,6 +140,58 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 				uint8(numConfs),
 			)
 			err := msg.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+
+		},
+	}
+}
+
+// GetCmdMarkNewHeaviest creates a CLI command to update best known digest and LCA
+func GetCmdMarkNewHeaviest(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "marknewheaviest <ancestor> <currentBest> <newBest> [limit]",
+		Short: "Updates best known digest and LCA",
+		Long:  "Updates best known digest and LCA.\nAncestor, current best, and new best are hex.\nLimit is an integer.",
+		Args:  cobra.RangeArgs(3, 4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			// TODO: Set default limit if limit is not provided?
+
+			ancestor, err := btcspv.NewHash256Digest(btcspv.DecodeIfHex(args[0]))
+			if err != nil {
+				return types.FromBTCSPVError(types.DefaultCodespace, err)
+			}
+
+			currentBest, curBestErr := btcspv.NewRawHeader(btcspv.DecodeIfHex(args[1]))
+			if curBestErr != nil {
+				return types.FromBTCSPVError(types.DefaultCodespace, curBestErr)
+			}
+
+			newBest, newBestErr := btcspv.NewRawHeader(btcspv.DecodeIfHex(args[2]))
+			if newBestErr != nil {
+				return types.FromBTCSPVError(types.DefaultCodespace, newBestErr)
+			}
+
+			limit, err := strconv.ParseUint(args[3], 10, 32)
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgMarkNewHeaviest(
+				cliCtx.GetFromAddress(),
+				ancestor,
+				currentBest,
+				newBest,
+				uint32(limit),
+			)
+			err = msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
