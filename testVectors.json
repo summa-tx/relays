@@ -1191,5 +1191,16 @@
       "error": 405,
       "output": ""
     }]
+  },
+  "requests": {
+    "checkRequests": [{
+      "inputIndex": 1,
+      "outputIndex": 2,
+      "vin": "0x02",
+      "vout": "0x02",
+      "requestID": 1,
+      "error": 0,
+      "output": true
+    }]
   }
 }

@@ -50,3 +50,7 @@ func (s *KeeperSuite) TestGetRequest() {
 	s.Nil(err)
 	s.Equal(requestRes, request)
 }
+
+func (s *KeeperSuite) TestCheckRequests() {
+
+}

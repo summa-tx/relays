@@ -155,12 +155,28 @@ type ValidatorTestCases struct {
 	ValidateProof []ValidateProofTestCase `json:"validateProof"`
 }
 
+/***** Request TEST CASES *****/
+type CheckRequestTestCase struct {
+	InputIdx  uint8  `json:"inputIndex"`
+	OutputIdx uint8  `json:"outputIndex"`
+	Vin       []byte `json:"vin"`
+	Vout      []byte `json:"vout"`
+	RequestID uint64 `json:"requestID"`
+	Error     int    `json:"error"`
+	Output    bool   `json:"output"`
+}
+
+type RequestTestCases struct {
+	CheckRequests []CheckRequestTestCase `json:"checkRequests"`
+}
+
 /***** KEEPER TEST CASES *****/
 type KeeperTestCases struct {
 	LinkTestCases      LinkTestCases      `json:"link"`
 	HeaderTestCases    HeaderTestCases    `json:"header"`
 	ChainTestCases     ChainTestCases     `json:"chain"`
 	ValidatorTestCases ValidatorTestCases `json:"validator"`
+	RequestTestCases   RequestTestCases   `json:"requests"`
 }
 
 type KeeperSuite struct {
