@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/json"
 
@@ -97,7 +98,7 @@ func (k Keeper) getNextID(ctx sdk.Context) []byte {
 	store := k.getRequestStore(ctx)
 	id := []byte(types.RequestID)
 	if !store.Has(id) {
-		store.Set(id, []byte{0})
+		store.Set(id, bytes.Repeat([]byte{0}, 8))
 	}
 	return store.Get(id)
 }
