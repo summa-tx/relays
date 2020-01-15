@@ -110,7 +110,7 @@ func (s *KeeperSuite) TestHeaviestFromAncestor() {
 
 func (s *KeeperSuite) TestMarkNewHeaviest() {
 	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
-	tc := s.Fixtures.ChainTestCases.MarkNewHeaviest.TestCases
+	tc := s.Fixtures.ChainTestCases.MarkNewHeaviest
 	pre := tv.PreRetargetChain
 	post := tv.PostRetargetChain
 	var postWithOrphan []types.BitcoinHeader

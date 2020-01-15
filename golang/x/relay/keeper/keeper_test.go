@@ -105,14 +105,10 @@ type NewHeaviestTestCase struct {
 	Output      string              `json:"output"`
 }
 
-type MarkNewHeaviest struct {
-	TestCases []NewHeaviestTestCase `json:"testCases"`
-}
-
 type ChainTestCases struct {
-	IsMostRecentCA       IsMostRecentCA       `json:"isMostRecentCommonAncestor"`
-	HeaviestFromAncestor HeaviestFromAncestor `json:"heaviestFromAncestor"`
-	MarkNewHeaviest      MarkNewHeaviest      `json:"markNewHeaviest"`
+	IsMostRecentCA       IsMostRecentCA        `json:"isMostRecentCommonAncestor"`
+	HeaviestFromAncestor HeaviestFromAncestor  `json:"heaviestFromAncestor"`
+	MarkNewHeaviest      []NewHeaviestTestCase `json:"markNewHeaviest"`
 }
 
 /***** HEADER TEST CASES *****/
@@ -146,11 +142,25 @@ type HeaderTestCases struct {
 	CompareTargets     []CompareCase    `json:"compareTargets"`
 }
 
+/***** Validator TEST CASES *****/
+type ValidateProofTestCase struct {
+	Proof     types.SPVProof      `json:"proof"`
+	BestKnown types.Hash256Digest `json:"bestKnown"`
+	LCA       types.Hash256Digest `json:"lca"`
+	Error     int                 `json:"error"`
+	Output    bool                `json:"output"`
+}
+
+type ValidatorTestCases struct {
+	ValidateProof []ValidateProofTestCase `json:"validateProof"`
+}
+
 /***** KEEPER TEST CASES *****/
 type KeeperTestCases struct {
-	LinkTestCases   LinkTestCases   `json:"link"`
-	HeaderTestCases HeaderTestCases `json:"header"`
-	ChainTestCases  ChainTestCases  `json:"chain"`
+	LinkTestCases      LinkTestCases      `json:"link"`
+	HeaderTestCases    HeaderTestCases    `json:"header"`
+	ChainTestCases     ChainTestCases     `json:"chain"`
+	ValidatorTestCases ValidatorTestCases `json:"validator"`
 }
 
 type KeeperSuite struct {

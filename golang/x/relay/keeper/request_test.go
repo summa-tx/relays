@@ -22,10 +22,6 @@ func (s *KeeperSuite) TestIncrementID() {
 	s.Equal(id, []byte{0, 0, 0, 0, 0, 0, 0, 1})
 }
 
-func (s *KeeperSuite) TestSetRequest() {
-
-}
-
 func (s *KeeperSuite) TestHasRequest() {
 	hasRequest := s.Keeper.hasRequest(s.Context, 0)
 	s.Equal(false, hasRequest)
@@ -54,14 +50,3 @@ func (s *KeeperSuite) TestGetRequest() {
 	s.Nil(err)
 	s.Equal(requestRes, request)
 }
-
-// func (s *KeeperSuite) TestGetDigestByStoreKey() {
-// 	wrongLenDigest := bytes.Repeat([]byte{0}, 31)
-// 	key := "bad-digest"
-
-// 	store := s.Keeper.getChainStore(s.Context)
-// 	store.Set([]byte(key), wrongLenDigest)
-
-// 	_, err := s.Keeper.getDigestByStoreKey(s.Context, key)
-// 	s.Equal(sdk.CodeType(105), err.Code())
-// }
