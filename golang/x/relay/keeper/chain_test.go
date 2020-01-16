@@ -4,6 +4,7 @@ import (
 	"bytes"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
@@ -137,6 +138,8 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 	s.SDKNil(err)
 
 	for i := range tc {
+		curBestDigest := btcspv.Hash256(tc[i].CurrentBest[:])
+		s.Keeper.setBestKnownDigest(s.Context, curBestDigest)
 		if tc[i].Error == 0 {
 			// updates the best known and emits an event
 			err = s.Keeper.MarkNewHeaviest(
