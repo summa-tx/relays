@@ -48,26 +48,6 @@ func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof, requestID u
 	return true, nil
 }
 
-func (k Keeper) checkAll(ctx sdk.Context, proof types.SPVProof, inputIndex, outputIndex uint8, vin, vout []byte, requestIDs []uint64) ([]uint64, sdk.Error) {
-	var matching []uint64
-	for i := range requestIDs {
-		// Validate Proof
-		validProof, err := k.validateProof(ctx, proof, requestIDs[i])
-		if err != nil {
-			return []uint64{}, err
-		}
-		// Check request
-		matchingRequest, err := k.checkRequests(ctx, inputIndex, outputIndex, vin, vout, requestIDs[i])
-		if err != nil {
-			return []uint64{}, err
-		}
-		if validProof && matchingRequest {
-			matching = append(matching, requestIDs[i])
-		}
-	}
-	return matching, nil
-}
-
 func (k Keeper) checkRequestsFilled(ctx sdk.Context, r types.FilledRequests) (bool, sdk.Error) {
 	// Validate Proof once.  If proof errors it is not valid.
 	_, err := k.validateProof(ctx, r.Proof, r.Requests[0].ID)
