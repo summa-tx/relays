@@ -180,6 +180,11 @@ const (
 	// NotEnoughConfs is the corresponding message
 	NotEnoughConfsMessage = "Not enough confirmations"
 
+	// NotMatching means a Request does not match a Proof
+	NotMatching sdk.CodeType = 612
+	// NotMatchingMessage is the corresponding message
+	NotMatchingMessage = "Request does not match Proof"
+
 	// 700-block External
 
 	ExternalError sdk.CodeType = 701
@@ -343,6 +348,11 @@ func ErrNotAncestor(codespace sdk.CodespaceType) sdk.Error {
 // ErrNotEnoughConfs throws an error
 func ErrNotEnoughConfs(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, NotEnoughConfs, NotEnoughConfsMessage)
+}
+
+// ErrNotMatching throws an error
+func ErrNotMatching(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, NotMatching, NotMatchingMessage)
 }
 
 // ErrExternal converts any external error into an sdk error

@@ -103,7 +103,7 @@ func (k Keeper) getNextID(ctx sdk.Context) []byte {
 	return store.Get(id)
 }
 
-func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vin []byte, vout []byte, requestID uint64) (bool, sdk.Error) {
+func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vin, vout []byte, requestID uint64) (bool, sdk.Error) {
 	if !btcspv.ValidateVin(vin) {
 		return false, types.ErrInvalidVin(types.DefaultCodespace)
 	}
