@@ -4,7 +4,6 @@ import (
 	"bytes"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
@@ -137,34 +136,6 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
 	s.SDKNil(err)
 
-	for i := range tc {
-		curBestDigest := btcspv.Hash256(tc[i].CurrentBest[:])
-		s.Keeper.setBestKnownDigest(s.Context, curBestDigest)
-		if tc[i].Error == 0 {
-			// updates the best known and emits an event
-			err = s.Keeper.MarkNewHeaviest(
-				s.Context,
-				tc[i].Ancestor,
-				tc[i].CurrentBest,
-				tc[i].NewBest,
-				tc[i].Limit,
-			)
-			s.SDKNil(err)
-			events := s.Context.EventManager().Events()
-			e := events[0]
-			s.Equal(e.Type, tc[i].Output)
-		} else {
-			err = s.Keeper.MarkNewHeaviest(
-				s.Context,
-				tc[i].Ancestor,
-				tc[i].CurrentBest,
-				tc[i].NewBest,
-				tc[i].Limit,
-			)
-			s.Equal(err.Code(), sdk.CodeType(tc[i].Error))
-		}
-	}
-
 	// errors if the ancestor is not the heaviest common ancestor
 	err = s.Keeper.MarkNewHeaviest(
 		s.Context,
@@ -182,4 +153,25 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 		10,
 	)
 	s.Equal(err.Code(), sdk.CodeType(404))
+
+	for i := range tc {
+		s.Keeper.setBestKnownDigest(s.Context, tc[i].BestKnownDigest)
+		// updates the best known and emits an event
+		err = s.Keeper.MarkNewHeaviest(
+			s.Context,
+			tc[i].Ancestor,
+			tc[i].CurrentBest,
+			tc[i].NewBest,
+			tc[i].Limit,
+		)
+
+		if tc[i].Error == 0 {
+			s.SDKNil(err)
+			events := s.Context.EventManager().Events()
+			e := events[i]
+			s.Equal(e.Type, tc[i].Output)
+		} else {
+			s.Equal(err.Code(), sdk.CodeType(tc[i].Error))
+		}
+	}
 }

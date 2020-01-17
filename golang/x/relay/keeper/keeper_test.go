@@ -97,12 +97,13 @@ type HeaviestFromAncestor struct {
 }
 
 type NewHeaviestTestCase struct {
-	Ancestor    types.Hash256Digest `json:"ancestor"`
-	CurrentBest types.RawHeader     `json:"currentBest"`
-	NewBest     types.RawHeader     `json:"newBest"`
-	Limit       uint32              `json:"limit"`
-	Error       int                 `json:"error"`
-	Output      string              `json:"output"`
+	BestKnownDigest types.Hash256Digest `json:"bestKnownDigest"`
+	Ancestor        types.Hash256Digest `json:"ancestor"`
+	CurrentBest     types.RawHeader     `json:"currentBest"`
+	NewBest         types.RawHeader     `json:"newBest"`
+	Limit           uint32              `json:"limit"`
+	Error           int                 `json:"error"`
+	Output          string              `json:"output"`
 }
 
 type ChainTestCases struct {
