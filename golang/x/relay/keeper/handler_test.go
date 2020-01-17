@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"bytes"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
@@ -43,7 +45,7 @@ func (s *KeeperSuite) TestHandleMsgIngestHeaderChain() {
 	newMsg := types.NewMsgIngestHeaderChain(getAccAddress(), testCases[0].Headers)
 
 	res := handler(s.Context, newMsg)
-	s.Equal(res.Code, sdk.CodeType(103))
+	s.Equal(sdk.CodeType(103), res.Code)
 
 	s.Keeper.ingestHeader(s.Context, testCases[0].Anchor)
 	res = handler(s.Context, newMsg)
@@ -57,7 +59,7 @@ func (s *KeeperSuite) TestHandleMsgIngestDifficultyChange() {
 	newMsg := types.NewMsgIngestDifficultyChange(getAccAddress(), testCases[0].PrevEpochStart.HashLE, testCases[0].Headers)
 
 	res := handler(s.Context, newMsg)
-	s.Equal(res.Code, sdk.CodeType(103))
+	s.Equal(sdk.CodeType(103), res.Code)
 
 	s.Keeper.ingestHeader(s.Context, testCases[0].PrevEpochStart)
 	s.Keeper.ingestHeader(s.Context, testCases[0].Anchor)
@@ -99,10 +101,29 @@ func (s *KeeperSuite) TestHandleMarkNewHeaviest() {
 	// returns correct error
 	newMsg := types.NewMsgMarkNewHeaviest(getAccAddress(), tv.OldPeriodStart.HashLE, tv.OldPeriodStart.Raw, tv.OldPeriodStart.Raw, 10)
 	res := handler(s.Context, newMsg)
-	s.Equal(res.Code, sdk.CodeType(403))
+	s.Equal(sdk.CodeType(403), res.Code)
 
 	// Successfully marks new heaviest
 	newMsg = types.NewMsgMarkNewHeaviest(getAccAddress(), tv.Genesis.HashLE, tv.Genesis.Raw, pre[0].Raw, 10)
 	res = handler(s.Context, newMsg)
 	s.Equal(res.Events[0].Type, "extension")
+}
+
+func (s *KeeperSuite) TestHandleNewRequest() {
+	handler := NewHandler(s.Keeper)
+
+	// Success
+	newRequest := types.NewMsgNewRequest(getAccAddress(), bytes.Repeat([]byte{0}, 36), []byte{0}, 0, 0)
+	res := handler(s.Context, newRequest)
+	hasRequest := s.Keeper.hasRequest(s.Context, 0)
+	s.Equal(true, hasRequest)
+	s.Equal(res.Events[0].Type, "proof_request")
+
+	// Msg validation failed
+	newRequest = types.NewMsgNewRequest(getAccAddress(), []byte{0}, []byte{0}, 0, 0)
+	res = handler(s.Context, newRequest)
+	hasRequest = s.Keeper.hasRequest(s.Context, 0)
+	s.Equal(sdk.CodeType(602), res.Code)
+
+	// setRequest error
 }
