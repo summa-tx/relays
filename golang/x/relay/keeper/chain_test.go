@@ -87,22 +87,16 @@ func (s *KeeperSuite) TestHeaviestFromAncestor() {
 	s.SDKNil(err)
 
 	for i := range tv.TestCases {
+		heaviest, err := s.Keeper.HeaviestFromAncestor(
+			s.Context,
+			tv.TestCases[i].Ancestor,
+			tv.TestCases[i].CurrentBest,
+			tv.TestCases[i].NewBest,
+			tv.TestCases[i].Limit)
 		if tv.TestCases[i].Error == 0 {
-			heaviest, err := s.Keeper.HeaviestFromAncestor(
-				s.Context,
-				tv.TestCases[i].Ancestor,
-				tv.TestCases[i].CurrentBest,
-				tv.TestCases[i].NewBest,
-				tv.TestCases[i].Limit)
 			s.SDKNil(err)
 			s.Equal(heaviest, tv.TestCases[i].Output)
 		} else {
-			_, err = s.Keeper.HeaviestFromAncestor(
-				s.Context,
-				tv.TestCases[i].Ancestor,
-				tv.TestCases[i].CurrentBest,
-				tv.TestCases[i].NewBest,
-				tv.TestCases[i].Limit)
 			s.Equal(err.Code(), sdk.CodeType(tv.TestCases[i].Error))
 		}
 	}

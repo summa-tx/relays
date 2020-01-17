@@ -30,14 +30,11 @@ func (s *KeeperSuite) TestFindAncestor() {
 	s.SDKNil(err)
 
 	for i := 1; i < len(tc); i++ {
+		ancestor, err := s.Keeper.FindAncestor(s.Context, tc[i].Digest, tc[i].Offset)
 		if tc[i].Error == 0 {
-			// successfully retrieves ancestor
-			ancestor, err := s.Keeper.FindAncestor(s.Context, tc[i].Digest, tc[i].Offset)
 			s.SDKNil(err)
 			s.Equal(tc[i].Output, ancestor)
 		} else {
-			// errors if link is not found
-			_, err = s.Keeper.FindAncestor(s.Context, tc[i].Digest, tc[i].Offset)
 			s.Equal(err.Code(), types.CodeType(tc[i].Error))
 		}
 	}
