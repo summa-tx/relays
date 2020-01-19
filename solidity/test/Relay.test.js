@@ -69,7 +69,7 @@ contract('Relay', async () => {
       assert(res.eq(genDiff));
 
       res = await instance.getPrevEpochDifficulty();
-      assert(res.eq(genDiff));
+      assert(res.eqn(0));
     });
   });
 

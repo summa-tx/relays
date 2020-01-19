@@ -94,7 +94,6 @@ contract Relay is IRelay {
         blockHeight[_periodStart] = _height.sub(_height % 2016);
 
         currentEpochDiff = _genesisHeader.extractDifficulty();
-        prevEpochDiff = _genesisHeader.extractDifficulty();
     }
 
     /// @notice             Adds headers to storage after validating
