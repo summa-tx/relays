@@ -23,6 +23,8 @@ interface IRelay {
     function getRelayGenesis() external view returns (bytes32);
     function getBestKnownDigest() external view returns (bytes32);
     function getLastReorgCommonAncestor() external view returns (bytes32);
+    function getCurrentEpochDifficulty() external view returns (bytes32);
+    function getPrevEpochDifficulty() external view returns (bytes32);
 
     function findHeight(bytes32 _digest) external view returns (uint256);
 
@@ -67,6 +69,9 @@ contract Relay is IRelay {
     bytes32 internal lastReorgCommonAncestor;
     mapping (bytes32 => bytes32) internal previousBlock;
     mapping (bytes32 => uint256) internal blockHeight;
+
+    uint256 internal currentEpochDiff;
+    uint256 internal prevEpochDiff;
 
 
     /// @notice                   Gives a starting point for the relay
@@ -213,6 +218,11 @@ contract Relay is IRelay {
             (_actualTarget & _expectedTarget) == _actualTarget,
             "Invalid retarget provided");
 
+        uint256 _oldDiff = _oldPeriodStartHeader.extractDifficulty();
+        if (prevEpochDiff != _oldDiff) {
+          prevEpochDiff = _oldDiff;
+        }
+
         // Pass all but the first through to be added
         return _addHeaders(_oldPeriodEndHeader, _headers, true);
     }
@@ -320,6 +330,12 @@ contract Relay is IRelay {
 
         bestKnownDigest = _newBestDigest;
         lastReorgCommonAncestor = _ancestor;
+
+        uint256 _newDiff = _newBest.extractDifficulty();
+        if (_newDiff != currentEpochDiff) {
+          currentEpochDiff = _newDiff;
+        }
+
         emit Reorg(
             _currentBestDigest,
             _newBestDigest,
@@ -454,6 +470,19 @@ contract Relay is IRelay {
         bytes calldata _right
     ) external view returns (bytes32) {
         return _heaviestFromAncestor(_ancestor, _left, _right);
+    }
+
+    /// @notice     Getter for currentEpochDiff
+    /// @dev        This is updated when a new heavist header has a new diff
+    /// @return     The difficulty of the bestKnownDigest
+    function getCurrentEpochDifficulty() external view returns (uint256) {
+      return currentEpochDiff;
+    }
+    /// @notice     Getter for prevEpochDiff
+    /// @dev        This is updated when a difficulty change is accepted
+    /// @return     The difficulty of the previous epoch
+    function getPrevEpochDifficulty() external view returns (uint256) {
+      return prevEpochDiff;
     }
 
     /// @notice     Getter for relayGenesis
