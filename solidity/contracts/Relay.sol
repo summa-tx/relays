@@ -20,11 +20,11 @@ interface IRelay {
         uint256 _limit
     ) external view returns (bool);
 
+    function getCurrentEpochDifficulty() external view returns (uint256);
+    function getPrevEpochDifficulty() external view returns (uint256);
     function getRelayGenesis() external view returns (bytes32);
     function getBestKnownDigest() external view returns (bytes32);
     function getLastReorgCommonAncestor() external view returns (bytes32);
-    function getCurrentEpochDifficulty() external view returns (bytes32);
-    function getPrevEpochDifficulty() external view returns (bytes32);
 
     function findHeight(bytes32 _digest) external view returns (uint256);
 
@@ -92,6 +92,9 @@ contract Relay is IRelay {
         lastReorgCommonAncestor = _genesisDigest;
         blockHeight[_genesisDigest] = _height;
         blockHeight[_periodStart] = _height.sub(_height % 2016);
+
+        currentEpochDiff = _genesisHeader.extractDifficulty();
+        prevEpochDiff = _genesisHeader.extractDifficulty();
     }
 
     /// @notice             Adds headers to storage after validating
