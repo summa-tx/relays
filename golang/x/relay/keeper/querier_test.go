@@ -416,50 +416,38 @@ func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
 	s.Equal(sdk.CodeType(1), err.Code())
 }
 
-// func (s *KeeperSuite) TestQueryGetRequest() {
-// 	querier := NewQuerier(s.Keeper)
+func (s *KeeperSuite) TestQueryGetRequest() {
+	querier := NewQuerier(s.Keeper)
 
-// 	path := []string{"getrequest"}
+	path := []string{"getrequest"}
 
-// 	params := types.QueryParamsGetRequest{
-// 		Test: 2,
-// 		ID:   0,
-// 	}
-// 	marshalledParams, marshalErr := json.Marshal(params)
-// 	s.Nil(marshalErr)
+	params := types.QueryParamsGetRequest{
+		ID: types.RequestID{},
+	}
+	marshalledParams, marshalErr := json.Marshal(params)
+	s.Nil(marshalErr)
 
-// 	req := abci.RequestQuery{
-// 		Path: "custom/relay/getrequest",
-// 		Data: marshalledParams,
-// 	}
+	req := abci.RequestQuery{
+		Path: "custom/relay/getrequest",
+		Data: marshalledParams,
+	}
 
-// // test block: remove
-// dat := make(map[string]interface{})
-// d := json.NewDecoder(bytes.NewBuffer(req.Data))
-// d.UseNumber()
-// err := d.Decode(&dat)
-// s.Nil(err)
-// n := dat["id"].(json.Number)
-// id, _ := strconv.ParseUint(string(n), 10, 64)
-// s.Equal(id, uint64(100))
+	// Errors if request is not found
+	_, err := querier(s.Context, path, req)
+	s.Equal(sdk.CodeType(601), err.Code())
 
-// // Errors if request is not found
-// _, err := querier(s.Context, path, req)
-// s.Equal(sdk.CodeType(601), err.Code())
+	// Set Request
+	err = s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0)
+	s.SDKNil(err)
 
-// // Set Request
-// err = s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0)
-// s.SDKNil(err)
+	// Use querier handler to get request
+	res, err := querier(s.Context, path, req)
+	s.SDKNil(err)
 
-// // Use querier handler to get request
-// res, err := querier(s.Context, path, req)
-// s.SDKNil(err)
-// s.Equal(res, res)
+	// Unmarshall the result and test
+	var result types.QueryResGetRequest
 
-// // Unmarshall the result and test
-// var result types.QueryResGetRequest
-
-// unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
-// s.Nil(unmarshallErr)
-// // s.Equal(result.Res, genesis.HashLE)
-// }
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(result.Res, "hi")
+}
