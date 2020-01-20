@@ -6,7 +6,7 @@ import (
 )
 
 func (s *KeeperSuite) TestEmitProofRequest() {
-	s.Keeper.emitProofRequest(s.Context, []byte{0}, []byte{0}, 0, 3)
+	s.Keeper.emitProofRequest(s.Context, []byte{0}, []byte{0}, 0, types.RequestID{})
 
 	events := s.Context.EventManager().Events()
 	e := events[0]
@@ -15,19 +15,24 @@ func (s *KeeperSuite) TestEmitProofRequest() {
 
 // tests getNextID and incrementID
 func (s *KeeperSuite) TestIncrementID() {
-	id := s.Keeper.getNextID(s.Context)
-	s.Equal(id, []byte{0, 0, 0, 0, 0, 0, 0, 0})
-	s.Keeper.incrementID(s.Context)
-	id = s.Keeper.getNextID(s.Context)
-	s.Equal(id, []byte{0, 0, 0, 0, 0, 0, 0, 1})
+	id, err := s.Keeper.getNextID(s.Context)
+	s.SDKNil(err)
+	s.Equal(id, types.RequestID{})
+
+	err = s.Keeper.incrementID(s.Context)
+	s.SDKNil(err)
+
+	id, err = s.Keeper.getNextID(s.Context)
+	s.SDKNil(err)
+	s.Equal(id, types.RequestID{0, 0, 0, 0, 0, 0, 0, 1})
 }
 
 func (s *KeeperSuite) TestHasRequest() {
-	hasRequest := s.Keeper.hasRequest(s.Context, 0)
+	hasRequest := s.Keeper.hasRequest(s.Context, types.RequestID{})
 	s.Equal(false, hasRequest)
 	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 4)
 	s.Nil(requestErr)
-	hasRequest = s.Keeper.hasRequest(s.Context, 0)
+	hasRequest = s.Keeper.hasRequest(s.Context, types.RequestID{})
 	s.Equal(true, hasRequest)
 }
 
@@ -39,14 +44,14 @@ func (s *KeeperSuite) TestGetRequest() {
 		ActiveState: true,
 		NumConfs:    0,
 	}
-	request, err := s.Keeper.getRequest(s.Context, 0)
+	request, err := s.Keeper.getRequest(s.Context, types.RequestID{})
 	s.Equal(err.Code(), sdk.CodeType(601))
 	s.Equal(types.ProofRequest{}, request)
 
 	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0)
 	s.Nil(requestErr)
 
-	request, err = s.Keeper.getRequest(s.Context, 0)
+	request, err = s.Keeper.getRequest(s.Context, types.RequestID{})
 	s.Nil(err)
 	s.Equal(requestRes, request)
 }

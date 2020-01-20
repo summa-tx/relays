@@ -145,7 +145,7 @@ func (r QueryResIsMostRecentCommonAncestor) String() string {
 }
 
 type QueryParamsGetRequest struct {
-	ID uint64 `json:"id"`
+	ID RequestID `json:"id"`
 }
 
 // QueryResIsMostRecentCommonAncestor is the response struct for queryIsMostRecentCommonAncestor

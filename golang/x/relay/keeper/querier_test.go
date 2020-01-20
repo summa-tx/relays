@@ -72,7 +72,7 @@ func (s *KeeperSuite) TestNewQuerier() {
 
 	// Test that NewQuerier errors when given a bad path
 	_, err := querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(6))
+	s.Equal(sdk.CodeType(6), err.Code())
 }
 
 func (s *KeeperSuite) TestQueryIsAncestor() {
@@ -135,7 +135,7 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 	}
 
 	_, err = querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(1))
+	s.Equal(sdk.CodeType(1), err.Code())
 }
 
 func (s *KeeperSuite) TestQueryGetRelayGenesis() {
@@ -153,7 +153,7 @@ func (s *KeeperSuite) TestQueryGetRelayGenesis() {
 
 	// Test that GetRelayGenesis errors if RelayGenesis is not found
 	_, err := querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(105))
+	s.Equal(sdk.CodeType(105), err.Code())
 
 	// Set Genesis state
 	err = s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
@@ -185,7 +185,7 @@ func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
 
 	// Test that it errors if it doesn't find LastReorgLCA
 	_, err := querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(105))
+	s.Equal(sdk.CodeType(105), err.Code())
 
 	setStateErr := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
 	s.SDKNil(setStateErr)
@@ -220,7 +220,7 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 
 	// Test that it errors if ancestor is not found
 	_, findAncestorErr := querier(s.Context, path, req)
-	s.Equal(findAncestorErr.Code(), sdk.CodeType(103))
+	s.Equal(sdk.CodeType(103), findAncestorErr.Code())
 
 	// initialize data
 	s.Keeper.ingestHeader(s.Context, anchor)
@@ -245,7 +245,7 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 	}
 
 	_, err = querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(1))
+	s.Equal(sdk.CodeType(1), err.Code())
 }
 
 func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
@@ -305,7 +305,7 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 	}
 
 	_, err = querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(103))
+	s.Equal(sdk.CodeType(103), err.Code())
 
 	// Test that default limit is used if limit is set to zero
 	params = types.QueryParamsHeaviestFromAncestor{
@@ -336,7 +336,7 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 	}
 
 	_, err = querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(1))
+	s.Equal(sdk.CodeType(1), err.Code())
 }
 
 func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
@@ -413,5 +413,53 @@ func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
 	}
 
 	_, err = querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(1))
+	s.Equal(sdk.CodeType(1), err.Code())
 }
+
+// func (s *KeeperSuite) TestQueryGetRequest() {
+// 	querier := NewQuerier(s.Keeper)
+
+// 	path := []string{"getrequest"}
+
+// 	params := types.QueryParamsGetRequest{
+// 		Test: 2,
+// 		ID:   0,
+// 	}
+// 	marshalledParams, marshalErr := json.Marshal(params)
+// 	s.Nil(marshalErr)
+
+// 	req := abci.RequestQuery{
+// 		Path: "custom/relay/getrequest",
+// 		Data: marshalledParams,
+// 	}
+
+// // test block: remove
+// dat := make(map[string]interface{})
+// d := json.NewDecoder(bytes.NewBuffer(req.Data))
+// d.UseNumber()
+// err := d.Decode(&dat)
+// s.Nil(err)
+// n := dat["id"].(json.Number)
+// id, _ := strconv.ParseUint(string(n), 10, 64)
+// s.Equal(id, uint64(100))
+
+// // Errors if request is not found
+// _, err := querier(s.Context, path, req)
+// s.Equal(sdk.CodeType(601), err.Code())
+
+// // Set Request
+// err = s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0)
+// s.SDKNil(err)
+
+// // Use querier handler to get request
+// res, err := querier(s.Context, path, req)
+// s.SDKNil(err)
+// s.Equal(res, res)
+
+// // Unmarshall the result and test
+// var result types.QueryResGetRequest
+
+// unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+// s.Nil(unmarshallErr)
+// // s.Equal(result.Res, genesis.HashLE)
+// }

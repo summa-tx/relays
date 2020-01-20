@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/binary"
 	"fmt"
 	"strconv"
 
@@ -324,18 +325,36 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "getrequest <id>",
 		Example: "getrequest 12",
-		Long:    "Get a proof request using the associated ID",
+		Long:    "Get a proof request using the associated ID. ID can be an\n\"0x\" prepended hexbyte string or an integer",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			id, err := strconv.ParseUint(args[0], 10, 64)
-			if err != nil {
-				return err
+			var idBytes types.RequestID
+			if args[0][:2] == "0x" {
+				id, err := types.RequestIdFromHex(args[0])
+				if err != nil {
+					return err
+				}
+				idBytes = id
+			} else {
+				id, err := strconv.ParseUint(args[0], 10, 64)
+				if err != nil {
+					return err
+				}
+
+				// convert to bytes
+				b := make([]byte, 8)
+				binary.BigEndian.PutUint64(b, id)
+				newID, err := types.NewRequestID(b)
+				if err != nil {
+					return err
+				}
+				idBytes = newID
 			}
 
 			params := types.QueryParamsGetRequest{
-				ID: id,
+				ID: idBytes,
 			}
 
 			queryData, err := cdc.MarshalJSON(params)
@@ -347,7 +366,7 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			res, _, err := cliCtx.QueryWithData("custom/relay/getrequest", queryData)
 
 			if err != nil {
-				fmt.Printf("could not find request associated with id: %d... \n", id)
+				fmt.Printf("could not find request associated with id: %s... \n", args[0])
 				return nil
 			}
 
