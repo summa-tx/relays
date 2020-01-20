@@ -617,7 +617,7 @@
         },
         "internal": false,
         "isMainnet": true,
-        "output": 107
+        "output": 108
       },
       {
         "comment": "header chain doesn't pass validation, anchor is low work",
@@ -655,7 +655,7 @@
         },
         "internal": false,
         "isMainnet": true,
-        "output": 107
+        "output": 108
       }
     ],
     "compareTargets": [
