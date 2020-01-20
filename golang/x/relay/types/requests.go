@@ -20,7 +20,7 @@ type ProofRequest struct {
 func NewRequestID(b []byte) (RequestID, sdk.Error) {
 	var h RequestID
 	copied := copy(h[:], b)
-	if copied != 8 {
+	if copied != 8 || len(b) != 8 {
 		return RequestID{}, ErrBadHexLen(DefaultCodespace, 8, copied)
 	}
 	return h, nil

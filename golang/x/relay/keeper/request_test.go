@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"bytes"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
@@ -10,7 +12,7 @@ func (s *KeeperSuite) TestEmitProofRequest() {
 
 	events := s.Context.EventManager().Events()
 	e := events[0]
-	s.Equal(e.Type, "proof_request")
+	s.Equal("proof_request", e.Type)
 }
 
 // tests getNextID and incrementID
@@ -24,7 +26,15 @@ func (s *KeeperSuite) TestIncrementID() {
 
 	id, err = s.Keeper.getNextID(s.Context)
 	s.SDKNil(err)
-	s.Equal(id, types.RequestID{0, 0, 0, 0, 0, 0, 0, 1})
+	s.Equal(types.RequestID{0, 0, 0, 0, 0, 0, 0, 1}, id)
+
+	// errors if it cannot get next ID
+	store := s.Keeper.getRequestStore(s.Context)
+	idTag := []byte(types.RequestIdTag)
+	store.Set(idTag, bytes.Repeat([]byte{9}, 9))
+
+	err = s.Keeper.incrementID(s.Context)
+	s.Equal(sdk.CodeType(107), err.Code())
 }
 
 func (s *KeeperSuite) TestHasRequest() {
@@ -36,16 +46,19 @@ func (s *KeeperSuite) TestHasRequest() {
 	s.Equal(true, hasRequest)
 }
 
+func (s *KeeperSuite) TestSetRequest() {
+	store := s.Keeper.getRequestStore(s.Context)
+	idTag := []byte(types.RequestIdTag)
+	store.Set(idTag, bytes.Repeat([]byte{9}, 9))
+
+	err := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0)
+	s.Equal(sdk.CodeType(107), err.Code())
+}
+
 func (s *KeeperSuite) TestGetRequest() {
-	requestRes := types.ProofRequest{
-		Spends:      types.Hash256Digest{0x14, 0x6, 0xe0, 0x58, 0x81, 0xe2, 0x99, 0x36, 0x77, 0x66, 0xd3, 0x13, 0xe2, 0x6c, 0x5, 0x56, 0x4e, 0xc9, 0x1b, 0xf7, 0x21, 0xd3, 0x17, 0x26, 0xbd, 0x6e, 0x46, 0xe6, 0x6, 0x89, 0x53, 0x9a},
-		Pays:        types.Hash256Digest{0x14, 0x6, 0xe0, 0x58, 0x81, 0xe2, 0x99, 0x36, 0x77, 0x66, 0xd3, 0x13, 0xe2, 0x6c, 0x5, 0x56, 0x4e, 0xc9, 0x1b, 0xf7, 0x21, 0xd3, 0x17, 0x26, 0xbd, 0x6e, 0x46, 0xe6, 0x6, 0x89, 0x53, 0x9a},
-		PaysValue:   0,
-		ActiveState: true,
-		NumConfs:    0,
-	}
+	requestRes := s.Fixtures.RequestTestCases.EmptyRequest
 	request, err := s.Keeper.getRequest(s.Context, types.RequestID{})
-	s.Equal(err.Code(), sdk.CodeType(601))
+	s.Equal(sdk.CodeType(601), err.Code())
 	s.Equal(types.ProofRequest{}, request)
 
 	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0)
