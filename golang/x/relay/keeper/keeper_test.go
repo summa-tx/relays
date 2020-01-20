@@ -168,6 +168,7 @@ type CheckRequestTestCase struct {
 }
 
 type RequestTestCases struct {
+	EmptyRequest  types.ProofRequest     `json:"emptyRequest"`
 	CheckRequests []CheckRequestTestCase `json:"checkRequests"`
 }
 

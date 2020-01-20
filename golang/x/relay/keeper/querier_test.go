@@ -449,5 +449,5 @@ func (s *KeeperSuite) TestQueryGetRequest() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, "hi")
+	s.Equal(result.Res, s.Fixtures.RequestTestCases.EmptyRequest)
 }

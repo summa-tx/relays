@@ -1197,6 +1197,13 @@
     }]
   },
   "requests": {
+    "emptyRequest": {
+      "spends": "0x1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a",
+      "pays": "0x1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a",
+      "paysValue": 0,
+      "activeState": true,
+      "numConfs": 0
+    },
     "checkRequests": [{
       "inputIndex": 1,
       "outputIndex": 2,
