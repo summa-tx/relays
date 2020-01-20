@@ -421,19 +421,30 @@ func (s *KeeperSuite) TestQueryGetRequest() {
 
 	path := []string{"getrequest"}
 
+	// bad req
+	req := abci.RequestQuery{
+		Path: "custom/relay/getrequest",
+		Data: []byte{0},
+	}
+
+	// Errors if it cannot unmarshal req data
+	_, err := querier(s.Context, path, req)
+	s.Equal(sdk.CodeType(1), err.Code())
+
+	// marshal params and set req
 	params := types.QueryParamsGetRequest{
 		ID: types.RequestID{},
 	}
 	marshalledParams, marshalErr := json.Marshal(params)
 	s.Nil(marshalErr)
 
-	req := abci.RequestQuery{
+	req = abci.RequestQuery{
 		Path: "custom/relay/getrequest",
 		Data: marshalledParams,
 	}
 
 	// Errors if request is not found
-	_, err := querier(s.Context, path, req)
+	_, err = querier(s.Context, path, req)
 	s.Equal(sdk.CodeType(601), err.Code())
 
 	// Set Request
