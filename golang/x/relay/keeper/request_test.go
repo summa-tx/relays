@@ -72,6 +72,9 @@ func (s *KeeperSuite) TestGetRequest() {
 func (s *KeeperSuite) TestCheckRequests() {
 	tc := s.Fixtures.RequestTestCases.CheckRequests
 	v := tc[0]
+	// out, extractErr := btcspv.ExtractOutputAtIndex(v.Vout, v.OutputIdx)
+	// s.Nil(extractErr)
+	// s.Equal(btcspv.Hash256(out[8:]), "hi")
 
 	// Errors if request is not found
 	id, err := types.NewRequestID(v.RequestID[:])
@@ -84,6 +87,53 @@ func (s *KeeperSuite) TestCheckRequests() {
 		id)
 	s.Equal(false, valid)
 	s.Equal(sdk.CodeType(601), err.Code())
+
+	// set request
+	requestErr := s.Keeper.setRequest(s.Context, []byte{1}, []byte{1}, 0, 0)
+	s.Nil(requestErr)
+	// change active state to false
+	activeErr := s.Keeper.setRequestState(s.Context, types.RequestID{}, false)
+	s.Nil(activeErr)
+	// TODO: Move this to setRequestState test function
+	deactivatedRequest, deactivatedRequestErr := s.Keeper.getRequest(s.Context, types.RequestID{})
+	s.Nil(deactivatedRequestErr)
+	s.Equal(false, deactivatedRequest.ActiveState)
+	// errors if request is not active
+	valid, err = s.Keeper.checkRequests(
+		s.Context,
+		v.InputIdx,
+		v.OutputIdx,
+		v.Vin,
+		v.Vout,
+		id)
+	s.Equal(false, valid)
+	s.Equal(sdk.CodeType(606), err.Code())
+
+	// change active state to false
+	activeErr = s.Keeper.setRequestState(s.Context, types.RequestID{}, true)
+	s.Nil(activeErr)
+	// errors if request pays is not equal to output amount
+	valid, err = s.Keeper.checkRequests(
+		s.Context,
+		v.InputIdx,
+		v.OutputIdx,
+		v.Vin,
+		v.Vout,
+		id)
+	s.Equal(false, valid)
+	s.Equal(sdk.CodeType(607), err.Code())
+
+	// requestErr = s.Keeper.setRequest(s.Context, out[8:], out[8:], 0, 0)
+	// s.Nil(requestErr)
+	// valid, err = s.Keeper.checkRequests(
+	// 	s.Context,
+	// 	v.InputIdx,
+	// 	v.OutputIdx,
+	// 	v.Vin,
+	// 	v.Vout,
+	// 	types.RequestID{0, 0, 0, 0, 0, 0, 0, 0})
+	// s.Equal(false, valid)
+	// s.Equal(sdk.CodeType(608), err.Code())
 
 	for i := 1; i < len(tc); i++ {
 		id, err := types.NewRequestID(tc[i].RequestID[:])

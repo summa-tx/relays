@@ -61,6 +61,23 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 	return nil
 }
 
+func (k Keeper) setRequestState(ctx sdk.Context, requestID types.RequestID, active bool) sdk.Error {
+	store := k.getRequestStore(ctx)
+	request, err := k.getRequest(ctx, requestID)
+	if err != nil {
+		return err
+	}
+
+	request.ActiveState = active
+
+	buf, marshalErr := json.Marshal(request)
+	if marshalErr != nil {
+		return types.ErrMarshalJSON(types.DefaultCodespace)
+	}
+	store.Set(requestID[:], buf)
+	return nil
+}
+
 func (k Keeper) getRequest(ctx sdk.Context, id types.RequestID) (types.ProofRequest, sdk.Error) {
 	store := k.getRequestStore(ctx)
 
@@ -128,7 +145,7 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 		return false, types.ErrClosedRequest(types.DefaultCodespace)
 	}
 
-	hasPays := req.Pays != types.Hash256Digest{}
+	hasPays := req.Pays != btcspv.Hash256([]byte{0})
 	if hasPays {
 		// We can ignore this error because we know that ValidateVout passed
 		out, _ := btcspv.ExtractOutputAtIndex(vout, outputIndex)
@@ -137,16 +154,16 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 			return false, types.ErrRequestPays(types.DefaultCodespace)
 		}
 		paysValue := req.PaysValue
-		if paysValue != 0 || uint64(btcspv.ExtractValue(out)) < paysValue {
+		if paysValue != 0 && uint64(btcspv.ExtractValue(out)) < paysValue {
 			return false, types.ErrRequestValue(types.DefaultCodespace)
 		}
 	}
 
-	hasSpends := req.Spends != types.Hash256Digest{}
+	hasSpends := req.Spends != btcspv.Hash256([]byte{0})
 	if hasSpends {
 		in := btcspv.ExtractInputAtIndex(vin, inputIndex)
 		inDigest := btcspv.Hash256(in)
-		if !hasSpends || inDigest != req.Spends {
+		if hasSpends && inDigest != req.Spends {
 			return false, types.ErrRequestSpends(types.DefaultCodespace)
 		}
 	}
