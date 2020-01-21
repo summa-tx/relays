@@ -165,7 +165,8 @@ func (s *KeeperSuite) TestCheckRequests() {
 
 	// Success
 	in := btcspv.ExtractInputAtIndex(v.Vin, v.InputIdx)
-	requestErr = s.Keeper.setRequest(s.Context, in, out[8:], 10, 255)
+	outpoint := btcspv.ExtractOutpoint(in)
+	requestErr = s.Keeper.setRequest(s.Context, outpoint, out[8:], 10, 255)
 	s.SDKNil(requestErr)
 	valid, err = s.Keeper.checkRequests(
 		s.Context,

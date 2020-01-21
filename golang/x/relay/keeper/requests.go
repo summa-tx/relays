@@ -162,7 +162,8 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 	hasSpends := req.Spends != btcspv.Hash256([]byte{0})
 	if hasSpends {
 		in := btcspv.ExtractInputAtIndex(vin, inputIndex)
-		inDigest := btcspv.Hash256(in)
+		outpoint := btcspv.ExtractOutpoint(in)
+		inDigest := btcspv.Hash256(outpoint)
 		if hasSpends && inDigest != req.Spends {
 			return false, types.ErrRequestSpends(types.DefaultCodespace)
 		}
