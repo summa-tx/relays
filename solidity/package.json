@@ -1,6 +1,6 @@
 {
   "name": "@summa-tx/relay-sol",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Bitcoin Relay",
   "main": "index.js",
   "scripts": {
