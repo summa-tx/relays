@@ -126,4 +126,10 @@ func (s *KeeperSuite) TestHandleNewRequest() {
 	s.Equal(sdk.CodeType(602), res.Code)
 
 	// setRequest error
+	store := s.Keeper.getRequestStore(s.Context)
+	store.Set([]byte(types.RequestIdTag), []byte("badID"))
+
+	newRequest = types.NewMsgNewRequest(getAccAddress(), bytes.Repeat([]byte{0}, 36), []byte{0}, 0, 0)
+	res = handler(s.Context, newRequest)
+	s.Equal(sdk.CodeType(107), res.Code)
 }
