@@ -70,5 +70,35 @@ func (s *KeeperSuite) TestGetRequest() {
 }
 
 func (s *KeeperSuite) TestCheckRequests() {
+	tc := s.Fixtures.RequestTestCases.CheckRequests
+	v := tc[0]
 
+	// Errors if request is not found
+	id, err := types.NewRequestID(v.RequestID[:])
+	valid, err := s.Keeper.checkRequests(
+		s.Context,
+		v.InputIdx,
+		v.OutputIdx,
+		v.Vin,
+		v.Vout,
+		id)
+	s.Equal(false, valid)
+	s.Equal(sdk.CodeType(601), err.Code())
+
+	for i := 1; i < len(tc); i++ {
+		id, err := types.NewRequestID(tc[i].RequestID[:])
+		valid, err := s.Keeper.checkRequests(
+			s.Context,
+			tc[i].InputIdx,
+			tc[i].OutputIdx,
+			tc[i].Vin,
+			tc[i].Vout,
+			id)
+		s.Equal(tc[i].Output, valid)
+		if tc[i].Error == 0 {
+			s.SDKNil(err)
+		} else {
+			s.Equal(sdk.CodeType(tc[i].Error), err.Code())
+		}
+	}
 }

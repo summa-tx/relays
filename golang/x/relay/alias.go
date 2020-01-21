@@ -48,6 +48,9 @@ type (
 	// RawHeader is an 80-byte raw header
 	RawHeader = types.RawHeader
 
+	// HexBytes is a type alias to make JSON hex ser/deser easier
+	HexBytes = types.HexBytes
+
 	// BitcoinHeader is a parsed Bitcoin header
 	BitcoinHeader = types.BitcoinHeader
 

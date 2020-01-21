@@ -158,13 +158,13 @@ type ValidatorTestCases struct {
 
 /***** Request TEST CASES *****/
 type CheckRequestTestCase struct {
-	InputIdx  uint8  `json:"inputIndex"`
-	OutputIdx uint8  `json:"outputIndex"`
-	Vin       []byte `json:"vin"`
-	Vout      []byte `json:"vout"`
-	RequestID uint64 `json:"requestID"`
-	Error     int    `json:"error"`
-	Output    bool   `json:"output"`
+	InputIdx  uint8          `json:"inputIndex"`
+	OutputIdx uint8          `json:"outputIndex"`
+	Vin       types.HexBytes `json:"vin"`
+	Vout      types.HexBytes `json:"vout"`
+	RequestID types.HexBytes `json:"requestID"`
+	Error     int            `json:"error"`
+	Output    bool           `json:"output"`
 }
 
 type RequestTestCases struct {
