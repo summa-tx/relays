@@ -67,7 +67,7 @@ func (s *KeeperSuite) TestSetRequestState() {
 	// change active state to false
 	activeErr = s.Keeper.setRequestState(s.Context, types.RequestID{}, false)
 	s.Nil(activeErr)
-	// TODO: Move this to setRequestState test function
+
 	deactivatedRequest, deactivatedRequestErr := s.Keeper.getRequest(s.Context, types.RequestID{})
 	s.Nil(deactivatedRequestErr)
 	s.Equal(false, deactivatedRequest.ActiveState)
