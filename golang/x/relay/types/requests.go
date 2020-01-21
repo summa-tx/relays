@@ -45,25 +45,3 @@ func RequestIdFromHex(hexStr string) (RequestID, sdk.Error) {
 	}
 	return id, nil
 }
-
-// // UnmarshalJSON unmarshalls 32 byte digests
-// func (id *RequestID) UnmarshalJSON(b []byte) error {
-// 	// Have to trim quotation marks off byte array
-// 	buf, err := hex.DecodeString(string(id[2:]))
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if len(buf) != 8 {
-// 		return fmt.Errorf("Expected 8 bytes, got %d bytes", len(buf))
-// 	}
-
-// 	copy(id[:], buf)
-
-// 	return nil
-// }
-
-// // MarshalJSON marashalls 32 byte digests as 0x-prepended hex
-// func (id RequestID) MarshalJSON() ([]byte, error) {
-// 	encoded := "\"0x" + hex.EncodeToString(id[:]) + "\""
-// 	return []byte(encoded), nil
-// }
