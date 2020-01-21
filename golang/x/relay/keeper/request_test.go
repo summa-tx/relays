@@ -4,6 +4,7 @@ import (
 	"bytes"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
@@ -55,6 +56,23 @@ func (s *KeeperSuite) TestSetRequest() {
 	s.Equal(sdk.CodeType(107), err.Code())
 }
 
+func (s *KeeperSuite) TestSetRequestState() {
+	// errors if request is not found
+	activeErr := s.Keeper.setRequestState(s.Context, types.RequestID{}, false)
+	s.Equal(sdk.CodeType(601), activeErr.Code())
+
+	// set request
+	requestErr := s.Keeper.setRequest(s.Context, []byte{1}, []byte{1}, 0, 0)
+	s.Nil(requestErr)
+	// change active state to false
+	activeErr = s.Keeper.setRequestState(s.Context, types.RequestID{}, false)
+	s.Nil(activeErr)
+	// TODO: Move this to setRequestState test function
+	deactivatedRequest, deactivatedRequestErr := s.Keeper.getRequest(s.Context, types.RequestID{})
+	s.Nil(deactivatedRequestErr)
+	s.Equal(false, deactivatedRequest.ActiveState)
+}
+
 func (s *KeeperSuite) TestGetRequest() {
 	requestRes := s.Fixtures.RequestTestCases.EmptyRequest
 	request, err := s.Keeper.getRequest(s.Context, types.RequestID{})
@@ -72,9 +90,6 @@ func (s *KeeperSuite) TestGetRequest() {
 func (s *KeeperSuite) TestCheckRequests() {
 	tc := s.Fixtures.RequestTestCases.CheckRequests
 	v := tc[0]
-	// out, extractErr := btcspv.ExtractOutputAtIndex(v.Vout, v.OutputIdx)
-	// s.Nil(extractErr)
-	// s.Equal(btcspv.Hash256(out[8:]), "hi")
 
 	// Errors if request is not found
 	id, err := types.NewRequestID(v.RequestID[:])
@@ -94,10 +109,6 @@ func (s *KeeperSuite) TestCheckRequests() {
 	// change active state to false
 	activeErr := s.Keeper.setRequestState(s.Context, types.RequestID{}, false)
 	s.Nil(activeErr)
-	// TODO: Move this to setRequestState test function
-	deactivatedRequest, deactivatedRequestErr := s.Keeper.getRequest(s.Context, types.RequestID{})
-	s.Nil(deactivatedRequestErr)
-	s.Equal(false, deactivatedRequest.ActiveState)
 	// errors if request is not active
 	valid, err = s.Keeper.checkRequests(
 		s.Context,
@@ -112,7 +123,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 	// change active state to false
 	activeErr = s.Keeper.setRequestState(s.Context, types.RequestID{}, true)
 	s.Nil(activeErr)
-	// errors if request pays is not equal to output amount
+	// errors if request pays is not equal to output
 	valid, err = s.Keeper.checkRequests(
 		s.Context,
 		v.InputIdx,
@@ -123,17 +134,45 @@ func (s *KeeperSuite) TestCheckRequests() {
 	s.Equal(false, valid)
 	s.Equal(sdk.CodeType(607), err.Code())
 
-	// requestErr = s.Keeper.setRequest(s.Context, out[8:], out[8:], 0, 0)
-	// s.Nil(requestErr)
-	// valid, err = s.Keeper.checkRequests(
-	// 	s.Context,
-	// 	v.InputIdx,
-	// 	v.OutputIdx,
-	// 	v.Vin,
-	// 	v.Vout,
-	// 	types.RequestID{0, 0, 0, 0, 0, 0, 0, 0})
-	// s.Equal(false, valid)
-	// s.Equal(sdk.CodeType(608), err.Code())
+	// Errors if output value is less than pays value
+	out, outErr := btcspv.ExtractOutputAtIndex(v.Vout, v.OutputIdx)
+	s.Nil(outErr)
+	requestErr = s.Keeper.setRequest(s.Context, []byte{0}, out[8:], 1000, 0)
+	valid, err = s.Keeper.checkRequests(
+		s.Context,
+		v.InputIdx,
+		v.OutputIdx,
+		v.Vin,
+		v.Vout,
+		types.RequestID{0, 0, 0, 0, 0, 0, 0, 1})
+	s.Equal(false, valid)
+	s.Equal(sdk.CodeType(608), err.Code())
+
+	// Errors if input value does not equal spends value
+	requestErr = s.Keeper.setRequest(s.Context, []byte{1}, []byte{0}, 0, 255)
+	valid, err = s.Keeper.checkRequests(
+		s.Context,
+		v.InputIdx,
+		v.OutputIdx,
+		v.Vin,
+		v.Vout,
+		types.RequestID{0, 0, 0, 0, 0, 0, 0, 2})
+	s.Equal(false, valid)
+	s.Equal(sdk.CodeType(609), err.Code())
+
+	// Success
+	in := btcspv.ExtractInputAtIndex(v.Vin, v.InputIdx)
+	requestErr = s.Keeper.setRequest(s.Context, in, out[8:], 10, 255)
+	valid, err = s.Keeper.checkRequests(
+		s.Context,
+		v.InputIdx,
+		v.OutputIdx,
+		v.Vin,
+		v.Vout,
+		types.RequestID{0, 0, 0, 0, 0, 0, 0, 3})
+	s.SDKNil(err)
+	s.Equal(true, valid)
+	// s.Equal(sdk.CodeType(609), err.Code())
 
 	for i := 1; i < len(tc); i++ {
 		id, err := types.NewRequestID(tc[i].RequestID[:])
