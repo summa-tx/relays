@@ -13,7 +13,7 @@ func (s *KeeperSuite) TestEmitReorg() {
 
 	events := s.Context.EventManager().Events()
 	e := events[0]
-	s.Equal(e.Type, "reorg")
+	s.Equal("reorg", e.Type)
 }
 
 func (s *KeeperSuite) TestGetDigestByStoreKey() {
@@ -97,7 +97,7 @@ func (s *KeeperSuite) TestHeaviestFromAncestor() {
 			s.SDKNil(err)
 			s.Equal(heaviest, tv.TestCases[i].Output)
 		} else {
-			s.Equal(err.Code(), sdk.CodeType(tv.TestCases[i].Error))
+			s.Equal(sdk.CodeType(tv.TestCases[i].Error), err.Code())
 		}
 	}
 }
@@ -121,7 +121,7 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 		pre[1].Raw,
 		10,
 	)
-	s.EqualError(err, 103)
+	s.Equal(sdk.CodeType(103), err.Code())
 
 	err = s.Keeper.IngestHeaderChain(s.Context, pre)
 	s.SDKNil(err)
@@ -146,7 +146,7 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 		pre[1].Raw,
 		10,
 	)
-	s.Equal(err.Code(), sdk.CodeType(404))
+	s.Equal(sdk.CodeType(404), err.Code())
 
 	for i := range tc {
 		s.Keeper.setBestKnownDigest(s.Context, tc[i].BestKnownDigest)
@@ -163,9 +163,9 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 			s.SDKNil(err)
 			events := s.Context.EventManager().Events()
 			e := events[i]
-			s.Equal(e.Type, tc[i].Output)
+			s.Equal(tc[i].Output, e.Type)
 		} else {
-			s.Equal(err.Code(), sdk.CodeType(tc[i].Error))
+			s.Equal(sdk.CodeType(tc[i].Error), err.Code())
 		}
 	}
 }

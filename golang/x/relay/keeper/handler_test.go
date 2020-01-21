@@ -35,7 +35,7 @@ func (s *KeeperSuite) TestNewHandler() {
 	}
 
 	res := handler(s.Context, badMsg)
-	s.Equal(res.Log, "{\"codespace\":\"sdk\",\"code\":6,\"message\":\"Unrecognized relay Msg type: bad_message\"}")
+	s.Equal("{\"codespace\":\"sdk\",\"code\":6,\"message\":\"Unrecognized relay Msg type: bad_message\"}", res.Log)
 }
 
 func (s *KeeperSuite) TestHandleMsgIngestHeaderChain() {
@@ -49,7 +49,7 @@ func (s *KeeperSuite) TestHandleMsgIngestHeaderChain() {
 
 	s.Keeper.ingestHeader(s.Context, testCases[0].Anchor)
 	res = handler(s.Context, newMsg)
-	s.Equal(res.Events[0].Type, "extension")
+	s.Equal("extension", res.Events[0].Type)
 }
 
 func (s *KeeperSuite) TestHandleMsgIngestDifficultyChange() {
@@ -64,7 +64,7 @@ func (s *KeeperSuite) TestHandleMsgIngestDifficultyChange() {
 	s.Keeper.ingestHeader(s.Context, testCases[0].PrevEpochStart)
 	s.Keeper.ingestHeader(s.Context, testCases[0].Anchor)
 	res = handler(s.Context, newMsg)
-	s.Equal(res.Events[0].Type, "extension")
+	s.Equal("extension", res.Events[0].Type)
 }
 
 func (s *KeeperSuite) TestHandleMsgMarkNewHeaviest() {
@@ -75,7 +75,7 @@ func (s *KeeperSuite) TestHandleMsgMarkNewHeaviest() {
 	s.Keeper.ingestHeader(s.Context, testCases[0].Anchor)
 	newMsg := types.NewMsgIngestDifficultyChange(getAccAddress(), testCases[0].PrevEpochStart.HashLE, testCases[0].Headers)
 	res := handler(s.Context, newMsg)
-	s.Equal(res.Events[0].Type, "extension")
+	s.Equal("extension", res.Events[0].Type)
 }
 
 func (s *KeeperSuite) TestHandleMarkNewHeaviest() {
@@ -106,7 +106,7 @@ func (s *KeeperSuite) TestHandleMarkNewHeaviest() {
 	// Successfully marks new heaviest
 	newMsg = types.NewMsgMarkNewHeaviest(getAccAddress(), tv.Genesis.HashLE, tv.Genesis.Raw, pre[0].Raw, 10)
 	res = handler(s.Context, newMsg)
-	s.Equal(res.Events[0].Type, "extension")
+	s.Equal("extension", res.Events[0].Type)
 }
 
 func (s *KeeperSuite) TestHandleNewRequest() {
@@ -117,7 +117,7 @@ func (s *KeeperSuite) TestHandleNewRequest() {
 	res := handler(s.Context, newRequest)
 	hasRequest := s.Keeper.hasRequest(s.Context, types.RequestID{})
 	s.Equal(true, hasRequest)
-	s.Equal(res.Events[0].Type, "proof_request")
+	s.Equal("proof_request", res.Events[0].Type)
 
 	// Msg validation failed
 	newRequest = types.NewMsgNewRequest(getAccAddress(), []byte{0}, []byte{0}, 0, 0)
@@ -126,7 +126,7 @@ func (s *KeeperSuite) TestHandleNewRequest() {
 
 	// setRequest error
 	store := s.Keeper.getRequestStore(s.Context)
-	store.Set([]byte(types.RequestIdTag), []byte("badID"))
+	store.Set([]byte(types.RequestIDTag), []byte("badID"))
 
 	newRequest = types.NewMsgNewRequest(getAccAddress(), bytes.Repeat([]byte{0}, 36), []byte{0}, 0, 0)
 	res = handler(s.Context, newRequest)

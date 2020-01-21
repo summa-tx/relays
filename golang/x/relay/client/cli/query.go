@@ -332,7 +332,7 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 			var idBytes types.RequestID
 			if args[0][:2] == "0x" {
-				id, err := types.RequestIdFromHex(args[0])
+				id, err := types.RequestIDFromHex(args[0])
 				if err != nil {
 					return err
 				}

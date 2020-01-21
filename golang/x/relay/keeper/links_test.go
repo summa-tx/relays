@@ -12,7 +12,7 @@ func (s *KeeperSuite) TestGetLink() {
 	hasHeader := s.Keeper.hasLink(s.Context, child.HashLE)
 	s.Equal(true, hasHeader)
 	getHeader := s.Keeper.getLink(s.Context, child.HashLE)
-	s.Equal(getHeader, parent.HashLE)
+	s.Equal(parent.HashLE, getHeader)
 }
 
 func (s *KeeperSuite) TestFindAncestor() {
@@ -22,7 +22,7 @@ func (s *KeeperSuite) TestFindAncestor() {
 
 	// errors if link is not found
 	_, err := s.Keeper.FindAncestor(s.Context, tc[0].Digest, tc[0].Offset)
-	s.Equal(err.Code(), types.CodeType(tc[0].Error))
+	s.Equal(types.CodeType(tc[0].Error), err.Code())
 
 	s.Keeper.ingestHeader(s.Context, anchor)
 	err = s.Keeper.IngestHeaderChain(s.Context, headers)
@@ -34,7 +34,7 @@ func (s *KeeperSuite) TestFindAncestor() {
 			s.SDKNil(err)
 			s.Equal(tc[i].Output, ancestor)
 		} else {
-			s.Equal(err.Code(), types.CodeType(tc[i].Error))
+			s.Equal(types.CodeType(tc[i].Error), err.Code())
 		}
 	}
 }

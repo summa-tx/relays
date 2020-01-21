@@ -20,7 +20,7 @@ func (s *KeeperSuite) TestEmitProofRequest() {
 func (s *KeeperSuite) TestIncrementID() {
 	id, err := s.Keeper.getNextID(s.Context)
 	s.SDKNil(err)
-	s.Equal(id, types.RequestID{})
+	s.Equal(types.RequestID{}, id)
 
 	err = s.Keeper.incrementID(s.Context)
 	s.SDKNil(err)
@@ -31,7 +31,7 @@ func (s *KeeperSuite) TestIncrementID() {
 
 	// errors if it cannot get next ID
 	store := s.Keeper.getRequestStore(s.Context)
-	idTag := []byte(types.RequestIdTag)
+	idTag := []byte(types.RequestIDTag)
 	store.Set(idTag, bytes.Repeat([]byte{9}, 9))
 
 	err = s.Keeper.incrementID(s.Context)
@@ -49,7 +49,7 @@ func (s *KeeperSuite) TestHasRequest() {
 
 func (s *KeeperSuite) TestSetRequest() {
 	store := s.Keeper.getRequestStore(s.Context)
-	idTag := []byte(types.RequestIdTag)
+	idTag := []byte(types.RequestIDTag)
 	store.Set(idTag, bytes.Repeat([]byte{9}, 9))
 
 	err := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0)
@@ -176,7 +176,6 @@ func (s *KeeperSuite) TestCheckRequests() {
 		types.RequestID{0, 0, 0, 0, 0, 0, 0, 3})
 	s.SDKNil(err)
 	s.Equal(true, valid)
-	// s.Equal(sdk.CodeType(609), err.Code())
 
 	for i := 1; i < len(tc); i++ {
 		id, err := types.NewRequestID(tc[i].RequestID[:])

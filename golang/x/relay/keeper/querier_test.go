@@ -106,7 +106,7 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, true)
+	s.Equal(true, result.Res)
 
 	// If Limit is 0, it will use default limit
 	params = types.QueryParamsIsAncestor{
@@ -126,7 +126,7 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 
 	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, true)
+	s.Equal(true, result.Res)
 
 	// Test unmarshall error
 	req = abci.RequestQuery{
@@ -168,7 +168,7 @@ func (s *KeeperSuite) TestQueryGetRelayGenesis() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, genesis.HashLE)
+	s.Equal(genesis.HashLE, result.Res)
 }
 
 func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
@@ -197,7 +197,7 @@ func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, genesis.HashLE)
+	s.Equal(genesis.HashLE, result.Res)
 }
 
 func (s *KeeperSuite) TestQueryFindAncestor() {
@@ -236,7 +236,7 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	// s.SDKNil(unmarshallErr)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, headers[2].HashLE)
+	s.Equal(headers[2].HashLE, result.Res)
 
 	// Test unmarshall error
 	req = abci.RequestQuery{
@@ -287,7 +287,7 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, headers[5].HashLE)
+	s.Equal(headers[5].HashLE, result.Res)
 
 	// Test that it errors if HeaviestFromAncestorErrors
 	params = types.QueryParamsHeaviestFromAncestor{
@@ -327,7 +327,7 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 
 	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, headers[5].HashLE)
+	s.Equal(headers[5].HashLE, result.Res)
 
 	// Test unmarshall error
 	req = abci.RequestQuery{
@@ -382,7 +382,7 @@ func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, true)
+	s.Equal(true, result.Res)
 
 	// Test that it looks up the default limit if limit is set to zero
 	params = types.QueryParamsIsMostRecentCommonAncestor{
@@ -404,7 +404,7 @@ func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
 
 	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, true)
+	s.Equal(true, result.Res)
 
 	// Test unmarshall error
 	req = abci.RequestQuery{
@@ -460,5 +460,5 @@ func (s *KeeperSuite) TestQueryGetRequest() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, s.Fixtures.RequestTestCases.EmptyRequest)
+	s.Equal(s.Fixtures.RequestTestCases.EmptyRequest, result.Res)
 }

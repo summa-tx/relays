@@ -28,8 +28,8 @@ func NewRequestID(b []byte) (RequestID, sdk.Error) {
 	return h, nil
 }
 
-// RequestIdFromHex converts a hex into a RequestId
-func RequestIdFromHex(hexStr string) (RequestID, sdk.Error) {
+// RequestIDFromHex converts a hex into a RequestID
+func RequestIDFromHex(hexStr string) (RequestID, sdk.Error) {
 	data := hexStr
 	if data[:2] == "0x" {
 		data = data[2:]

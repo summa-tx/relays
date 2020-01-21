@@ -108,7 +108,7 @@ func (k Keeper) incrementID(ctx sdk.Context) sdk.Error {
 	// convert back to bytes and store
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, newID)
-	store.Set([]byte(types.RequestIdTag), b)
+	store.Set([]byte(types.RequestIDTag), b)
 	// if no errors, return nil
 	return nil
 }
@@ -117,7 +117,7 @@ func (k Keeper) incrementID(ctx sdk.Context) sdk.Error {
 // so this returns the next ID to be used.
 func (k Keeper) getNextID(ctx sdk.Context) (types.RequestID, sdk.Error) {
 	store := k.getRequestStore(ctx)
-	idTag := []byte(types.RequestIdTag)
+	idTag := []byte(types.RequestIDTag)
 	if !store.Has(idTag) {
 		store.Set(idTag, bytes.Repeat([]byte{0}, 8))
 	}

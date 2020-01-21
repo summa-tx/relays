@@ -271,7 +271,7 @@ func (suite *KeeperSuite) EqualError(e sdk.Error, code int) {
 	if e.Code() != sdk.CodeType(code) {
 		msg = fmt.Sprintf("%sExpected: %d\n", e.Error(), code)
 	}
-	suite.Equal(e.Code(), sdk.CodeType(code), msg)
+	suite.Equal(sdk.CodeType(code), e.Code(), msg)
 }
 
 func (s *KeeperSuite) TestGetPrefixStore() {
