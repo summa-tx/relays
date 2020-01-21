@@ -20,9 +20,12 @@ type ProofRequest struct {
 
 // NewRequestID instantiates a RequestID from a byte slice
 func NewRequestID(b []byte) (RequestID, sdk.Error) {
+	if len(b) != 8 {
+		return RequestID{}, ErrBadHexLen(DefaultCodespace, 8, len(b))
+	}
 	var h RequestID
 	copied := copy(h[:], b)
-	if copied != 8 || len(b) != 8 {
+	if copied != 8 {
 		return RequestID{}, ErrBadHexLen(DefaultCodespace, 8, copied)
 	}
 	return h, nil

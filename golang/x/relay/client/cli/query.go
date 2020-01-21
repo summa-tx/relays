@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"encoding/binary"
 	"fmt"
 	"strconv"
 
@@ -330,31 +329,13 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			var idBytes types.RequestID
-			if args[0][:2] == "0x" {
-				id, err := types.RequestIDFromHex(args[0])
-				if err != nil {
-					return err
-				}
-				idBytes = id
-			} else {
-				id, err := strconv.ParseUint(args[0], 10, 64)
-				if err != nil {
-					return err
-				}
-
-				// convert to bytes
-				b := make([]byte, 8)
-				binary.BigEndian.PutUint64(b, id)
-				newID, err := types.NewRequestID(b)
-				if err != nil {
-					return err
-				}
-				idBytes = newID
+			id, idErr := requestIDFromString(args[0])
+			if idErr != nil {
+				return idErr
 			}
 
 			params := types.QueryParamsGetRequest{
-				ID: idBytes,
+				ID: id,
 			}
 
 			queryData, err := cdc.MarshalJSON(params)
