@@ -93,6 +93,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 
 	// Errors if request is not found
 	id, err := types.NewRequestID(v.RequestID[:])
+	s.SDKNil(err)
 	valid, err := s.Keeper.checkRequests(
 		s.Context,
 		v.InputIdx,
@@ -138,6 +139,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 	out, outErr := btcspv.ExtractOutputAtIndex(v.Vout, v.OutputIdx)
 	s.Nil(outErr)
 	requestErr = s.Keeper.setRequest(s.Context, []byte{0}, out[8:], 1000, 0)
+	s.SDKNil(requestErr)
 	valid, err = s.Keeper.checkRequests(
 		s.Context,
 		v.InputIdx,
@@ -150,6 +152,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 
 	// Errors if input value does not equal spends value
 	requestErr = s.Keeper.setRequest(s.Context, []byte{1}, []byte{0}, 0, 255)
+	s.SDKNil(requestErr)
 	valid, err = s.Keeper.checkRequests(
 		s.Context,
 		v.InputIdx,
@@ -163,6 +166,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 	// Success
 	in := btcspv.ExtractInputAtIndex(v.Vin, v.InputIdx)
 	requestErr = s.Keeper.setRequest(s.Context, in, out[8:], 10, 255)
+	s.SDKNil(requestErr)
 	valid, err = s.Keeper.checkRequests(
 		s.Context,
 		v.InputIdx,
@@ -176,6 +180,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 
 	for i := 1; i < len(tc); i++ {
 		id, err := types.NewRequestID(tc[i].RequestID[:])
+		s.SDKNil(err)
 		valid, err := s.Keeper.checkRequests(
 			s.Context,
 			tc[i].InputIdx,

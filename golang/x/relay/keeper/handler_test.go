@@ -122,7 +122,6 @@ func (s *KeeperSuite) TestHandleNewRequest() {
 	// Msg validation failed
 	newRequest = types.NewMsgNewRequest(getAccAddress(), []byte{0}, []byte{0}, 0, 0)
 	res = handler(s.Context, newRequest)
-	hasRequest = s.Keeper.hasRequest(s.Context, types.RequestID{})
 	s.Equal(sdk.CodeType(602), res.Code)
 
 	// setRequest error
