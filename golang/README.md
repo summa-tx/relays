@@ -1,11 +1,38 @@
 ## TODOs:
 
-1. Migrate solidity logic
-1. Add iterator for links
-1. Add reasonable genesis state
-1. Add state export
-1. Pass in testnet or mainnet status
-    1. Maybe genesis state? that's not perfect tho
+- [X] Milestone 1
+- [ ] Milestone 2
+- - [X] Expose best-known digest
+- - [X] Expose LCA of reorg
+- - [X] Follow API of existing Solidity Relay
+- - [ ] Validate SPV Proofs
+- [ ] Milestone 3
+- - [ ] Provide hooks to execute tasks + dispatch messages
+- - [ ] Add a basic web dashboard with Relay health
+
+## Messages added to CLI
+
+| Message | Status | Description |
+| ------- | ------ | ----------- |
+| IngestHeaderChain | Completed | Add a chain of headers to the relay |
+| IngestDifficultyChange | Completed | Add a chain of headers to the relay with a difficulty change|
+| MarkNewHeaviest | Completed | Mark a new best-known chain tip |
+| NewRequest | Completed | Register a new SPV Proof request|
+| ProvideProof | TODO | Provide a proof that satisfies 1 or more requests |
+
+## Queries added to CLI
+
+| Query | Status | Description |
+| ----- | ------ | ----------- |
+| IsAncestor | Completed | Deteremine if a block is an ancestor of another |
+| GetRelayGenesis | Completed | Get the trusted root of the relay |
+| GetLastReorgLCA | Completed | Get the LCA of the latest reorg |
+| FindAncestor | Completed | Find the nth ancestor of a block|
+| IsMostRecentCommonAncestor | Completed | Determine if a block is the LCA of two headers|
+| HeaviestFromAncestor | Completed | Check which of two descendents is heaviest from the LCA |
+| GetRequest | Completed | Get details of an SPV Proof Request|
+| CheckProof | TODO | Check the syntactic validity of an SPV Proof |
+| CheckRequests | TODO | Perform CheckProof and check the SPV Proof against a set of Requests |
 
 ## How to add a view function
 1. Add necessary getter(s) in `x/relay/keeper/keeper.go`

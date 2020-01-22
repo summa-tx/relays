@@ -97,22 +97,19 @@ type HeaviestFromAncestor struct {
 }
 
 type NewHeaviestTestCase struct {
-	Ancestor    types.Hash256Digest `json:"ancestor"`
-	CurrentBest types.RawHeader     `json:"currentBest"`
-	NewBest     types.RawHeader     `json:"newBest"`
-	Limit       uint32              `json:"limit"`
-	Error       int                 `json:"error"`
-	Output      string              `json:"output"`
-}
-
-type MarkNewHeaviest struct {
-	TestCases []NewHeaviestTestCase `json:"testCases"`
+	BestKnownDigest types.Hash256Digest `json:"bestKnownDigest"`
+	Ancestor        types.Hash256Digest `json:"ancestor"`
+	CurrentBest     types.RawHeader     `json:"currentBest"`
+	NewBest         types.RawHeader     `json:"newBest"`
+	Limit           uint32              `json:"limit"`
+	Error           int                 `json:"error"`
+	Output          string              `json:"output"`
 }
 
 type ChainTestCases struct {
-	IsMostRecentCA       IsMostRecentCA       `json:"isMostRecentCommonAncestor"`
-	HeaviestFromAncestor HeaviestFromAncestor `json:"heaviestFromAncestor"`
-	MarkNewHeaviest      MarkNewHeaviest      `json:"markNewHeaviest"`
+	IsMostRecentCA       IsMostRecentCA        `json:"isMostRecentCommonAncestor"`
+	HeaviestFromAncestor HeaviestFromAncestor  `json:"heaviestFromAncestor"`
+	MarkNewHeaviest      []NewHeaviestTestCase `json:"markNewHeaviest"`
 }
 
 /***** HEADER TEST CASES *****/
@@ -159,12 +156,29 @@ type ValidatorTestCases struct {
 	ValidateProof []ValidateProofTestCase `json:"validateProof"`
 }
 
+/***** Request TEST CASES *****/
+type CheckRequestTestCase struct {
+	InputIdx  uint8          `json:"inputIndex"`
+	OutputIdx uint8          `json:"outputIndex"`
+	Vin       types.HexBytes `json:"vin"`
+	Vout      types.HexBytes `json:"vout"`
+	RequestID types.HexBytes `json:"requestID"`
+	Error     int            `json:"error"`
+	Output    bool           `json:"output"`
+}
+
+type RequestTestCases struct {
+	EmptyRequest  types.ProofRequest     `json:"emptyRequest"`
+	CheckRequests []CheckRequestTestCase `json:"checkRequests"`
+}
+
 /***** KEEPER TEST CASES *****/
 type KeeperTestCases struct {
 	LinkTestCases      LinkTestCases      `json:"link"`
 	HeaderTestCases    HeaderTestCases    `json:"header"`
 	ChainTestCases     ChainTestCases     `json:"chain"`
 	ValidatorTestCases ValidatorTestCases `json:"validator"`
+	RequestTestCases   RequestTestCases   `json:"requests"`
 }
 
 type KeeperSuite struct {
@@ -257,7 +271,7 @@ func (suite *KeeperSuite) EqualError(e sdk.Error, code int) {
 	if e.Code() != sdk.CodeType(code) {
 		msg = fmt.Sprintf("%sExpected: %d\n", e.Error(), code)
 	}
-	suite.Equal(e.Code(), sdk.CodeType(code), msg)
+	suite.Equal(sdk.CodeType(code), e.Code(), msg)
 }
 
 func (s *KeeperSuite) TestGetPrefixStore() {

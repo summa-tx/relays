@@ -14,6 +14,8 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) 
 
 	// add new tx msg routes here
 	s.HandleFunc("/ingestheaderchain", ingestHeaderChainHandler(cliCtx)).Methods("POST")
+	s.HandleFunc("/ingestdiffchange", ingestDifficultyChangeHandler(cliCtx)).Methods("POST")
+	s.HandleFunc("/marknewheaviest", markNewHeaviestHandler(cliCtx)).Methods("POST")
 	s.HandleFunc("/newrequest", newRequestHandler(cliCtx)).Methods("POST")
 
 	// add new query routes below

@@ -1,6 +1,8 @@
 package types
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -45,12 +47,17 @@ const (
 	// BadHexMessage is the corresponding message
 	BadHexMessage = "Bad hex string in query or msg"
 
+	// BadHexLen occurs when a hex argument is the wrong length
+	BadHexLen sdk.CodeType = 107
+	// BadHexLenMessage is the corresponding message
+	BadHexLenMessage = "Expected %d bytes in a RequestID, got %d"
+
 	// BitcoinSPV is the code for errors bubbled up from Bitcoin SPV
-	BitcoinSPV sdk.CodeType = 107
+	BitcoinSPV sdk.CodeType = 108
 	// BitcoinSPVMessage is the corresponding message
 
 	// AlreadyInit is the code for a second attempt to init the relay
-	AlreadyInit sdk.CodeType = 108
+	AlreadyInit sdk.CodeType = 109
 	// AlreadyInitMessage is the corresponding message
 	AlreadyInitMessage = "Relay has already set genesis state"
 
@@ -268,6 +275,11 @@ func ErrBadHash256Digest(codespace sdk.CodespaceType) sdk.Error {
 // ErrBadHex throws an error
 func ErrBadHex(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, BadHex, BadHexMessage)
+}
+
+// ErrBadHexLen throws an error
+func ErrBadHexLen(codespace sdk.CodespaceType, expected, actual int) sdk.Error {
+	return sdk.NewError(codespace, BadHexLen, fmt.Sprintf(BadHexLenMessage, expected, actual))
 }
 
 // ErrAlreadyInit throws an error

@@ -17,7 +17,7 @@ func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, s
 	return bestKnownHeader.Height - header.Height, nil
 }
 
-func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof, requestID uint64) (bool, sdk.Error) {
+func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof, requestID types.RequestID) (bool, sdk.Error) {
 	// If it is not valid, it will return an error
 	_, err := proof.Validate()
 	if err != nil {

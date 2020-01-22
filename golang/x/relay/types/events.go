@@ -46,7 +46,7 @@ func NewExtensionEvent(first, last BitcoinHeader) sdk.Event {
 }
 
 // NewExtensionEvent instantiates a proof request event
-func NewProofRequestEvent(pays, spends []byte, paysValue, id uint64) sdk.Event {
+func NewProofRequestEvent(pays, spends []byte, paysValue uint64, id RequestID) sdk.Event {
 	return sdk.NewEvent(
 		EventTypeProofRequest,
 		sdk.NewAttribute(AttributeKeyRequestID, fmt.Sprintf("%d", id)),

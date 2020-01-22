@@ -13,7 +13,7 @@ func (s *KeeperSuite) TestEmitReorg() {
 
 	events := s.Context.EventManager().Events()
 	e := events[0]
-	s.Equal(e.Type, "reorg")
+	s.Equal("reorg", e.Type)
 }
 
 func (s *KeeperSuite) TestGetDigestByStoreKey() {
@@ -87,30 +87,24 @@ func (s *KeeperSuite) TestHeaviestFromAncestor() {
 	s.SDKNil(err)
 
 	for i := range tv.TestCases {
+		heaviest, err := s.Keeper.HeaviestFromAncestor(
+			s.Context,
+			tv.TestCases[i].Ancestor,
+			tv.TestCases[i].CurrentBest,
+			tv.TestCases[i].NewBest,
+			tv.TestCases[i].Limit)
 		if tv.TestCases[i].Error == 0 {
-			heaviest, err := s.Keeper.HeaviestFromAncestor(
-				s.Context,
-				tv.TestCases[i].Ancestor,
-				tv.TestCases[i].CurrentBest,
-				tv.TestCases[i].NewBest,
-				tv.TestCases[i].Limit)
 			s.SDKNil(err)
 			s.Equal(heaviest, tv.TestCases[i].Output)
 		} else {
-			_, err = s.Keeper.HeaviestFromAncestor(
-				s.Context,
-				tv.TestCases[i].Ancestor,
-				tv.TestCases[i].CurrentBest,
-				tv.TestCases[i].NewBest,
-				tv.TestCases[i].Limit)
-			s.Equal(err.Code(), sdk.CodeType(tv.TestCases[i].Error))
+			s.Equal(sdk.CodeType(tv.TestCases[i].Error), err.Code())
 		}
 	}
 }
 
 func (s *KeeperSuite) TestMarkNewHeaviest() {
 	tv := s.Fixtures.ChainTestCases.IsMostRecentCA
-	tc := s.Fixtures.ChainTestCases.MarkNewHeaviest.TestCases
+	tc := s.Fixtures.ChainTestCases.MarkNewHeaviest
 	pre := tv.PreRetargetChain
 	post := tv.PostRetargetChain
 	var postWithOrphan []types.BitcoinHeader
@@ -127,7 +121,7 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 		pre[1].Raw,
 		10,
 	)
-	s.EqualError(err, 103)
+	s.Equal(sdk.CodeType(103), err.Code())
 
 	err = s.Keeper.IngestHeaderChain(s.Context, pre)
 	s.SDKNil(err)
@@ -135,32 +129,6 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 	s.SDKNil(err)
 	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
 	s.SDKNil(err)
-
-	for i := range tc {
-		if tc[i].Error == 0 {
-			// updates the best known and emits an event
-			err = s.Keeper.MarkNewHeaviest(
-				s.Context,
-				tc[i].Ancestor,
-				tc[i].CurrentBest,
-				tc[i].NewBest,
-				tc[i].Limit,
-			)
-			s.SDKNil(err)
-			events := s.Context.EventManager().Events()
-			e := events[0]
-			s.Equal(e.Type, tc[i].Output)
-		} else {
-			err = s.Keeper.MarkNewHeaviest(
-				s.Context,
-				tc[i].Ancestor,
-				tc[i].CurrentBest,
-				tc[i].NewBest,
-				tc[i].Limit,
-			)
-			s.Equal(err.Code(), sdk.CodeType(tc[i].Error))
-		}
-	}
 
 	// errors if the ancestor is not the heaviest common ancestor
 	err = s.Keeper.MarkNewHeaviest(
@@ -178,5 +146,26 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 		pre[1].Raw,
 		10,
 	)
-	s.Equal(err.Code(), sdk.CodeType(404))
+	s.Equal(sdk.CodeType(404), err.Code())
+
+	for i := range tc {
+		s.Keeper.setBestKnownDigest(s.Context, tc[i].BestKnownDigest)
+		// updates the best known and emits an event
+		err = s.Keeper.MarkNewHeaviest(
+			s.Context,
+			tc[i].Ancestor,
+			tc[i].CurrentBest,
+			tc[i].NewBest,
+			tc[i].Limit,
+		)
+
+		if tc[i].Error == 0 {
+			s.SDKNil(err)
+			events := s.Context.EventManager().Events()
+			e := events[i]
+			s.Equal(tc[i].Output, e.Type)
+		} else {
+			s.Equal(sdk.CodeType(tc[i].Error), err.Code())
+		}
+	}
 }
