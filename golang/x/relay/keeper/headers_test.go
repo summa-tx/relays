@@ -16,7 +16,7 @@ func (s *KeeperSuite) TestEmitExtension() {
 
 	events := s.Context.EventManager().Events()
 	e := events[0]
-	s.Equal(e.Type, "extension")
+	s.Equal("extension", e.Type)
 }
 
 func (s *KeeperSuite) TestValidateHeaderChain() {
@@ -81,10 +81,10 @@ func (s *KeeperSuite) TestIngestHeader() {
 	for _, tc := range cases {
 		s.Keeper.ingestHeader(s.Context, tc.Headers[0])
 		hasHeader := s.Keeper.HasHeader(s.Context, tc.Headers[0].HashLE)
-		s.Equal(hasHeader, true)
+		s.Equal(true, hasHeader)
 		header, err := s.Keeper.GetHeader(s.Context, tc.Headers[0].HashLE)
 		s.SDKNil(err)
-		s.Equal(header, tc.Headers[0])
+		s.Equal(tc.Headers[0], header)
 	}
 }
 
@@ -134,6 +134,6 @@ func (s *KeeperSuite) TestCompareTargets() {
 
 	for _, tc := range cases {
 		result := compareTargets(tc.Full, tc.Truncated)
-		s.Equal(result, tc.Output)
+		s.Equal(tc.Output, result)
 	}
 }

@@ -72,7 +72,7 @@ func (s *KeeperSuite) TestNewQuerier() {
 
 	// Test that NewQuerier errors when given a bad path
 	_, err := querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(6))
+	s.Equal(sdk.CodeType(6), err.Code())
 }
 
 func (s *KeeperSuite) TestQueryIsAncestor() {
@@ -106,7 +106,7 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, true)
+	s.Equal(true, result.Res)
 
 	// If Limit is 0, it will use default limit
 	params = types.QueryParamsIsAncestor{
@@ -126,7 +126,7 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 
 	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, true)
+	s.Equal(true, result.Res)
 
 	// Test unmarshall error
 	req = abci.RequestQuery{
@@ -135,7 +135,7 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 	}
 
 	_, err = querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(1))
+	s.Equal(sdk.CodeType(1), err.Code())
 }
 
 func (s *KeeperSuite) TestQueryGetRelayGenesis() {
@@ -153,7 +153,7 @@ func (s *KeeperSuite) TestQueryGetRelayGenesis() {
 
 	// Test that GetRelayGenesis errors if RelayGenesis is not found
 	_, err := querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(105))
+	s.Equal(sdk.CodeType(105), err.Code())
 
 	// Set Genesis state
 	err = s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
@@ -168,7 +168,7 @@ func (s *KeeperSuite) TestQueryGetRelayGenesis() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, genesis.HashLE)
+	s.Equal(genesis.HashLE, result.Res)
 }
 
 func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
@@ -185,7 +185,7 @@ func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
 
 	// Test that it errors if it doesn't find LastReorgLCA
 	_, err := querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(105))
+	s.Equal(sdk.CodeType(105), err.Code())
 
 	setStateErr := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
 	s.SDKNil(setStateErr)
@@ -197,7 +197,7 @@ func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, genesis.HashLE)
+	s.Equal(genesis.HashLE, result.Res)
 }
 
 func (s *KeeperSuite) TestQueryFindAncestor() {
@@ -220,7 +220,7 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 
 	// Test that it errors if ancestor is not found
 	_, findAncestorErr := querier(s.Context, path, req)
-	s.Equal(findAncestorErr.Code(), sdk.CodeType(103))
+	s.Equal(sdk.CodeType(103), findAncestorErr.Code())
 
 	// initialize data
 	s.Keeper.ingestHeader(s.Context, anchor)
@@ -236,7 +236,7 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	// s.SDKNil(unmarshallErr)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, headers[2].HashLE)
+	s.Equal(headers[2].HashLE, result.Res)
 
 	// Test unmarshall error
 	req = abci.RequestQuery{
@@ -245,7 +245,7 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 	}
 
 	_, err = querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(1))
+	s.Equal(sdk.CodeType(1), err.Code())
 }
 
 func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
@@ -287,7 +287,7 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, headers[5].HashLE)
+	s.Equal(headers[5].HashLE, result.Res)
 
 	// Test that it errors if HeaviestFromAncestorErrors
 	params = types.QueryParamsHeaviestFromAncestor{
@@ -305,7 +305,7 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 	}
 
 	_, err = querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(103))
+	s.Equal(sdk.CodeType(103), err.Code())
 
 	// Test that default limit is used if limit is set to zero
 	params = types.QueryParamsHeaviestFromAncestor{
@@ -327,7 +327,7 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 
 	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, headers[5].HashLE)
+	s.Equal(headers[5].HashLE, result.Res)
 
 	// Test unmarshall error
 	req = abci.RequestQuery{
@@ -336,7 +336,7 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 	}
 
 	_, err = querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(1))
+	s.Equal(sdk.CodeType(1), err.Code())
 }
 
 func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
@@ -382,7 +382,7 @@ func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, true)
+	s.Equal(true, result.Res)
 
 	// Test that it looks up the default limit if limit is set to zero
 	params = types.QueryParamsIsMostRecentCommonAncestor{
@@ -404,7 +404,7 @@ func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
 
 	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(result.Res, true)
+	s.Equal(true, result.Res)
 
 	// Test unmarshall error
 	req = abci.RequestQuery{
@@ -413,5 +413,52 @@ func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
 	}
 
 	_, err = querier(s.Context, path, req)
-	s.Equal(err.Code(), sdk.CodeType(1))
+	s.Equal(sdk.CodeType(1), err.Code())
+}
+
+func (s *KeeperSuite) TestQueryGetRequest() {
+	querier := NewQuerier(s.Keeper)
+
+	path := []string{"getrequest"}
+
+	// bad req
+	req := abci.RequestQuery{
+		Path: "custom/relay/getrequest",
+		Data: []byte{0},
+	}
+
+	// Errors if it cannot unmarshal req data
+	_, err := querier(s.Context, path, req)
+	s.Equal(sdk.CodeType(1), err.Code())
+
+	// marshal params and set req
+	params := types.QueryParamsGetRequest{
+		ID: types.RequestID{},
+	}
+	marshalledParams, marshalErr := json.Marshal(params)
+	s.Nil(marshalErr)
+
+	req = abci.RequestQuery{
+		Path: "custom/relay/getrequest",
+		Data: marshalledParams,
+	}
+
+	// Errors if request is not found
+	_, err = querier(s.Context, path, req)
+	s.Equal(sdk.CodeType(601), err.Code())
+
+	// Set Request
+	err = s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0)
+	s.SDKNil(err)
+
+	// Use querier handler to get request
+	res, err := querier(s.Context, path, req)
+	s.SDKNil(err)
+
+	// Unmarshall the result and test
+	var result types.QueryResGetRequest
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
+	s.Nil(unmarshallErr)
+	s.Equal(s.Fixtures.RequestTestCases.EmptyRequest, result.Res)
 }

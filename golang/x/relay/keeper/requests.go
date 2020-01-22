@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/json"
 
@@ -10,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) emitProofRequest(ctx sdk.Context, pays, spends []byte, paysValue, id uint64) {
+func (k Keeper) emitProofRequest(ctx sdk.Context, pays, spends []byte, paysValue uint64, id types.RequestID) {
 	ctx.EventManager().EmitEvent(types.NewProofRequestEvent(pays, spends, paysValue, id))
 }
 
@@ -18,13 +19,9 @@ func (k Keeper) getRequestStore(ctx sdk.Context) sdk.KVStore {
 	return k.getPrefixStore(ctx, types.RequestStorePrefix)
 }
 
-func (k Keeper) hasRequest(ctx sdk.Context, id uint64) bool {
-	// convert id to bytes
-	idBytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(idBytes, id)
-
+func (k Keeper) hasRequest(ctx sdk.Context, id types.RequestID) bool {
 	store := k.getRequestStore(ctx)
-	return store.Has(idBytes)
+	return store.Has(id[:])
 }
 
 func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValue uint64, numConfs uint8) sdk.Error {
@@ -42,35 +39,55 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 	}
 
 	// When a new request comes in, get the id and use it to store request
-	id := k.getNextID(ctx)
-
-	buf, err := json.Marshal(request)
+	id, err := k.getNextID(ctx)
 	if err != nil {
+		return err
+	}
+
+	buf, marshalErr := json.Marshal(request)
+	if marshalErr != nil {
 		return types.ErrMarshalJSON(types.DefaultCodespace)
 	}
-	store.Set(id, buf)
+	store.Set(id[:], buf)
 
 	// Increment the ID
-	k.incrementID(ctx)
+	incrementErr := k.incrementID(ctx)
+	if incrementErr != nil {
+		return incrementErr
+	}
 
 	// Emit Proof Request event
-	numID := binary.BigEndian.Uint64(id)
-	k.emitProofRequest(ctx, pays, spends, request.PaysValue, numID)
+	k.emitProofRequest(ctx, pays, spends, request.PaysValue, id)
 	return nil
 }
 
-func (k Keeper) getRequest(ctx sdk.Context, id uint64) (types.ProofRequest, sdk.Error) {
+func (k Keeper) setRequestState(ctx sdk.Context, requestID types.RequestID, active bool) sdk.Error {
 	store := k.getRequestStore(ctx)
+	request, err := k.getRequest(ctx, requestID)
+	if err != nil {
+		return err
+	}
 
-	// convert id to bytes
-	idBytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(idBytes, id)
+	request.ActiveState = active
+
+	buf, marshalErr := json.Marshal(request)
+	if marshalErr != nil {
+		return types.ErrMarshalJSON(types.DefaultCodespace)
+	}
+	store.Set(requestID[:], buf)
+	return nil
+}
+
+func (k Keeper) getRequest(ctx sdk.Context, id types.RequestID) (types.ProofRequest, sdk.Error) {
+	store := k.getRequestStore(ctx)
 
 	hasRequest := k.hasRequest(ctx, id)
 	if !hasRequest {
 		return types.ProofRequest{}, types.ErrUnknownRequest(types.DefaultCodespace)
 	}
-	buf := store.Get(idBytes)
+
+	buf := store.Get(id[:])
+
 	var request types.ProofRequest
 	jsonErr := json.Unmarshal(buf, &request)
 	if jsonErr != nil {
@@ -79,30 +96,40 @@ func (k Keeper) getRequest(ctx sdk.Context, id uint64) (types.ProofRequest, sdk.
 	return request, nil
 }
 
-func (k Keeper) incrementID(ctx sdk.Context) {
+func (k Keeper) incrementID(ctx sdk.Context) sdk.Error {
 	store := k.getRequestStore(ctx)
 	// get id
-	id := k.getNextID(ctx)
+	id, err := k.getNextID(ctx)
+	if err != nil {
+		return err
+	}
 	// convert id to uint64 and add 1
-	newID := binary.BigEndian.Uint64(id) + 1
+	newID := binary.BigEndian.Uint64(id[:]) + 1
 	// convert back to bytes and store
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, newID)
-	store.Set([]byte(types.RequestID), b)
+	store.Set([]byte(types.RequestIDTag), b)
+	// if no errors, return nil
+	return nil
 }
 
 // getNextID retrieves the ID.  The ID is incremented after storing a request,
 // so this returns the next ID to be used.
-func (k Keeper) getNextID(ctx sdk.Context) []byte {
+func (k Keeper) getNextID(ctx sdk.Context) (types.RequestID, sdk.Error) {
 	store := k.getRequestStore(ctx)
-	id := []byte(types.RequestID)
-	if !store.Has(id) {
-		store.Set(id, []byte{0})
+	idTag := []byte(types.RequestIDTag)
+	if !store.Has(idTag) {
+		store.Set(idTag, bytes.Repeat([]byte{0}, 8))
 	}
-	return store.Get(id)
+	id := store.Get(idTag)
+	newID, err := types.NewRequestID(id)
+	if err != nil {
+		return types.RequestID{}, err
+	}
+	return newID, nil
 }
 
-func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vin []byte, vout []byte, requestID uint64) (bool, sdk.Error) {
+func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vin []byte, vout []byte, requestID types.RequestID) (bool, sdk.Error) {
 	if !btcspv.ValidateVin(vin) {
 		return false, types.ErrInvalidVin(types.DefaultCodespace)
 	}
@@ -118,25 +145,27 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 		return false, types.ErrClosedRequest(types.DefaultCodespace)
 	}
 
-	hasPays := req.Pays != types.Hash256Digest{}
+	hasPays := req.Pays != btcspv.Hash256([]byte{0})
 	if hasPays {
 		// We can ignore this error because we know that ValidateVout passed
 		out, _ := btcspv.ExtractOutputAtIndex(vout, outputIndex)
+		// hash the output script (out[8:])
 		outDigest := btcspv.Hash256(out[8:])
 		if outDigest != req.Pays {
 			return false, types.ErrRequestPays(types.DefaultCodespace)
 		}
 		paysValue := req.PaysValue
-		if paysValue != 0 || uint64(btcspv.ExtractValue(out)) < paysValue {
+		if paysValue != 0 && uint64(btcspv.ExtractValue(out)) < paysValue {
 			return false, types.ErrRequestValue(types.DefaultCodespace)
 		}
 	}
 
-	hasSpends := req.Spends != types.Hash256Digest{}
+	hasSpends := req.Spends != btcspv.Hash256([]byte{0})
 	if hasSpends {
 		in := btcspv.ExtractInputAtIndex(vin, inputIndex)
-		inDigest := btcspv.Hash256(in)
-		if !hasSpends || inDigest != req.Spends {
+		outpoint := btcspv.ExtractOutpoint(in)
+		inDigest := btcspv.Hash256(outpoint)
+		if hasSpends && inDigest != req.Spends {
 			return false, types.ErrRequestSpends(types.DefaultCodespace)
 		}
 	}

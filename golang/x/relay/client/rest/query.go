@@ -263,9 +263,9 @@ func getRequestHandler(cliCtx context.CLIContext, storeName string) http.Handler
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
-		id, err := strconv.ParseUint(vars["id"], 10, 64)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+		id, sdkErr := types.RequestIDFromString(vars["id"])
+		if sdkErr != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, sdkErr.Error())
 			return
 		}
 

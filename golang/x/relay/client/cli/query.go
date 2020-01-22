@@ -324,14 +324,14 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "getrequest <id>",
 		Example: "getrequest 12",
-		Long:    "Get a proof request using the associated ID",
+		Long:    "Get a proof request using the associated ID. ID can be an\n\"0x\" prepended hexbyte string or an integer",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			id, err := strconv.ParseUint(args[0], 10, 64)
-			if err != nil {
-				return err
+			id, idErr := types.RequestIDFromString(args[0])
+			if idErr != nil {
+				return idErr
 			}
 
 			params := types.QueryParamsGetRequest{
@@ -347,7 +347,7 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			res, _, err := cliCtx.QueryWithData("custom/relay/getrequest", queryData)
 
 			if err != nil {
-				fmt.Printf("could not find request associated with id: %d... \n", id)
+				fmt.Printf("could not find request associated with id: %s... \n", args[0])
 				return nil
 			}
 

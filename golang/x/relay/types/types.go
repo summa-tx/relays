@@ -17,6 +17,9 @@ type Hash160Digest = btcspv.Hash160Digest
 // RawHeader is an 80-byte raw header
 type RawHeader = btcspv.RawHeader
 
+// HexBytes is a type alias to make JSON hex ser/deser easier
+type HexBytes = btcspv.HexBytes
+
 // BitcoinHeader is a parsed Bitcoin header
 type BitcoinHeader = btcspv.BitcoinHeader
 

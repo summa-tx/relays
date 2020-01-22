@@ -12,10 +12,9 @@ func (s *KeeperSuite) TestGetLink() {
 	hasHeader := s.Keeper.hasLink(s.Context, child.HashLE)
 	s.Equal(true, hasHeader)
 	getHeader := s.Keeper.getLink(s.Context, child.HashLE)
-	s.Equal(getHeader, parent.HashLE)
+	s.Equal(parent.HashLE, getHeader)
 }
 
-// TODO: Add test cases: add to JSON, loop over
 func (s *KeeperSuite) TestFindAncestor() {
 	headers := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers
 	anchor := s.Fixtures.HeaderTestCases.ValidateChain[0].Anchor
@@ -23,22 +22,19 @@ func (s *KeeperSuite) TestFindAncestor() {
 
 	// errors if link is not found
 	_, err := s.Keeper.FindAncestor(s.Context, tc[0].Digest, tc[0].Offset)
-	s.Equal(err.Code(), types.CodeType(tc[0].Error))
+	s.Equal(types.CodeType(tc[0].Error), err.Code())
 
 	s.Keeper.ingestHeader(s.Context, anchor)
 	err = s.Keeper.IngestHeaderChain(s.Context, headers)
 	s.SDKNil(err)
 
 	for i := 1; i < len(tc); i++ {
+		ancestor, err := s.Keeper.FindAncestor(s.Context, tc[i].Digest, tc[i].Offset)
 		if tc[i].Error == 0 {
-			// successfully retrieves ancestor
-			ancestor, err := s.Keeper.FindAncestor(s.Context, tc[i].Digest, tc[i].Offset)
 			s.SDKNil(err)
 			s.Equal(tc[i].Output, ancestor)
 		} else {
-			// errors if link is not found
-			_, err = s.Keeper.FindAncestor(s.Context, tc[i].Digest, tc[i].Offset)
-			s.Equal(err.Code(), types.CodeType(tc[i].Error))
+			s.Equal(types.CodeType(tc[i].Error), err.Code())
 		}
 	}
 }
