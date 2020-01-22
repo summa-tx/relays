@@ -149,6 +149,7 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 	if hasPays {
 		// We can ignore this error because we know that ValidateVout passed
 		out, _ := btcspv.ExtractOutputAtIndex(vout, outputIndex)
+		// hash the output script (out[8:])
 		outDigest := btcspv.Hash256(out[8:])
 		if outDigest != req.Pays {
 			return false, types.ErrRequestPays(types.DefaultCodespace)
