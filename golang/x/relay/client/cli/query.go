@@ -329,7 +329,7 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			id, idErr := requestIDFromString(args[0])
+			id, idErr := types.RequestIDFromString(args[0])
 			if idErr != nil {
 				return idErr
 			}

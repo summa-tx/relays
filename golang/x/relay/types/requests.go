@@ -1,7 +1,9 @@
 package types
 
 import (
+	"encoding/binary"
 	"encoding/hex"
+	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -31,20 +33,29 @@ func NewRequestID(b []byte) (RequestID, sdk.Error) {
 	return h, nil
 }
 
-// RequestIDFromHex converts a hex into a RequestID
-func RequestIDFromHex(hexStr string) (RequestID, sdk.Error) {
-	data := hexStr
-	if data[:2] == "0x" {
-		data = data[2:]
+// RequestIDFromString converts a hex string or integer string into a RequestID
+func RequestIDFromString(s string) (RequestID, error) {
+	var idBytes []byte
+	var err error
+
+	if s[:2] == "0x" {
+		idBytes, err = hex.DecodeString(s[2:])
+		if err != nil {
+			return RequestID{}, ErrBadHex(DefaultCodespace)
+		}
+	} else {
+		id, parseErr := strconv.ParseUint(s, 10, 64)
+		if parseErr != nil {
+			return RequestID{}, parseErr
+		}
+
+		// convert to bytes
+		binary.BigEndian.PutUint64(idBytes, id)
 	}
 
-	bytes, decodeErr := hex.DecodeString(data)
-	if decodeErr != nil {
-		return RequestID{}, ErrBadHex(DefaultCodespace)
+	requestID, newIDErr := NewRequestID(idBytes)
+	if newIDErr != nil {
+		return RequestID{}, newIDErr
 	}
-	id, newIdErr := NewRequestID(bytes)
-	if newIdErr != nil {
-		return RequestID{}, newIdErr
-	}
-	return id, nil
+	return requestID, err
 }
