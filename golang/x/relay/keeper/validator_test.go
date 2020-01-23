@@ -59,7 +59,7 @@ func (s *KeeperSuite) TestValidateProof() {
 
 		if proofCases[i].Error != 0 {
 			valid, err := s.Keeper.validateProof(s.Context, proofCases[i].Proof, types.RequestID{0, 0, 0, 0, 0, 0, 0, requestID})
-			s.Equal(err.Code(), sdk.CodeType(proofCases[i].Error))
+			s.Equal(sdk.CodeType(proofCases[i].Error), err.Code())
 			s.Equal(proofCases[i].Output, valid)
 		} else {
 			valid, err := s.Keeper.validateProof(s.Context, proofCases[i].Proof, types.RequestID{0, 0, 0, 0, 0, 0, 0, requestID})
@@ -69,25 +69,45 @@ func (s *KeeperSuite) TestValidateProof() {
 	}
 }
 
-// func (s *KeeperSuite) TestCheckRequestsFilled() {
-// 	v := s.Fixtures.RequestTestCases.CheckRequests[0]
+func (s *KeeperSuite) TestCheckRequestsFilled() {
+	tc := s.Fixtures.ValidatorTestCases.CheckRequestsFilled
+	validProof := s.Fixtures.ValidatorTestCases.ValidateProof[0]
 
-// 	// Success
-// 	out, _ := btcspv.ExtractOutputAtIndex(v.Vout, v.OutputIdx)
-// 	outputScript := out[8:]
+	// // Success
+	// out, _ := btcspv.ExtractOutputAtIndex(v.Vout, v.OutputIdx)
+	// outputScript := out[8:]
 
-// 	in := btcspv.ExtractInputAtIndex(v.Vin, v.InputIdx)
-// 	outpoint := btcspv.ExtractOutpoint(in)
+	// in := btcspv.ExtractInputAtIndex(v.Vin, v.InputIdx)
+	// outpoint := btcspv.ExtractOutpoint(in)
 
-// 	requestErr := s.Keeper.setRequest(s.Context, outpoint, outputScript, 10, 255)
-// 	s.SDKNil(requestErr)
-// 	valid, err := s.Keeper.checkRequests(
-// 		s.Context,
-// 		v.InputIdx,
-// 		v.OutputIdx,
-// 		v.Vin,
-// 		v.Vout,
-// 		types.RequestID{0, 0, 0, 0, 0, 0, 0, 3})
-// 	s.SDKNil(err)
-// 	s.Equal(true, valid)
-// }
+	// requestErr := s.Keeper.setRequest(s.Context, outpoint, outputScript, 10, 255)
+	// s.SDKNil(requestErr)
+	// valid, err := s.Keeper.checkRequests(
+	// 	s.Context,
+	// 	v.InputIdx,
+	// 	v.OutputIdx,
+	// 	v.Vin,
+	// 	v.Vout,
+	// 	types.RequestID{})
+	// s.SDKNil(err)
+	// s.Equal(true, valid)
+
+	s.Keeper.setLastReorgLCA(s.Context, validProof.LCA)
+	s.Keeper.ingestHeader(s.Context, validProof.Proof.ConfirmingHeader)
+	s.Keeper.setLink(s.Context, validProof.Proof.ConfirmingHeader)
+	s.Keeper.ingestHeader(s.Context, validProof.BestKnown)
+	s.Keeper.setBestKnownDigest(s.Context, validProof.BestKnown.HashLE)
+	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 4)
+	s.Nil(requestErr)
+
+	for i := range tc {
+		valid, err := s.Keeper.checkRequestsFilled(s.Context, tc[i].FilledRequests)
+		if tc[i].Error != 0 {
+			s.Equal(false, valid)
+			s.Equal(sdk.CodeType(tc[i].Error), err.Code())
+		} else {
+			s.SDKNil(err)
+			s.Equal(true, valid)
+		}
+	}
+}

@@ -153,9 +153,9 @@ type ValidateProofTestCase struct {
 }
 
 type CheckRequestsFilledTestCase struct {
-	FilledRequest types.FilledRequests `json:"filledRequest"`
-	Error         int                  `json:"error"`
-	Output        bool                 `json:"output"`
+	FilledRequests types.FilledRequests `json:"filledRequest"`
+	Error          int                  `json:"error"`
+	Output         bool                 `json:"output"`
 }
 
 type ValidatorTestCases struct {
