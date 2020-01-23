@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"fmt"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -58,4 +59,27 @@ func RequestIDFromString(s string) (RequestID, error) {
 		return RequestID{}, newIDErr
 	}
 	return requestID, err
+}
+
+// UnmarshalJSON unmarshalls 8 byte requestID
+func (r *RequestID) UnmarshalJSON(b []byte) error {
+	// Have to trim quotation marks off byte array
+	buf, err := hex.DecodeString(strip0xPrefix(string(b[1 : len(b)-1])))
+	if err != nil {
+		return err
+	}
+
+	if len(buf) != 8 {
+		return fmt.Errorf("Expected 8 bytes, got %d bytes", len(buf))
+	}
+
+	copy(r[:], buf)
+
+	return nil
+}
+
+// MarshalJSON marashalls 32 byte digests as 0x-prepended hex
+func (r RequestID) MarshalJSON() ([]byte, error) {
+	encoded := "\"0x" + hex.EncodeToString(r[:]) + "\""
+	return []byte(encoded), nil
 }

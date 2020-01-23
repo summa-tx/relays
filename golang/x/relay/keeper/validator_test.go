@@ -68,3 +68,26 @@ func (s *KeeperSuite) TestValidateProof() {
 		}
 	}
 }
+
+// func (s *KeeperSuite) TestCheckRequestsFilled() {
+// 	v := s.Fixtures.RequestTestCases.CheckRequests[0]
+
+// 	// Success
+// 	out, _ := btcspv.ExtractOutputAtIndex(v.Vout, v.OutputIdx)
+// 	outputScript := out[8:]
+
+// 	in := btcspv.ExtractInputAtIndex(v.Vin, v.InputIdx)
+// 	outpoint := btcspv.ExtractOutpoint(in)
+
+// 	requestErr := s.Keeper.setRequest(s.Context, outpoint, outputScript, 10, 255)
+// 	s.SDKNil(requestErr)
+// 	valid, err := s.Keeper.checkRequests(
+// 		s.Context,
+// 		v.InputIdx,
+// 		v.OutputIdx,
+// 		v.Vin,
+// 		v.Vout,
+// 		types.RequestID{0, 0, 0, 0, 0, 0, 0, 3})
+// 	s.SDKNil(err)
+// 	s.Equal(true, valid)
+// }

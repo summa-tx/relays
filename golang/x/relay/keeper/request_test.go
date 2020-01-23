@@ -92,15 +92,13 @@ func (s *KeeperSuite) TestCheckRequests() {
 	v := tc[0]
 
 	// Errors if request is not found
-	id, err := types.NewRequestID(v.RequestID[:])
-	s.SDKNil(err)
 	valid, err := s.Keeper.checkRequests(
 		s.Context,
 		v.InputIdx,
 		v.OutputIdx,
 		v.Vin,
 		v.Vout,
-		id)
+		v.RequestID)
 	s.Equal(false, valid)
 	s.Equal(sdk.CodeType(601), err.Code())
 
@@ -117,7 +115,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 		v.OutputIdx,
 		v.Vin,
 		v.Vout,
-		id)
+		v.RequestID)
 	s.Equal(false, valid)
 	s.Equal(sdk.CodeType(606), err.Code())
 
@@ -131,7 +129,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 		v.OutputIdx,
 		v.Vin,
 		v.Vout,
-		id)
+		v.RequestID)
 	s.Equal(false, valid)
 	s.Equal(sdk.CodeType(607), err.Code())
 
@@ -181,15 +179,13 @@ func (s *KeeperSuite) TestCheckRequests() {
 	s.Equal(true, valid)
 
 	for i := 1; i < len(tc); i++ {
-		id, err := types.NewRequestID(tc[i].RequestID[:])
-		s.SDKNil(err)
 		valid, err := s.Keeper.checkRequests(
 			s.Context,
 			tc[i].InputIdx,
 			tc[i].OutputIdx,
 			tc[i].Vin,
 			tc[i].Vout,
-			id)
+			tc[i].RequestID)
 		s.Equal(tc[i].Output, valid)
 		if tc[i].Error == 0 {
 			s.SDKNil(err)
