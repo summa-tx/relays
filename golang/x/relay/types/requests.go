@@ -78,7 +78,7 @@ func (r *RequestID) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// MarshalJSON marashalls 32 byte digests as 0x-prepended hex
+// MarshalJSON marashalls 8 byte RequestID as 0x-prepended hex
 func (r RequestID) MarshalJSON() ([]byte, error) {
 	encoded := "\"0x" + hex.EncodeToString(r[:]) + "\""
 	return []byte(encoded), nil
