@@ -17,48 +17,48 @@ func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, s
 	return bestKnownHeader.Height - header.Height, nil
 }
 
-func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof, requestID types.RequestID) (bool, sdk.Error) {
+func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof, requestID types.RequestID) sdk.Error {
 	// If it is not valid, it will return an error
 	_, err := proof.Validate()
 	if err != nil {
-		return false, types.FromBTCSPVError(types.DefaultCodespace, err)
+		return types.FromBTCSPVError(types.DefaultCodespace, err)
 	}
 
 	lca, lcaErr := k.GetLastReorgLCA(ctx)
 	if lcaErr != nil {
-		return false, lcaErr
+		return lcaErr
 	}
 	isAncestor := k.IsAncestor(ctx, proof.ConfirmingHeader.HashLE, lca, 240)
 	if !isAncestor {
-		return false, types.ErrNotAncestor(types.DefaultCodespace)
+		return types.ErrNotAncestor(types.DefaultCodespace)
 	}
 
 	request, getErr := k.getRequest(ctx, requestID)
 	if getErr != nil {
-		return false, getErr
+		return getErr
 	}
 	confs, confsErr := k.getConfs(ctx, proof.ConfirmingHeader)
 	if confsErr != nil {
-		return false, confsErr
+		return confsErr
 	}
 	if confs < uint32(request.NumConfs) {
-		return false, types.ErrNotEnoughConfs(types.DefaultCodespace)
+		return types.ErrNotEnoughConfs(types.DefaultCodespace)
 	}
 
-	return true, nil
+	return nil
 }
 
-func (k Keeper) checkRequestsFilled(ctx sdk.Context, r types.FilledRequests) (bool, sdk.Error) {
-	// Validate Proof once.  If proof errors it is not valid.
-	_, err := k.validateProof(ctx, r.Proof, r.Requests[0].ID)
+func (k Keeper) checkRequestsFilled(ctx sdk.Context, r types.FilledRequests) sdk.Error {
+	// Validate Proof once
+	err := k.validateProof(ctx, r.Proof, r.Requests[0].ID)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	// get confs
 	confs, confsErr := k.getConfs(ctx, r.Proof.ConfirmingHeader)
 	if confsErr != nil {
-		return false, confsErr
+		return confsErr
 	}
 
 	// check subsequent proofs
@@ -66,17 +66,17 @@ func (k Keeper) checkRequestsFilled(ctx sdk.Context, r types.FilledRequests) (bo
 		// get request
 		request, getErr := k.getRequest(ctx, r.Requests[i].ID)
 		if getErr != nil {
-			return false, getErr
+			return getErr
 		}
 		// check confirmations
 		if confs < uint32(request.NumConfs) {
-			return false, types.ErrNotEnoughConfs(types.DefaultCodespace)
+			return types.ErrNotEnoughConfs(types.DefaultCodespace)
 		}
 	}
 
 	for i := range r.Requests {
 		// check request
-		matchingRequest, err := k.checkRequests(
+		err := k.checkRequests(
 			ctx,
 			r.Requests[i].InputIndex,
 			r.Requests[i].OutputIndex,
@@ -84,11 +84,8 @@ func (k Keeper) checkRequestsFilled(ctx sdk.Context, r types.FilledRequests) (bo
 			r.Proof.Vout,
 			r.Requests[i].ID)
 		if err != nil {
-			return false, err
-		}
-		if !matchingRequest {
-			return false, types.ErrNotMatching(types.DefaultCodespace)
+			return err
 		}
 	}
-	return true, nil
+	return nil
 }

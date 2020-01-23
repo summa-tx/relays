@@ -1222,8 +1222,7 @@
         "height": 592924
       },
       "lca": "0xc238b601308b7297346ab2ed59942d7d7ecea8d23a1001000000000000000000",
-      "error": 0,
-      "output": true
+      "error": 0
     },
     {
       "proof": {
@@ -1246,8 +1245,7 @@
         }
       },
       "lca": "0xc238b601308b7297346ab2ed59942d7d7ecea8d23a1001000000000000000000",
-      "error": 108,
-      "output": false
+      "error": 108
     },
     {
       "proof": {
@@ -1274,8 +1272,7 @@
         "height": 592922
       },
       "lca": "0xc238b601308b7297346ab2ed59942d7d7ecea8d23a1001000000000000000000",
-      "error": 611,
-      "output": false
+      "error": 611
     }],
     "checkRequestsFilled": [{
       "filledRequest": {
@@ -1309,7 +1306,6 @@
           "id": "0x0000000000000000"
         }]
       },
-      "output": true,
       "error": 0
     }, {
       "filledRequest": {
@@ -1339,7 +1335,6 @@
           "id": "0x0000000000000000"
         }]
       },
-      "output": false,
       "error": 108
     }, {
       "filledRequest": {
@@ -1373,7 +1368,6 @@
           "id": "0x0700000000000000"
         }]
       },
-      "output": false,
       "error": 601
     }]
   },
@@ -1391,24 +1385,21 @@
       "vin": "0x0101748906a5c7064550a594c4683ffc6d1ee25292b638c4328bb66403cfceb58a000000006a4730440220364301a77ee7ae34fa71768941a2aad5bd1fa8d3e30d4ce6424d8752e83f2c1b02203c9f8aafced701f59ffb7c151ff2523f3ed1586d29b674efb489e803e9bf93050121029b3008c0fa147fd9db5146e42b27eb0a77389497713d3aad083313d1b1b05ec0ffffffff",
       "vout": "0x0316312f00000000001976a91400cc8d95d6835252e0d95eb03b11691a21a7bac588ac220200000000000017a914e5034b9de4881d62480a2df81032ef0299dcdc32870000000000000000166a146f6d6e69000000000000001f0000000315e17900",
       "requestID": "0x0000000000000000",
-      "error": 605,
-      "output": false
+      "error": 605
     }, {
       "inputIndex": 1,
       "outputIndex": 2,
       "vin": "0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffff",
       "vout": "0x02",
       "requestID": "0x0100000000000000",
-      "error": 604,
-      "output": false
+      "error": 604
     }, {
         "inputIndex": 1,
         "outputIndex": 2,
         "vin": "0x0101748906a5c7064550a594c4683ffc6d1ee25292b638c4328bb66403cfceb58a000000006a4730440220364301a77ee7ae34fa71768941a2aad5bd1fa8d3e30d4ce6424d8752e83f2c1b02203c9f8aafced701f59ffb7c151ff2523f3ed1586d29b674efb489e803e9bf93050121029b3008c0fa147fd9db5146e42b27eb0a77389497713d3aad083313d1b1b05ec0ffffffff",
         "vout": "0x004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
         "requestID": "0x0100000000000000",
-        "error": 605,
-        "output": false
+        "error": 605
     }]
   }
 }

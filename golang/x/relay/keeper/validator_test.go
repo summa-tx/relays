@@ -12,39 +12,34 @@ func (s *KeeperSuite) TestValidateProof() {
 	proof := proofCases[0].Proof
 
 	// errors if LCA is not found
-	valid, err := s.Keeper.validateProof(s.Context, proof, types.RequestID{})
+	err := s.Keeper.validateProof(s.Context, proof, types.RequestID{})
 	s.Equal(sdk.CodeType(105), err.Code())
-	s.Equal(false, valid)
 
 	// errors if link is not found
 	s.Keeper.setLastReorgLCA(s.Context, proofCases[0].LCA)
 
-	valid, err = s.Keeper.validateProof(s.Context, proof, types.RequestID{})
+	err = s.Keeper.validateProof(s.Context, proof, types.RequestID{})
 	s.Equal(sdk.CodeType(610), err.Code())
-	s.Equal(false, valid)
 
 	// errors if request is not found
 	s.Keeper.ingestHeader(s.Context, proof.ConfirmingHeader)
 	s.Keeper.setLink(s.Context, proof.ConfirmingHeader)
 
-	valid, err = s.Keeper.validateProof(s.Context, proof, types.RequestID{})
+	err = s.Keeper.validateProof(s.Context, proof, types.RequestID{})
 	s.Equal(sdk.CodeType(601), err.Code())
-	s.Equal(false, valid)
 
 	// errors if Best Known Digest is not found
 	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 4)
 	s.Nil(requestErr)
 
-	valid, err = s.Keeper.validateProof(s.Context, proof, types.RequestID{})
+	err = s.Keeper.validateProof(s.Context, proof, types.RequestID{})
 	s.Equal(sdk.CodeType(105), err.Code())
-	s.Equal(false, valid)
 
 	// errors if Best Known Digest header is not found
 	s.Keeper.setBestKnownDigest(s.Context, proofCases[0].BestKnown.HashLE)
 
-	valid, err = s.Keeper.validateProof(s.Context, proof, types.RequestID{})
+	err = s.Keeper.validateProof(s.Context, proof, types.RequestID{})
 	s.Equal(sdk.CodeType(103), err.Code())
-	s.Equal(false, valid)
 
 	for i := range proofCases {
 		requestID := byte(i + 1)
@@ -58,13 +53,11 @@ func (s *KeeperSuite) TestValidateProof() {
 		s.Nil(requestErr)
 
 		if proofCases[i].Error != 0 {
-			valid, err := s.Keeper.validateProof(s.Context, proofCases[i].Proof, types.RequestID{0, 0, 0, 0, 0, 0, 0, requestID})
+			err := s.Keeper.validateProof(s.Context, proofCases[i].Proof, types.RequestID{0, 0, 0, 0, 0, 0, 0, requestID})
 			s.Equal(sdk.CodeType(proofCases[i].Error), err.Code())
-			s.Equal(proofCases[i].Output, valid)
 		} else {
-			valid, err := s.Keeper.validateProof(s.Context, proofCases[i].Proof, types.RequestID{0, 0, 0, 0, 0, 0, 0, requestID})
+			err := s.Keeper.validateProof(s.Context, proofCases[i].Proof, types.RequestID{0, 0, 0, 0, 0, 0, 0, requestID})
 			s.Nil(err)
-			s.Equal(proofCases[i].Output, valid)
 		}
 	}
 }
@@ -82,8 +75,7 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 
 	// errors if getConfs fails
 	// TODO: this is failing inside the ValidateProof check
-	valid, err := s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
-	s.Equal(false, valid)
+	err := s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
 	s.Equal(sdk.CodeType(105), err.Code())
 
 	s.Keeper.setBestKnownDigest(s.Context, validProof.BestKnown.HashLE)
@@ -93,8 +85,7 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	activeErr := s.Keeper.setRequestState(s.Context, types.RequestID{}, false)
 	s.SDKNil(activeErr)
 
-	valid, err = s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
-	s.Equal(false, valid)
+	err = s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
 	s.Equal(sdk.CodeType(606), err.Code())
 
 	// reactivate request
@@ -102,13 +93,11 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	s.SDKNil(activeErr)
 
 	for i := range tc {
-		valid, err := s.Keeper.checkRequestsFilled(s.Context, tc[i].FilledRequests)
+		err := s.Keeper.checkRequestsFilled(s.Context, tc[i].FilledRequests)
 		if tc[i].Error != 0 {
-			s.Equal(tc[i].Output, valid)
 			s.Equal(sdk.CodeType(tc[i].Error), err.Code())
 		} else {
 			s.SDKNil(err)
-			s.Equal(tc[i].Output, valid)
 		}
 	}
 
@@ -118,7 +107,6 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 
 	copiedRequest := tc[0].FilledRequests
 	copiedRequest.Requests[1].ID = types.RequestID{0, 0, 0, 0, 0, 0, 0, 1}
-	valid, err = s.Keeper.checkRequestsFilled(s.Context, copiedRequest)
-	s.Equal(false, valid)
+	err = s.Keeper.checkRequestsFilled(s.Context, copiedRequest)
 	s.Equal(sdk.CodeType(611), err.Code())
 }

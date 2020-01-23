@@ -129,20 +129,20 @@ func (k Keeper) getNextID(ctx sdk.Context) (types.RequestID, sdk.Error) {
 	return newID, nil
 }
 
-func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vin []byte, vout []byte, requestID types.RequestID) (bool, sdk.Error) {
+func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vin []byte, vout []byte, requestID types.RequestID) sdk.Error {
 	if !btcspv.ValidateVin(vin) {
-		return false, types.ErrInvalidVin(types.DefaultCodespace)
+		return types.ErrInvalidVin(types.DefaultCodespace)
 	}
 	if !btcspv.ValidateVout(vout) {
-		return false, types.ErrInvalidVout(types.DefaultCodespace)
+		return types.ErrInvalidVout(types.DefaultCodespace)
 	}
 
 	req, reqErr := k.getRequest(ctx, requestID)
 	if reqErr != nil {
-		return false, reqErr
+		return reqErr
 	}
 	if !req.ActiveState {
-		return false, types.ErrClosedRequest(types.DefaultCodespace)
+		return types.ErrClosedRequest(types.DefaultCodespace)
 	}
 
 	hasPays := req.Pays != btcspv.Hash256([]byte{0})
@@ -152,11 +152,11 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 		// hash the output script (out[8:])
 		outDigest := btcspv.Hash256(out[8:])
 		if outDigest != req.Pays {
-			return false, types.ErrRequestPays(types.DefaultCodespace)
+			return types.ErrRequestPays(types.DefaultCodespace)
 		}
 		paysValue := req.PaysValue
 		if paysValue != 0 && uint64(btcspv.ExtractValue(out)) < paysValue {
-			return false, types.ErrRequestValue(types.DefaultCodespace)
+			return types.ErrRequestValue(types.DefaultCodespace)
 		}
 	}
 
@@ -166,8 +166,8 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 		outpoint := btcspv.ExtractOutpoint(in)
 		inDigest := btcspv.Hash256(outpoint)
 		if hasSpends && inDigest != req.Spends {
-			return false, types.ErrRequestSpends(types.DefaultCodespace)
+			return types.ErrRequestSpends(types.DefaultCodespace)
 		}
 	}
-	return true, nil
+	return nil
 }

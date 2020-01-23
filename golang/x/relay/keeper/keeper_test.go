@@ -149,13 +149,11 @@ type ValidateProofTestCase struct {
 	BestKnown types.BitcoinHeader `json:"bestKnown"`
 	LCA       types.Hash256Digest `json:"lca"`
 	Error     int                 `json:"error"`
-	Output    bool                `json:"output"`
 }
 
 type CheckRequestsFilledTestCase struct {
 	FilledRequests types.FilledRequests `json:"filledRequest"`
 	Error          int                  `json:"error"`
-	Output         bool                 `json:"output"`
 }
 
 type ValidatorTestCases struct {
@@ -171,7 +169,6 @@ type CheckRequestTestCase struct {
 	Vout      types.HexBytes  `json:"vout"`
 	RequestID types.RequestID `json:"requestID"`
 	Error     int             `json:"error"`
-	Output    bool            `json:"output"`
 }
 
 type RequestTestCases struct {
