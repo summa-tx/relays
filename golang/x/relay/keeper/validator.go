@@ -17,7 +17,7 @@ func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, s
 	return bestKnownHeader.Height - header.Height, nil
 }
 
-func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof, requestID types.RequestID) sdk.Error {
+func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof) sdk.Error {
 	// If it is not valid, it will return an error
 	_, err := proof.Validate()
 	if err != nil {
@@ -33,35 +33,32 @@ func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof, requestID t
 		return types.ErrNotAncestor(types.DefaultCodespace)
 	}
 
-	request, getErr := k.getRequest(ctx, requestID)
-	if getErr != nil {
-		return getErr
-	}
-	confs, confsErr := k.getConfs(ctx, proof.ConfirmingHeader)
-	if confsErr != nil {
-		return confsErr
-	}
-	if confs < uint32(request.NumConfs) {
-		return types.ErrNotEnoughConfs(types.DefaultCodespace)
-	}
-
 	return nil
 }
 
 func (k Keeper) checkRequestsFilled(ctx sdk.Context, r types.FilledRequests) sdk.Error {
 	// Validate Proof once
-	err := k.validateProof(ctx, r.Proof, r.Requests[0].ID)
+	err := k.validateProof(ctx, r.Proof)
 	if err != nil {
 		return err
 	}
 
-	// get confs
 	confs, confsErr := k.getConfs(ctx, r.Proof.ConfirmingHeader)
 	if confsErr != nil {
 		return confsErr
 	}
 
 	for i := range r.Requests {
+		// get request
+		request, getErr := k.getRequest(ctx, r.Requests[i].ID)
+		if getErr != nil {
+			return getErr
+		}
+		// check confirmations
+		if confs < uint32(request.NumConfs) {
+			return types.ErrNotEnoughConfs(types.DefaultCodespace)
+		}
+
 		// check request
 		err := k.checkRequests(
 			ctx,
@@ -72,18 +69,6 @@ func (k Keeper) checkRequestsFilled(ctx sdk.Context, r types.FilledRequests) sdk
 			r.Requests[i].ID)
 		if err != nil {
 			return err
-		}
-
-		if i >= 1 {
-			// get request
-			request, getErr := k.getRequest(ctx, r.Requests[i].ID)
-			if getErr != nil {
-				return getErr
-			}
-			// check confirmations
-			if confs < uint32(request.NumConfs) {
-				return types.ErrNotEnoughConfs(types.DefaultCodespace)
-			}
 		}
 	}
 	return nil

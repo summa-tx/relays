@@ -5,58 +5,55 @@ import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
-// TODO: Fix IncrementID, ID is not incrementing when a new request is set
+func (s *KeeperSuite) TestGetConfs() {
+	header := s.Fixtures.ValidatorTestCases.ValidateProof[0].Proof.ConfirmingHeader
+	bestKnown := s.Fixtures.ValidatorTestCases.ValidateProof[0].BestKnown
+
+	// errors if Best Known Digest is not found
+	confs, err := s.Keeper.getConfs(s.Context, header)
+	s.Equal(sdk.CodeType(105), err.Code())
+	s.Equal(uint32(0), confs)
+
+	// errors if Best Known Digest header is not found
+	s.Keeper.setBestKnownDigest(s.Context, bestKnown.HashLE)
+
+	confs, err = s.Keeper.getConfs(s.Context, header)
+	s.Equal(sdk.CodeType(103), err.Code())
+	s.Equal(uint32(0), confs)
+
+	// success
+	s.Keeper.ingestHeader(s.Context, bestKnown)
+
+	confs, err = s.Keeper.getConfs(s.Context, header)
+	s.SDKNil(err)
+	s.Equal(uint32(4), confs)
+}
+
 func (s *KeeperSuite) TestValidateProof() {
-	// TODO: Add Request ID and NumConfs check to test
 	proofCases := s.Fixtures.ValidatorTestCases.ValidateProof
 	proof := proofCases[0].Proof
 
 	// errors if LCA is not found
-	err := s.Keeper.validateProof(s.Context, proof, types.RequestID{})
+	err := s.Keeper.validateProof(s.Context, proof)
 	s.Equal(sdk.CodeType(105), err.Code())
 
 	// errors if link is not found
 	s.Keeper.setLastReorgLCA(s.Context, proofCases[0].LCA)
 
-	err = s.Keeper.validateProof(s.Context, proof, types.RequestID{})
+	err = s.Keeper.validateProof(s.Context, proof)
 	s.Equal(sdk.CodeType(610), err.Code())
 
-	// errors if request is not found
-	s.Keeper.ingestHeader(s.Context, proof.ConfirmingHeader)
-	s.Keeper.setLink(s.Context, proof.ConfirmingHeader)
-
-	err = s.Keeper.validateProof(s.Context, proof, types.RequestID{})
-	s.Equal(sdk.CodeType(601), err.Code())
-
-	// errors if Best Known Digest is not found
-	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 4)
-	s.Nil(requestErr)
-
-	err = s.Keeper.validateProof(s.Context, proof, types.RequestID{})
-	s.Equal(sdk.CodeType(105), err.Code())
-
-	// errors if Best Known Digest header is not found
-	s.Keeper.setBestKnownDigest(s.Context, proofCases[0].BestKnown.HashLE)
-
-	err = s.Keeper.validateProof(s.Context, proof, types.RequestID{})
-	s.Equal(sdk.CodeType(103), err.Code())
-
 	for i := range proofCases {
-		requestID := byte(i + 1)
 		// Store lots of stuff
 		s.Keeper.setLastReorgLCA(s.Context, proofCases[i].LCA)
 		s.Keeper.ingestHeader(s.Context, proofCases[i].Proof.ConfirmingHeader)
 		s.Keeper.setLink(s.Context, proofCases[i].Proof.ConfirmingHeader)
-		s.Keeper.ingestHeader(s.Context, proofCases[i].BestKnown)
-		s.Keeper.setBestKnownDigest(s.Context, proofCases[i].BestKnown.HashLE)
-		requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 4)
-		s.Nil(requestErr)
 
 		if proofCases[i].Error != 0 {
-			err := s.Keeper.validateProof(s.Context, proofCases[i].Proof, types.RequestID{0, 0, 0, 0, 0, 0, 0, requestID})
+			err := s.Keeper.validateProof(s.Context, proofCases[i].Proof)
 			s.Equal(sdk.CodeType(proofCases[i].Error), err.Code())
 		} else {
-			err := s.Keeper.validateProof(s.Context, proofCases[i].Proof, types.RequestID{0, 0, 0, 0, 0, 0, 0, requestID})
+			err := s.Keeper.validateProof(s.Context, proofCases[i].Proof)
 			s.Nil(err)
 		}
 	}
@@ -74,7 +71,6 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	s.Nil(requestErr)
 
 	// errors if getConfs fails
-	// TODO: this is failing inside the ValidateProof check
 	err := s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
 	s.Equal(sdk.CodeType(105), err.Code())
 
@@ -106,7 +102,7 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	s.Nil(requestErr)
 
 	copiedRequest := tc[0].FilledRequests
-	copiedRequest.Requests[1].ID = types.RequestID{0, 0, 0, 0, 0, 0, 0, 1}
+	copiedRequest.Requests[0].ID = types.RequestID{0, 0, 0, 0, 0, 0, 0, 1}
 	err = s.Keeper.checkRequestsFilled(s.Context, copiedRequest)
 	s.Equal(sdk.CodeType(611), err.Code())
 }
