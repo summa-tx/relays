@@ -61,19 +61,6 @@ func (k Keeper) checkRequestsFilled(ctx sdk.Context, r types.FilledRequests) sdk
 		return confsErr
 	}
 
-	// check subsequent proofs
-	for i := 1; i < len(r.Requests); i++ {
-		// get request
-		request, getErr := k.getRequest(ctx, r.Requests[i].ID)
-		if getErr != nil {
-			return getErr
-		}
-		// check confirmations
-		if confs < uint32(request.NumConfs) {
-			return types.ErrNotEnoughConfs(types.DefaultCodespace)
-		}
-	}
-
 	for i := range r.Requests {
 		// check request
 		err := k.checkRequests(
@@ -85,6 +72,18 @@ func (k Keeper) checkRequestsFilled(ctx sdk.Context, r types.FilledRequests) sdk
 			r.Requests[i].ID)
 		if err != nil {
 			return err
+		}
+
+		if i >= 1 {
+			// get request
+			request, getErr := k.getRequest(ctx, r.Requests[i].ID)
+			if getErr != nil {
+				return getErr
+			}
+			// check confirmations
+			if confs < uint32(request.NumConfs) {
+				return types.ErrNotEnoughConfs(types.DefaultCodespace)
+			}
 		}
 	}
 	return nil
