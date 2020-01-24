@@ -37,6 +37,22 @@ func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) (types.
 	return header, nil
 }
 
+func getCurrentEpochDifficulty() sdk.Uint {
+	return sdk.NewUint(0)
+}
+
+func setCurrentEpochDifficulty(diff sdk.Uint) {
+
+}
+
+func getPrevEpochDifficulty() sdk.Uint {
+	return sdk.NewUint(0)
+}
+
+func setPrevEpochDifficulty(diff sdk.Uint) {
+
+}
+
 // compareTargets compares Bitcoin truncated and full-length targets
 func compareTargets(full, truncated sdk.Uint) bool {
 	// dirty hacks. sdk.Uint doesn't give us easy access to the underlying
