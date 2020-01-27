@@ -37,20 +37,48 @@ func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) (types.
 	return header, nil
 }
 
-func getCurrentEpochDifficulty() sdk.Uint {
-	return sdk.NewUint(0)
+func (k Keeper) getCurrentEpochDifficulty(ctx sdk.Context) sdk.Uint {
+	store := k.getHeaderStore(ctx)
+	result := store.Get([]byte(types.CurrentEpochDiffStorage))
+
+	var diff sdk.Uint
+	diff.UnmarshalJSON(result)
+
+	return diff
 }
 
-func setCurrentEpochDifficulty(diff sdk.Uint) {
+func (k Keeper) setCurrentEpochDifficulty(ctx sdk.Context, diff sdk.Uint) sdk.Error {
+	store := k.getHeaderStore(ctx)
 
+	b, err := diff.MarshalJSON()
+	if err != nil {
+		return types.ErrExternal(types.DefaultCodespace, err)
+	}
+
+	store.Set([]byte(types.CurrentEpochDiffStorage), b)
+	return nil
 }
 
-func getPrevEpochDifficulty() sdk.Uint {
-	return sdk.NewUint(0)
+func (k Keeper) getPrevEpochDifficulty(ctx sdk.Context) sdk.Uint {
+	store := k.getHeaderStore(ctx)
+	result := store.Get([]byte(types.PrevEpochDiffStorage))
+
+	var diff sdk.Uint
+	diff.UnmarshalJSON(result)
+
+	return diff
 }
 
-func setPrevEpochDifficulty(diff sdk.Uint) {
+func (k Keeper) setPrevEpochDifficulty(ctx sdk.Context, diff sdk.Uint) sdk.Error {
+	store := k.getHeaderStore(ctx)
 
+	b, err := diff.MarshalJSON()
+	if err != nil {
+		return types.ErrExternal(types.DefaultCodespace, err)
+	}
+
+	store.Set([]byte(types.PrevEpochDiffStorage), b)
+	return nil
 }
 
 // compareTargets compares Bitcoin truncated and full-length targets
