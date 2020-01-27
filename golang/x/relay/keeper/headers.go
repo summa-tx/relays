@@ -171,7 +171,47 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 	return nil
 }
 
-func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anchor types.BitcoinHeader) sdk.Error {
+// function _addHeadersWithRetarget(
+// 	bytes memory _oldPeriodStartHeader,
+// 	bytes memory _oldPeriodEndHeader,
+// 	bytes memory _headers
+// ) internal returns (bool) {
+// 	/* NB: requires that both blocks are known */
+// 	uint256 _startHeight = _findHeight(_oldPeriodStartHeader.hash256());
+// 	uint256 _endHeight = _findHeight(_oldPeriodEndHeader.hash256());
+
+// 	/* NB: retargets should happen at 2016 block intervals */
+// 	require(
+// 			_endHeight % 2016 == 2015,
+// 			"Must provide the last header of the closing difficulty period");
+// 	require(
+// 			_endHeight == _startHeight.add(2015),
+// 			"Must provide exactly 1 difficulty period");
+// 	require(
+// 			_oldPeriodStartHeader.extractDifficulty() == _oldPeriodEndHeader.extractDifficulty(),
+// 			"Period header difficulties do not match");
+
+// 	/* NB: This comparison looks weird because header nBits encoding truncates targets */
+// 	bytes memory _newPeriodStart = _headers.slice(0, 80);
+// 	uint256 _actualTarget = _newPeriodStart.extractTarget();
+// 	uint256 _expectedTarget = BTCUtils.retargetAlgorithm(
+// 			_oldPeriodStartHeader.extractTarget(),
+// 			_oldPeriodStartHeader.extractTimestamp(),
+// 			_oldPeriodEndHeader.extractTimestamp()
+// 	);
+// 	require(
+// 			(_actualTarget & _expectedTarget) == _actualTarget,
+// 			"Invalid retarget provided");
+
+// 	uint256 _oldDiff = _oldPeriodStartHeader.extractDifficulty();
+// 	if (prevEpochDiff != _oldDiff) {
+// 		prevEpochDiff = _oldDiff;
+// 	}
+
+// 	// Pass all but the first through to be added
+// 	return _addHeaders(_oldPeriodEndHeader, _headers, true);
+// }
+func (k Keeper) validateDifficultyChange(ctx sdk.Context, headers []types.BitcoinHeader, prevEpochStart, anchor types.BitcoinHeader) sdk.Error {
 	if anchor.Height%2016 != 2015 {
 		return types.ErrWrongEnd(types.DefaultCodespace)
 	}
@@ -194,6 +234,15 @@ func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anc
 	if !compareTargets(expectedTarget, actualTarget) {
 		return types.ErrBadRetarget(types.DefaultCodespace)
 	}
+
+	prevEpochDiff := k.getPrevEpochDifficulty(ctx)
+	oldDiff := btcspv.ExtractDifficulty(prevEpochStart.Raw)
+	if prevEpochDiff != oldDiff {
+		err := k.setPrevEpochDifficulty(ctx, oldDiff)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -208,7 +257,7 @@ func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.H
 		return err
 	}
 
-	err = validateDifficultyChange(headers, prevEpochStart, anchor)
+	err = k.validateDifficultyChange(ctx, headers, prevEpochStart, anchor)
 	if err != nil {
 		return err
 	}
