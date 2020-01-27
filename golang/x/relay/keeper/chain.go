@@ -145,33 +145,6 @@ func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, new
 	return rightBlock.HashLE, nil
 }
 
-// function _markNewHeaviest(
-// 	bytes32 _ancestor,
-// 	bytes memory _currentBest,
-// 	bytes memory _newBest,
-// 	uint256 _limit
-// ) internal returns (bool) {
-// 	bytes32 _newBestDigest = _newBest.hash256();
-// 	bytes32 _currentBestDigest = _currentBest.hash256();
-// 	require(_currentBestDigest == bestKnownDigest, "Passed in best is not best known");
-// 	require(
-// 			previousBlock[_newBestDigest] != bytes32(0),
-// 			"New best is unknown");
-// 	require(
-// 			_isMostRecentAncestor(_ancestor, bestKnownDigest, _newBestDigest, _limit),
-// 			"Ancestor must be heaviest common ancestor");
-// 	require(
-// 			_heaviestFromAncestor(_ancestor, _currentBest, _newBest) == _newBestDigest,
-// 			"New best hash does not have more work than previous");
-
-// 	bestKnownDigest = _newBestDigest;
-// 	lastReorgCommonAncestor = _ancestor;
-
-// 	uint256 _newDiff = _newBest.extractDifficulty();
-// 	if (_newDiff != currentEpochDiff) {
-// 		currentEpochDiff = _newDiff;
-// 	}
-
 // MarkNewHeaviest updates the best known digest and LCA
 func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, currentBest, newBest types.RawHeader, limit uint32) sdk.Error {
 	newBestDigest := btcspv.Hash256(newBest[:])
@@ -214,11 +187,6 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 			return err
 		}
 	}
-
-	// uint256 _newDiff = _newBest.extractDifficulty();
-	// 	if (_newDiff != currentEpochDiff) {
-	// 		currentEpochDiff = _newDiff;
-	// 	}
 
 	k.setLastReorgLCA(ctx, ancestor)
 	k.setBestKnownDigest(ctx, newBestDigest)
