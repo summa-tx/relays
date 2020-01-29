@@ -1,6 +1,9 @@
 package keeper
 
-import "github.com/cosmos/cosmos-sdk/types"
+import (
+	"github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 func (s *KeeperSuite) TestGetHeader() {
 	// errors if header is not found
@@ -136,4 +139,24 @@ func (s *KeeperSuite) TestCompareTargets() {
 		result := compareTargets(tc.Full, tc.Truncated)
 		s.Equal(tc.Output, result)
 	}
+}
+
+func (s *KeeperSuite) TestSetCurrentEpochDiff() {
+	val := sdk.NewUint(1000)
+	err := s.Keeper.setCurrentEpochDifficulty(s.Context, val)
+	s.SDKNil(err)
+
+	d := s.Keeper.getCurrentEpochDifficulty(s.Context)
+
+	s.Equal(d, val)
+}
+
+func (s *KeeperSuite) TestSetPrevEpochDiff() {
+	val := sdk.NewUint(1000)
+	err := s.Keeper.setPrevEpochDifficulty(s.Context, val)
+	s.SDKNil(err)
+
+	d := s.Keeper.getPrevEpochDifficulty(s.Context)
+
+	s.Equal(d, val)
 }

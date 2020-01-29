@@ -37,6 +37,61 @@ func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) (types.
 	return header, nil
 }
 
+func (k Keeper) getCurrentEpochDifficulty(ctx sdk.Context) sdk.Uint {
+	store := k.getHeaderStore(ctx)
+	result := store.Get([]byte(types.CurrentEpochDiffStorage))
+
+	var diff sdk.Uint
+	diff.UnmarshalJSON(result)
+
+	return diff
+}
+
+func (k Keeper) setCurrentEpochDifficulty(ctx sdk.Context, diff sdk.Uint) sdk.Error {
+	store := k.getHeaderStore(ctx)
+
+	b, err := diff.MarshalJSON()
+	if err != nil {
+		return types.ErrExternal(types.DefaultCodespace, err)
+	}
+
+	store.Set([]byte(types.CurrentEpochDiffStorage), b)
+	return nil
+}
+
+func (k Keeper) getPrevEpochDifficulty(ctx sdk.Context) sdk.Uint {
+	store := k.getHeaderStore(ctx)
+	result := store.Get([]byte(types.PrevEpochDiffStorage))
+
+	var diff sdk.Uint
+	diff.UnmarshalJSON(result)
+
+	return diff
+}
+
+func (k Keeper) setPrevEpochDifficulty(ctx sdk.Context, diff sdk.Uint) sdk.Error {
+	store := k.getHeaderStore(ctx)
+
+	b, err := diff.MarshalJSON()
+	if err != nil {
+		return types.ErrExternal(types.DefaultCodespace, err)
+	}
+
+	store.Set([]byte(types.PrevEpochDiffStorage), b)
+	return nil
+}
+
+func (k Keeper) updatePrevEpochDifficulty(ctx sdk.Context, oldDiff sdk.Uint) sdk.Error {
+	prevEpochDiff := k.getPrevEpochDifficulty(ctx)
+	if prevEpochDiff != oldDiff {
+		err := k.setPrevEpochDifficulty(ctx, oldDiff)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // compareTargets compares Bitcoin truncated and full-length targets
 func compareTargets(full, truncated sdk.Uint) bool {
 	// dirty hacks. sdk.Uint doesn't give us easy access to the underlying
@@ -150,6 +205,7 @@ func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anc
 	if !compareTargets(expectedTarget, actualTarget) {
 		return types.ErrBadRetarget(types.DefaultCodespace)
 	}
+
 	return nil
 }
 
@@ -165,6 +221,12 @@ func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.H
 	}
 
 	err = validateDifficultyChange(headers, prevEpochStart, anchor)
+	if err != nil {
+		return err
+	}
+
+	oldDiff := btcspv.ExtractDifficulty(prevEpochStart.Raw)
+	err = k.updatePrevEpochDifficulty(ctx, oldDiff)
 	if err != nil {
 		return err
 	}

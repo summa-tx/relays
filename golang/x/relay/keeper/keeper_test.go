@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
@@ -307,6 +308,9 @@ func (s *KeeperSuite) TestSetGenesisState() {
 	best, err := s.Keeper.GetBestKnownDigest(s.Context)
 	s.SDKNil(err)
 	s.Equal(genesis.HashLE, best)
+
+	diff := s.Keeper.getCurrentEpochDifficulty(s.Context)
+	s.Equal(btcspv.ExtractDifficulty(genesis.Raw), diff)
 
 	err = s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
 	s.Equal(types.AlreadyInit, err.Code())

@@ -172,6 +172,22 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 		return types.ErrNotHeavier(types.DefaultCodespace)
 	}
 
+	// get newBestHeader
+	newBestHeader, getHeaderErr := k.GetHeader(ctx, newBestDigest)
+	if getHeaderErr != nil {
+		return getHeaderErr
+	}
+	// extract difficulty
+	newDiff := btcspv.ExtractDifficulty(newBestHeader.Raw)
+	// get currentEpochDifficulty
+	currentEpochDiff := k.getCurrentEpochDifficulty(ctx)
+	if newDiff != currentEpochDiff {
+		err := k.setCurrentEpochDifficulty(ctx, newDiff)
+		if err != nil {
+			return err
+		}
+	}
+
 	k.setLastReorgLCA(ctx, ancestor)
 	k.setBestKnownDigest(ctx, newBestDigest)
 	k.emitReorg(ctx, knownBestDigest, newBestDigest, ancestor)
