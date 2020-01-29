@@ -177,6 +177,16 @@ const (
 	// RequestSpendsMessage is the corresponding message
 	RequestSpendsMessage = "Does not match spends request"
 
+	// NotAncestor means the LCA is not an ancestor of the SPV Proof header
+	NotAncestor sdk.CodeType = 610
+	// NotAncestorMessage is the corresponding message
+	NotAncestorMessage = "LCA not ancestor of proof header"
+
+	// NotEnoughConfs means the proof does not have enough confirmations
+	NotEnoughConfs sdk.CodeType = 611
+	// NotEnoughConfs is the corresponding message
+	NotEnoughConfsMessage = "Not enough confirmations"
+
 	// 700-block External
 
 	ExternalError sdk.CodeType = 701
@@ -335,6 +345,16 @@ func ErrRequestValue(codespace sdk.CodespaceType) sdk.Error {
 // ErrRequestSpends throws an error
 func ErrRequestSpends(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, RequestSpends, RequestSpendsMessage)
+}
+
+// ErrNotAncestor throws an error
+func ErrNotAncestor(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, NotAncestor, NotAncestorMessage)
+}
+
+// ErrNotEnoughConfs throws an error
+func ErrNotEnoughConfs(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, NotEnoughConfs, NotEnoughConfsMessage)
 }
 
 // ErrExternal converts any external error into an sdk error

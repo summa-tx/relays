@@ -92,16 +92,13 @@ func (s *KeeperSuite) TestCheckRequests() {
 	v := tc[0]
 
 	// Errors if request is not found
-	id, err := types.NewRequestID(v.RequestID[:])
-	s.SDKNil(err)
-	valid, err := s.Keeper.checkRequests(
+	err := s.Keeper.checkRequests(
 		s.Context,
 		v.InputIdx,
 		v.OutputIdx,
 		v.Vin,
 		v.Vout,
-		id)
-	s.Equal(false, valid)
+		v.RequestID)
 	s.Equal(sdk.CodeType(601), err.Code())
 
 	// set request
@@ -111,28 +108,26 @@ func (s *KeeperSuite) TestCheckRequests() {
 	activeErr := s.Keeper.setRequestState(s.Context, types.RequestID{}, false)
 	s.Nil(activeErr)
 	// errors if request is not active
-	valid, err = s.Keeper.checkRequests(
+	err = s.Keeper.checkRequests(
 		s.Context,
 		v.InputIdx,
 		v.OutputIdx,
 		v.Vin,
 		v.Vout,
-		id)
-	s.Equal(false, valid)
+		v.RequestID)
 	s.Equal(sdk.CodeType(606), err.Code())
 
 	// change active state to false
 	activeErr = s.Keeper.setRequestState(s.Context, types.RequestID{}, true)
 	s.Nil(activeErr)
 	// errors if request pays is not equal to output
-	valid, err = s.Keeper.checkRequests(
+	err = s.Keeper.checkRequests(
 		s.Context,
 		v.InputIdx,
 		v.OutputIdx,
 		v.Vin,
 		v.Vout,
-		id)
-	s.Equal(false, valid)
+		v.RequestID)
 	s.Equal(sdk.CodeType(607), err.Code())
 
 	// Errors if output value is less than pays value
@@ -141,27 +136,25 @@ func (s *KeeperSuite) TestCheckRequests() {
 	// out[8:] extracts the output script which we use to set the request
 	requestErr = s.Keeper.setRequest(s.Context, []byte{0}, out[8:], 1000, 0)
 	s.SDKNil(requestErr)
-	valid, err = s.Keeper.checkRequests(
+	err = s.Keeper.checkRequests(
 		s.Context,
 		v.InputIdx,
 		v.OutputIdx,
 		v.Vin,
 		v.Vout,
 		types.RequestID{0, 0, 0, 0, 0, 0, 0, 1})
-	s.Equal(false, valid)
 	s.Equal(sdk.CodeType(608), err.Code())
 
 	// Errors if input value does not equal spends value
 	requestErr = s.Keeper.setRequest(s.Context, []byte{1}, []byte{0}, 0, 255)
 	s.SDKNil(requestErr)
-	valid, err = s.Keeper.checkRequests(
+	err = s.Keeper.checkRequests(
 		s.Context,
 		v.InputIdx,
 		v.OutputIdx,
 		v.Vin,
 		v.Vout,
 		types.RequestID{0, 0, 0, 0, 0, 0, 0, 2})
-	s.Equal(false, valid)
 	s.Equal(sdk.CodeType(609), err.Code())
 
 	// Success
@@ -170,7 +163,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 	// out[8:] extracts the output script which we use to set the request
 	requestErr = s.Keeper.setRequest(s.Context, outpoint, out[8:], 10, 255)
 	s.SDKNil(requestErr)
-	valid, err = s.Keeper.checkRequests(
+	err = s.Keeper.checkRequests(
 		s.Context,
 		v.InputIdx,
 		v.OutputIdx,
@@ -178,19 +171,15 @@ func (s *KeeperSuite) TestCheckRequests() {
 		v.Vout,
 		types.RequestID{0, 0, 0, 0, 0, 0, 0, 3})
 	s.SDKNil(err)
-	s.Equal(true, valid)
 
 	for i := 1; i < len(tc); i++ {
-		id, err := types.NewRequestID(tc[i].RequestID[:])
-		s.SDKNil(err)
-		valid, err := s.Keeper.checkRequests(
+		err := s.Keeper.checkRequests(
 			s.Context,
 			tc[i].InputIdx,
 			tc[i].OutputIdx,
 			tc[i].Vin,
 			tc[i].Vout,
-			id)
-		s.Equal(tc[i].Output, valid)
+			tc[i].RequestID)
 		if tc[i].Error == 0 {
 			s.SDKNil(err)
 		} else {

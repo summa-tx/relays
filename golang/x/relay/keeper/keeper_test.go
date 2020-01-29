@@ -146,25 +146,29 @@ type HeaderTestCases struct {
 /***** Validator TEST CASES *****/
 type ValidateProofTestCase struct {
 	Proof     types.SPVProof      `json:"proof"`
-	BestKnown types.Hash256Digest `json:"bestKnown"`
+	BestKnown types.BitcoinHeader `json:"bestKnown"`
 	LCA       types.Hash256Digest `json:"lca"`
 	Error     int                 `json:"error"`
-	Output    bool                `json:"output"`
+}
+
+type CheckRequestsFilledTestCase struct {
+	FilledRequests types.FilledRequests `json:"filledRequest"`
+	Error          int                  `json:"error"`
 }
 
 type ValidatorTestCases struct {
-	ValidateProof []ValidateProofTestCase `json:"validateProof"`
+	ValidateProof       []ValidateProofTestCase       `json:"validateProof"`
+	CheckRequestsFilled []CheckRequestsFilledTestCase `json:"checkRequestsFilled"`
 }
 
 /***** Request TEST CASES *****/
 type CheckRequestTestCase struct {
-	InputIdx  uint8          `json:"inputIndex"`
-	OutputIdx uint8          `json:"outputIndex"`
-	Vin       types.HexBytes `json:"vin"`
-	Vout      types.HexBytes `json:"vout"`
-	RequestID types.HexBytes `json:"requestID"`
-	Error     int            `json:"error"`
-	Output    bool           `json:"output"`
+	InputIdx  uint8           `json:"inputIndex"`
+	OutputIdx uint8           `json:"outputIndex"`
+	Vin       types.HexBytes  `json:"vin"`
+	Vout      types.HexBytes  `json:"vout"`
+	RequestID types.RequestID `json:"requestID"`
+	Error     int             `json:"error"`
 }
 
 type RequestTestCases struct {
