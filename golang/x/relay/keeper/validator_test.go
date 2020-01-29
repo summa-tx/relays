@@ -102,7 +102,7 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	s.Nil(requestErr)
 
 	copiedRequest := tc[0].FilledRequests
-	copiedRequest.Requests[0].ID = types.RequestID{0, 0, 0, 0, 0, 0, 0, 1}
+	copiedRequest.Filled[0].ID = types.RequestID{0, 0, 0, 0, 0, 0, 0, 1}
 	err = s.Keeper.checkRequestsFilled(s.Context, copiedRequest)
 	s.Equal(sdk.CodeType(611), err.Code())
 }

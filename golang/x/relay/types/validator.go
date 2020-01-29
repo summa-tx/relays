@@ -7,6 +7,6 @@ type FilledRequestInfo struct {
 }
 
 type FilledRequests struct {
-	Proof    SPVProof            `json:"proof"`
-	Requests []FilledRequestInfo `json:"requests"`
+	Proof  SPVProof            `json:"proof"`
+	Filled []FilledRequestInfo `json:"requests"`
 }
