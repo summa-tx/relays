@@ -42,7 +42,8 @@ func (k Keeper) getCurrentEpochDifficulty(ctx sdk.Context) sdk.Uint {
 	result := store.Get([]byte(types.CurrentEpochDiffStorage))
 
 	var diff sdk.Uint
-	diff.UnmarshalJSON(result)
+	// This will only fail if the store is corrupted
+	_ = diff.UnmarshalJSON(result)
 
 	return diff
 }
@@ -64,7 +65,8 @@ func (k Keeper) getPrevEpochDifficulty(ctx sdk.Context) sdk.Uint {
 	result := store.Get([]byte(types.PrevEpochDiffStorage))
 
 	var diff sdk.Uint
-	diff.UnmarshalJSON(result)
+	// This will only fail if the store is corrupted
+	_ = diff.UnmarshalJSON(result)
 
 	return diff
 }
