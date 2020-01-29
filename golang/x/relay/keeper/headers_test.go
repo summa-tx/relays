@@ -95,7 +95,7 @@ func (s *KeeperSuite) TestValidateDifficultyChange() {
 	cases := s.Fixtures.HeaderTestCases.ValidateDiffChange
 
 	for _, tc := range cases {
-		err := s.Keeper.validateDifficultyChange(s.Context, tc.Headers, tc.PrevEpochStart, tc.Anchor)
+		err := validateDifficultyChange(tc.Headers, tc.PrevEpochStart, tc.Anchor)
 		if tc.Output == 0 {
 			logIfTestCaseError(tc, err)
 			s.SDKNil(err)

@@ -171,7 +171,7 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 	return nil
 }
 
-func (k Keeper) validateDifficultyChange(ctx sdk.Context, headers []types.BitcoinHeader, prevEpochStart, anchor types.BitcoinHeader) sdk.Error {
+func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anchor types.BitcoinHeader) sdk.Error {
 	if anchor.Height%2016 != 2015 {
 		return types.ErrWrongEnd(types.DefaultCodespace)
 	}
@@ -195,14 +195,6 @@ func (k Keeper) validateDifficultyChange(ctx sdk.Context, headers []types.Bitcoi
 		return types.ErrBadRetarget(types.DefaultCodespace)
 	}
 
-	prevEpochDiff := k.getPrevEpochDifficulty(ctx)
-	oldDiff := btcspv.ExtractDifficulty(prevEpochStart.Raw)
-	if prevEpochDiff != oldDiff {
-		err := k.setPrevEpochDifficulty(ctx, oldDiff)
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
@@ -217,9 +209,18 @@ func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.H
 		return err
 	}
 
-	err = k.validateDifficultyChange(ctx, headers, prevEpochStart, anchor)
+	err = validateDifficultyChange(headers, prevEpochStart, anchor)
 	if err != nil {
 		return err
+	}
+
+	prevEpochDiff := k.getPrevEpochDifficulty(ctx)
+	oldDiff := btcspv.ExtractDifficulty(prevEpochStart.Raw)
+	if prevEpochDiff != oldDiff {
+		err := k.setPrevEpochDifficulty(ctx, oldDiff)
+		if err != nil {
+			return err
+		}
 	}
 
 	return k.ingestHeaders(ctx, headers, true)
