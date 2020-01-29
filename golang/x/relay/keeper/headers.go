@@ -81,6 +81,17 @@ func (k Keeper) setPrevEpochDifficulty(ctx sdk.Context, diff sdk.Uint) sdk.Error
 	return nil
 }
 
+func (k Keeper) updatePrevEpochDifficulty(ctx sdk.Context, oldDiff sdk.Uint) sdk.Error {
+	prevEpochDiff := k.getPrevEpochDifficulty(ctx)
+	if prevEpochDiff != oldDiff {
+		err := k.setPrevEpochDifficulty(ctx, oldDiff)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // compareTargets compares Bitcoin truncated and full-length targets
 func compareTargets(full, truncated sdk.Uint) bool {
 	// dirty hacks. sdk.Uint doesn't give us easy access to the underlying
@@ -214,13 +225,10 @@ func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.H
 		return err
 	}
 
-	prevEpochDiff := k.getPrevEpochDifficulty(ctx)
 	oldDiff := btcspv.ExtractDifficulty(prevEpochStart.Raw)
-	if prevEpochDiff != oldDiff {
-		err := k.setPrevEpochDifficulty(ctx, oldDiff)
-		if err != nil {
-			return err
-		}
+	err = k.updatePrevEpochDifficulty(ctx, oldDiff)
+	if err != nil {
+		return err
 	}
 
 	return k.ingestHeaders(ctx, headers, true)
