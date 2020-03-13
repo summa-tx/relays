@@ -17,6 +17,7 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) 
 	s.HandleFunc("/ingestdiffchange", ingestDifficultyChangeHandler(cliCtx)).Methods("POST")
 	s.HandleFunc("/marknewheaviest", markNewHeaviestHandler(cliCtx)).Methods("POST")
 	s.HandleFunc("/newrequest", newRequestHandler(cliCtx)).Methods("POST")
+	s.HandleFunc("/provideproof", provideProofHandler(cliCtx)).Methods("POST")
 
 	// add new query routes below
 	// {} denotes variable parts of the url route

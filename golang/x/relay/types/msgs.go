@@ -167,3 +167,39 @@ func (msg MsgNewRequest) GetSignBytes() []byte {
 }
 
 func (msg MsgNewRequest) Route() string { return RouterKey }
+
+/***** ProvideProof *****/
+
+// MsgProvideProof defines a NewRequest message
+type MsgProvideProof struct {
+	Signer sdk.AccAddress `json:"signer"`
+	Filled FilledRequests `json:"filled"`
+}
+
+func NewMsgProvideProof(address sdk.AccAddress, filledRequests FilledRequests) MsgProvideProof {
+	return MsgProvideProof{
+		address,
+		filledRequests,
+	}
+}
+
+func (msg MsgProvideProof) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.Signer}
+}
+
+func (msg MsgProvideProof) ValidateBasic() sdk.Error {
+	valid, err := msg.Filled.Proof.Validate()
+	if !valid || err != nil {
+		return FromBTCSPVError(DefaultCodespace, err)
+	}
+
+	return nil
+}
+
+func (msg MsgProvideProof) Type() string { return "provide_proof" }
+
+func (msg MsgProvideProof) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgProvideProof) Route() string { return RouterKey }

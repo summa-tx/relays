@@ -164,8 +164,8 @@ type ValidatorTestCases struct {
 
 /***** Request TEST CASES *****/
 type CheckRequestTestCase struct {
-	InputIdx  uint32           `json:"inputIndex"`
-	OutputIdx uint32           `json:"outputIndex"`
+	InputIdx  uint32          `json:"inputIndex"`
+	OutputIdx uint32          `json:"outputIndex"`
 	Vin       types.HexBytes  `json:"vin"`
 	Vout      types.HexBytes  `json:"vout"`
 	RequestID types.RequestID `json:"requestID"`
