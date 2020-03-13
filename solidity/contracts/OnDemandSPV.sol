@@ -26,6 +26,7 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         address consumer;
         address owner;
         uint8 numConfs;
+        uint256 notBefore;
     }
 
     enum RequestStates { NONE, ACTIVE, CLOSED }
@@ -87,7 +88,8 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         uint8 state,
         address consumer,
         address owner,
-        uint8 numConfs
+        uint8 numConfs,
+        uint256 notBefore
     ) {
         ProofRequest storage _req = requests[_requestID];
         spends = _req.spends;
@@ -97,6 +99,7 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         consumer = _req.consumer;
         owner = _req.owner;
         numConfs = _req.numConfs;
+        notBefore = _req.notBefore;
     }
 
     /// @notice                 Subscribe to a feed of Bitcoin txns matching a request
@@ -105,15 +108,18 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
     /// @param  _pays           An output script that must be paid in acceptable txns (optional)
     /// @param  _paysValue      A minimum value that must be paid to the output script (optional)
     /// @param  _consumer       The address of a ISPVConsumer exposing spv
+    /// @param  _numConfs       The minimum number of Bitcoin confirmations to accept
+    /// @param  _notBefore      A timestamp before which proofs are not accepted
     /// @return                 A unique request ID.
     function request(
         bytes calldata _spends,
         bytes calldata _pays,
         uint64 _paysValue,
         address _consumer,
-        uint8 _numConfs
+        uint8 _numConfs,
+        uint256 _notBefore
     ) external returns (uint256) {
-        return _request(_spends, _pays, _paysValue, _consumer, _numConfs);
+        return _request(_spends, _pays, _paysValue, _consumer, _numConfs, _notBefore);
     }
 
     /// @notice                 Subscribe to a feed of Bitcoin txns matching a request
@@ -122,13 +128,16 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
     /// @param  _pays           An output script that must be paid in acceptable txns (optional)
     /// @param  _paysValue      A minimum value that must be paid to the output script (optional)
     /// @param  _consumer       The address of a ISPVConsumer exposing spv
+    /// @param  _numConfs       The minimum number of Bitcoin confirmations to accept
+    /// @param  _notBefore      A timestamp before which proofs are not accepted
     /// @return                 A unique request ID
     function _request(
         bytes memory _spends,
         bytes memory _pays,
         uint64 _paysValue,
         address _consumer,
-        uint8 _numConfs
+        uint8 _numConfs,
+        uint256 _notBefore
     ) internal returns (uint256) {
         uint256 _requestID = nextID;
         nextID = nextID + 1;
@@ -168,6 +177,9 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         }
         if (_numConfs > 0 && _numConfs < 241) { //241 is arbitray. 40 hours
             _req.numConfs = _numConfs;
+        }
+        if (_notBefore > 0) {
+            _req.notBefore = _notBefore;
         }
         _req.consumer = _consumer;
         _req.state = RequestStates.ACTIVE;
@@ -321,6 +333,7 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         uint8 _outputIndex = uint8(_reqIndices & 0xff);
 
         ProofRequest storage _req = requests[_requestID];
+        require(_req.notBefore <= block.timestamp, "Request is submitted too early");
         require(_req.state == RequestStates.ACTIVE, "Request is not active");
 
         bytes32 _pays = _req.pays;

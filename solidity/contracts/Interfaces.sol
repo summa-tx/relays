@@ -109,13 +109,17 @@ interface ISPVRequestManager {
     ///                     so the general "6 confirmation" rule would be expressed
     ///                     as `5` when calling this function
     ///
+    /// @param  _notBefore  An Ethereum timestamp before which proofs will not be accepted.
+    ///                     Used to control app flow for specific users.
+    ///
     /// @return             A unique request ID.
     function request(
         bytes calldata _spends,
         bytes calldata _pays,
         uint64 _paysValue,
         address _consumer,
-        uint8 _numConfs
+        uint8 _numConfs,
+        uint256 _notBefore
     ) external returns (uint256);
 
     /// @notice                 Cancel an active bitcoin event request.
@@ -141,6 +145,7 @@ interface ISPVRequestManager {
         uint8 state,
         address consumer,
         address owner,
-        uint8 numConfs
+        uint8 numConfs,
+        uint256 notBefore
     );
 }
