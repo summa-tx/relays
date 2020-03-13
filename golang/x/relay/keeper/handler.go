@@ -19,6 +19,8 @@ func NewHandler(keeper Keeper) sdk.Handler {
 			return handleMsgMarkNewHeaviest(ctx, keeper, msg)
 		case types.MsgNewRequest:
 			return handleMsgNewRequest(ctx, keeper, msg)
+		case types.MsgProvideProof:
+			return handleMsgProvideProof(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized relay Msg type: %v", msg.Type())
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -70,6 +72,18 @@ func handleMsgNewRequest(ctx sdk.Context, keeper Keeper, msg types.MsgNewRequest
 		return err.Result()
 	}
 
+	return sdk.Result{
+		Events: ctx.EventManager().Events(),
+	}
+}
+
+func handleMsgProvideProof(ctx sdk.Context, keeper Keeper, msg types.MsgProvideProof) sdk.Result {
+	err := keeper.checkRequestsFilled(ctx, msg.Filled)
+	if err != nil {
+		return err.Result()
+	}
+
+	// TODO: Add "hooks"
 	return sdk.Result{
 		Events: ctx.EventManager().Events(),
 	}

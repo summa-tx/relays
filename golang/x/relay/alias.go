@@ -27,6 +27,8 @@ var (
 	NewMsgMarkNewHeaviest = types.NewMsgMarkNewHeaviest
 	// NewMsgGetRequest is what is says on the tin
 	NewMsgNewRequest = types.NewMsgNewRequest
+	// NewMsgProvideProof is what is says on the tin
+	NewMsgProvideProof = types.NewMsgProvideProof
 	// RegisterCodec is what is says on the tin
 	RegisterCodec = types.RegisterCodec
 	// ModuleCdc is what is says on the tin

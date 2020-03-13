@@ -150,6 +150,50 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 	}
 }
 
+// GetCmdProvideProof stores a new proof request
+func GetCmdProvideProof(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "provideproof <json proof> <json list of requests>",
+		Short: "validates proof of given requests",
+		Long:  "validates proof of given requests",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			var proof types.SPVProof
+			jsonErr := json.Unmarshal([]byte(args[0]), &proof)
+			if jsonErr != nil {
+				return jsonErr
+			}
+
+			var requests []types.FilledRequestInfo
+			jsonErr = json.Unmarshal([]byte(args[1]), &requests)
+			if jsonErr != nil {
+				return jsonErr
+			}
+
+			filledRequests := types.NewFilledRequests(
+				proof,
+				requests,
+			)
+
+			msg := types.NewMsgProvideProof(
+				cliCtx.GetFromAddress(),
+				filledRequests,
+			)
+
+			err := msg.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+
+		},
+	}
+}
+
 // GetCmdMarkNewHeaviest creates a CLI command to update best known digest and LCA
 func GetCmdMarkNewHeaviest(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
