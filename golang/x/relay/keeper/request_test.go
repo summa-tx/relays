@@ -131,7 +131,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 	s.Equal(sdk.CodeType(607), err.Code())
 
 	// Errors if output value is less than pays value
-	out, outErr := btcspv.ExtractOutputAtIndex(v.Vout, v.OutputIdx)
+	out, outErr := btcspv.ExtractOutputAtIndex(v.Vout, uint(v.OutputIdx))
 	s.Nil(outErr)
 	// out[8:] extracts the output script which we use to set the request
 	requestErr = s.Keeper.setRequest(s.Context, []byte{0}, out[8:], 1000, 0)
@@ -158,7 +158,8 @@ func (s *KeeperSuite) TestCheckRequests() {
 	s.Equal(sdk.CodeType(609), err.Code())
 
 	// Success
-	in := btcspv.ExtractInputAtIndex(v.Vin, v.InputIdx)
+	in, extractErr := btcspv.ExtractInputAtIndex(v.Vin, uint(v.InputIdx))
+	s.Nil(extractErr)
 	outpoint := btcspv.ExtractOutpoint(in)
 	// out[8:] extracts the output script which we use to set the request
 	requestErr = s.Keeper.setRequest(s.Context, outpoint, out[8:], 10, 255)
