@@ -272,6 +272,7 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
     /// @param  _proof      The merkle proof intermediate nodes
     /// @param  _index      The index of the tx in the merkle tree's leaves
     /// @param  _txid       The txid that is the proof leaf
+    /// @param _requestID   The ID of the request to check against
     function _checkInclusion(
         bytes memory _header,
         bytes memory _proof,
