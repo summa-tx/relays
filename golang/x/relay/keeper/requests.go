@@ -129,7 +129,7 @@ func (k Keeper) getNextID(ctx sdk.Context) (types.RequestID, sdk.Error) {
 	return newID, nil
 }
 
-func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vin []byte, vout []byte, requestID types.RequestID) sdk.Error {
+func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint32, vin []byte, vout []byte, requestID types.RequestID) sdk.Error {
 	if !btcspv.ValidateVin(vin) {
 		return types.ErrInvalidVin(types.DefaultCodespace)
 	}
@@ -148,7 +148,7 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 	hasPays := req.Pays != btcspv.Hash256([]byte{0})
 	if hasPays {
 		// We can ignore this error because we know that ValidateVout passed
-		out, _ := btcspv.ExtractOutputAtIndex(vout, outputIndex)
+		out, _ := btcspv.ExtractOutputAtIndex(vout, uint(outputIndex))
 		// hash the output script (out[8:])
 		outDigest := btcspv.Hash256(out[8:])
 		if outDigest != req.Pays {
@@ -162,7 +162,10 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint8, vi
 
 	hasSpends := req.Spends != btcspv.Hash256([]byte{0})
 	if hasSpends {
-		in := btcspv.ExtractInputAtIndex(vin, inputIndex)
+		in, err := btcspv.ExtractInputAtIndex(vin, uint(inputIndex))
+		if err != nil {
+			return types.FromBTCSPVError(types.DefaultCodespace, err)
+		}
 		outpoint := btcspv.ExtractOutpoint(in)
 		inDigest := btcspv.Hash256(outpoint)
 		if hasSpends && inDigest != req.Spends {

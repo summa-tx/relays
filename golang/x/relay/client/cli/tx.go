@@ -197,7 +197,6 @@ func GetCmdMarkNewHeaviest(cdc *codec.Codec) *cobra.Command {
 			}
 
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
-
 		},
 	}
 }
