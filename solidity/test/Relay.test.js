@@ -1,4 +1,5 @@
 /* global artifacts contract describe before it assert web3 */
+const BN = require('bn.js');
 const utils = require('./utils.js');
 const REGULAR_CHAIN = require('./headers.json');
 const RETARGET_CHAIN = require('./headersWithRetarget.json');
@@ -62,6 +63,13 @@ contract('Relay', async () => {
 
       res = await instance.findHeight.call(genesis.digest_le);
       assert(res.eqn(genesis.height));
+
+      const genDiff = new BN(genesis.difficulty);
+      res = await instance.getCurrentEpochDifficulty();
+      assert(res.eq(genDiff));
+
+      res = await instance.getPrevEpochDifficulty();
+      assert(res.eqn(0));
     });
   });
 
