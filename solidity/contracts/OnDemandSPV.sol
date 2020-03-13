@@ -16,8 +16,6 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
     using BytesLib for bytes;
     using BTCUtils for bytes;
 
-    event SubscriptionExpired(address indexed _owner);
-
     struct ProofRequest {
         bytes32 spends;
         bytes32 pays;
