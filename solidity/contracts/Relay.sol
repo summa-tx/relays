@@ -220,8 +220,11 @@ contract Relay is IRelay {
             (_actualTarget & _expectedTarget) == _actualTarget,
             "Invalid retarget provided");
 
+        // If the current known prevEpochDiff doesn't match, and this old period is near the chaintip/
+        // update the stored prevEpochDiff
+        // Don't update if this is a deep past epoch
         uint256 _oldDiff = _oldPeriodStartHeader.extractDifficulty();
-        if (prevEpochDiff != _oldDiff) {
+        if (prevEpochDiff != _oldDiff && _findHeight(_oldPeriodEndHeader) > _findHeight(bestKnownDigest).sub(2016)) {
           prevEpochDiff = _oldDiff;
         }
 
