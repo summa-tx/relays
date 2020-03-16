@@ -28,10 +28,10 @@ const (
 	// LastReorgLCAStorage is the storage key for the last reorg LCA
 	LastReorgLCAStorage = "LastReorgLCA"
 
-	// currentEpochDiffStorage is the storage key for the current epoch difficulty
+	// CurrentEpochDiffStorage is the storage key for the current epoch difficulty
 	CurrentEpochDiffStorage = "currentEpochDifficulty"
 
-	// prevEpochDiffStorage is the storage key for the prev epoch difficulty
+	// PrevEpochDiffStorage is the storage key for the prev epoch difficulty
 	PrevEpochDiffStorage = "prevEpochDifficulty"
 
 	// RequestIDTag is the storage key for the next Request ID to be used

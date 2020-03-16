@@ -115,6 +115,7 @@ const (
 	// 500-block Queries
 
 	// TODO: Delete the next 2 error codes
+	
 	// NotEnoughArguments means there are not enough arguments specified in the path of a query
 	NotEnoughArguments sdk.CodeType = 501
 	// NotEnoughArgumentsMessage is the corresponding message
@@ -184,11 +185,12 @@ const (
 
 	// NotEnoughConfs means the proof does not have enough confirmations
 	NotEnoughConfs sdk.CodeType = 611
-	// NotEnoughConfs is the corresponding message
+	// NotEnoughConfsMessage is the corresponding message
 	NotEnoughConfsMessage = "Not enough confirmations"
 
 	// 700-block External
 
+	// ExternalError is an error from a dependency
 	ExternalError sdk.CodeType = 701
 )
 
