@@ -6,7 +6,7 @@
 - - [X] Expose LCA of reorg
 - - [X] Follow API of existing Solidity Relay
 - - [X] Validate SPV Proofs
-- - [ ] `ProvideProof` message
+- - [X] `ProvideProof` message
 - [ ] Milestone 3
 - - [ ] Provide hooks to execute tasks + dispatch messages
 - - [ ] Add a basic web dashboard with Relay health
@@ -19,7 +19,7 @@
 | IngestDifficultyChange | Completed | Add a chain of headers to the relay with a difficulty change|
 | MarkNewHeaviest | Completed | Mark a new best-known chain tip |
 | NewRequest | Completed | Register a new SPV Proof request|
-| ProvideProof | TODO | Provide a proof that satisfies 1 or more requests |
+| ProvideProof | Completed | Provide a proof that satisfies 1 or more requests |
 
 ## Queries added to CLI
 

@@ -97,6 +97,7 @@ func (r QueryResFindAncestor) String() string {
 		dig, offset, res)
 }
 
+// QueryParamsHeaviestFromAncestor is the params struct for queryHeaviestFromAncestor
 type QueryParamsHeaviestFromAncestor struct {
 	Ancestor    Hash256Digest `json:"ancestor"`
 	CurrentBest Hash256Digest `json:"currentBest"`
@@ -121,6 +122,7 @@ func (r QueryResHeaviestFromAncestor) String() string {
 		anc, curBest, newBest, r.Params.Limit, res)
 }
 
+// QueryParamsIsMostRecentCommonAncestor is the params struct for queryIsMostRecentCommonAncestor
 type QueryParamsIsMostRecentCommonAncestor struct {
 	Ancestor Hash256Digest `json:"ancestor"`
 	Left     Hash256Digest `json:"left"`
@@ -144,11 +146,12 @@ func (r QueryResIsMostRecentCommonAncestor) String() string {
 		anc, left, right, r.Params.Limit, r.Res)
 }
 
+// QueryParamsGetRequest is the response struct for queryGetRequest
 type QueryParamsGetRequest struct {
 	ID RequestID `json:"id"`
 }
 
-// QueryResIsMostRecentCommonAncestor is the response struct for queryIsMostRecentCommonAncestor
+// QueryResGetRequest is the response struct for queryGetRequest
 type QueryResGetRequest struct {
 	Params QueryParamsGetRequest `json:"params"`
 	Res    ProofRequest          `json:"result"`
