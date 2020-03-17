@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 )
 
@@ -29,6 +30,9 @@ const (
 
 	// QueryGetRequest is a query string tag for getRequest
 	QueryGetRequest = "getrequest"
+
+	// QueryCheckRequest is a query string tag for checkRequests
+	QueryCheckRequests = "checkrequests"
 )
 
 // QueryParamsIsAncestor represents the parameters for an IsAncestor query
@@ -164,4 +168,19 @@ func (r QueryResGetRequest) String() string {
 	return fmt.Sprintf(
 		"ID: %d, Spends: %s, Pays: %s, Value: %d, Active: %t, Confirmations: %d",
 		r.Params.ID, spends, pays, r.Res.PaysValue, r.Res.ActiveState, r.Res.NumConfs)
+}
+
+type QueryParamsCheckRequests struct {
+	Filled FilledRequests `json:"filledRequests"`
+}
+
+type QueryResCheckRequests struct {
+	Params       QueryParamsCheckRequests `json:"params"`
+	Valid        bool                     `json:"valid"`
+	ErrorMessage string                   `json:"errorMessage"`
+}
+
+func (r QueryResCheckRequests) String() string {
+	json, _ := json.Marshal(r)
+	return fmt.Sprint(string(json))
 }

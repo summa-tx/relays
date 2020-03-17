@@ -200,7 +200,7 @@ type MsgProvideProof struct {
 	Filled FilledRequests `json:"filled"`
 }
 
-// NewMsgProvideProof instantiates a MsgProvideProof 
+// NewMsgProvideProof instantiates a MsgProvideProof
 func NewMsgProvideProof(address sdk.AccAddress, filledRequests FilledRequests) MsgProvideProof {
 	return MsgProvideProof{
 		address,

@@ -258,7 +258,7 @@ func heaviestFromAncestorHandler(cliCtx context.CLIContext, storeName string) ht
 }
 
 // handler function for getRequest queries. parses arguments from url string, and passes them through
-// as a QueryParamsGetReqiest struct
+// as a QueryParamsGetRequest struct
 func getRequestHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -280,6 +280,48 @@ func getRequestHandler(cliCtx context.CLIContext, storeName string) http.Handler
 		}
 
 		res, _, err := cliCtx.QueryWithData("custom/relay/getRequest", queryData)
+
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+// struct to help parse json parameters since checkRequests has params more complex
+// than other view functions and hence technically comes in as a POST request
+type checkRequestsReq struct {
+	Proof    types.SPVProof            `json:"proof"`
+	Requests []types.FilledRequestInfo `json:"filled_requests"`
+}
+
+// handler function for checkRequests queries. parses arguments from url string, and passes them through
+// as a QueryParamsCheckRequests struct
+// Comes in as POST request will proceed to treat it as a GET
+func checkRequestsHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req checkRequestsReq
+
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+
+		filledRequests := types.NewFilledRequests(req.Proof, req.Requests)
+
+		params := types.QueryParamsCheckRequests{
+			Filled: filledRequests,
+		}
+
+		queryData, err := json.Marshal(params)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		res, _, err := cliCtx.QueryWithData("custom/relay/checkRequests", queryData)
 
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
