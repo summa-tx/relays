@@ -32,4 +32,5 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) 
 	s.HandleFunc("/heaviestfromancestor/{ancestor}/{currentbest}/{newbest}/", heaviestFromAncestorHandler(cliCtx, storeName)).Methods("GET")
 	s.HandleFunc("/heaviestfromancestor/{ancestor}/{currentbest}/{newbest}/{limit}", heaviestFromAncestorHandler(cliCtx, storeName)).Methods("GET")
 	s.HandleFunc("/getrequest/{id}", getRequestHandler(cliCtx, storeName)).Methods("GET")
+	s.HandleFunc("/checkrequests", checkRequestsHandler(cliCtx, storeName)).Methods("POST") // technically a view only query, POST is due to complex params
 }

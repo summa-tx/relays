@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -352,6 +353,56 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 
 			var out types.QueryResGetRequest
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(&out)
+		},
+	}
+}
+
+// GetCmdCheckRequest returns the CLI command struct for checkRequests
+func GetCmdCheckRequests(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:  "checkrequests <json proof> <json list of requests>",
+		Long: "check whether proof successfully validates a set of requests",
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			var proof types.SPVProof
+			jsonErr := json.Unmarshal([]byte(args[0]), &proof)
+			if jsonErr != nil {
+				return jsonErr
+			}
+
+			var requests []types.FilledRequestInfo
+			jsonErr = json.Unmarshal([]byte(args[1]), &requests)
+			if jsonErr != nil {
+				return jsonErr
+			}
+
+			filledRequests := types.NewFilledRequests(
+				proof,
+				requests,
+			)
+
+			params := types.QueryParamsCheckRequests{
+				Filled: filledRequests,
+			}
+
+			queryData, err := cdc.MarshalJSON(params)
+			if err != nil {
+				fmt.Print(err.Error())
+				return nil
+			}
+
+			res, _, err := cliCtx.QueryWithData("custom/relay/checkrequests", queryData)
+
+			if err != nil {
+				fmt.Printf("error processing checkrequests: %s \n", err)
+				return nil
+			}
+
+			var out types.QueryResCheckRequests
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(&out)
 		},
