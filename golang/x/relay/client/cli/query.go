@@ -408,3 +408,42 @@ func GetCmdCheckRequests(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		},
 	}
 }
+
+// GetCmdCheckProof returns the CLI command struct for checkProof
+func GetCmdCheckProof(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:  "checkproof <json proof>",
+		Long: "check proof has valid parameters",
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			var proof types.SPVProof
+			jsonErr := json.Unmarshal([]byte(args[0]), &proof)
+			if jsonErr != nil {
+				return jsonErr
+			}
+
+			params := types.QueryParamsCheckProof{
+				Proof: proof,
+			}
+
+			queryData, err := cdc.MarshalJSON(params)
+			if err != nil {
+				fmt.Print(err.Error())
+				return nil
+			}
+
+			res, _, err := cliCtx.QueryWithData("custom/relay/checkproof", queryData)
+
+			if err != nil {
+				fmt.Printf("error processing checkproof: %s \n", err)
+				return nil
+			}
+
+			var out types.QueryResCheckProof
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(&out)
+		},
+	}
+}

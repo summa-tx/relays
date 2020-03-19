@@ -42,6 +42,8 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 			return queryGetRequest(ctx, req, keeper)
 		case types.QueryCheckRequests:
 			return queryCheckRequests(ctx, req, keeper)
+		case types.QueryCheckProof:
+			return queryCheckProof(ctx, req, keeper)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown relay query endpoint")
 		}
@@ -256,6 +258,38 @@ func queryCheckRequests(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (
 
 	// Now we format the answer as a response
 	response := types.QueryResCheckRequests{
+		Params:       params,
+		Valid:        valid,
+		ErrorMessage: errMsg,
+	}
+
+	// And we serialize that response as JSON
+	res, marshalErr := codec.MarshalJSONIndent(keeper.cdc, response)
+	if marshalErr != nil {
+		return []byte{}, types.ErrMarshalJSON(types.DefaultCodespace)
+	}
+	return res, nil
+}
+
+func queryCheckProof(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+	var params types.QueryParamsCheckProof
+	var errMsg string
+	valid := true
+
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if unmarshallErr != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
+	}
+
+	// This calls the keeper with the parsed arguments, and gets an answer
+	resErr := keeper.validateProof(ctx, params.Proof)
+	if resErr != nil {
+		valid = false
+		errMsg = resErr.Error()
+	}
+
+	// Now we format the answer as a response
+	response := types.QueryResCheckProof{
 		Params:       params,
 		Valid:        valid,
 		ErrorMessage: errMsg,
