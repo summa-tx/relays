@@ -33,6 +33,9 @@ const (
 
 	// QueryCheckRequest is a query string tag for checkRequests
 	QueryCheckRequests = "checkrequests"
+
+	// QueryCheckProof is a query string tag for checkProof
+	QueryCheckProof = "checkproof"
 )
 
 // QueryParamsIsAncestor represents the parameters for an IsAncestor query
@@ -170,17 +173,38 @@ func (r QueryResGetRequest) String() string {
 		r.Params.ID, spends, pays, r.Res.PaysValue, r.Res.ActiveState, r.Res.NumConfs)
 }
 
+// QueryParamsCheckRequests is the response struct for queryCheckRequests
 type QueryParamsCheckRequests struct {
 	Filled FilledRequests `json:"filledRequests"`
 }
 
+// QueryResCheckRequests is the response struct for queryCheckRequests
 type QueryResCheckRequests struct {
 	Params       QueryParamsCheckRequests `json:"params"`
 	Valid        bool                     `json:"valid"`
 	ErrorMessage string                   `json:"errorMessage"`
 }
 
+// String formats a QueryResCheckRequests struct
 func (r QueryResCheckRequests) String() string {
 	json, _ := json.Marshal(r)
-	return fmt.Sprint(string(json))
+	return string(json)
+}
+
+// QueryParamsCheckProof is the response struct for queryCheckProof
+type QueryParamsCheckProof struct {
+	Proof SPVProof `json:"proof"`
+}
+
+// QueryResCheckProof is the response struct for queryCheckProof
+type QueryResCheckProof struct {
+	Params       QueryParamsCheckProof `json:"params"`
+	Valid        bool                  `json:"valid"`
+	ErrorMessage string                `json:"errorMessage"`
+}
+
+// String formats a QueryResCheckProof struct
+func (r QueryResCheckProof) String() string {
+	json, _ := json.Marshal(r)
+	return string(json)
 }
