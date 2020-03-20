@@ -188,6 +188,11 @@ const (
 	// NotEnoughConfsMessage is the corresponding message
 	NotEnoughConfsMessage = "Not enough confirmations"
 
+	// ActionLength means the pays value is greater than 50 bytes
+	ActionLength sdk.CodeType = 612
+	// ActionLengthMessage is the corresponding message
+	ActionLengthMessage = "Action value is greater than 500 bytes"
+
 	// 700-block External
 
 	// ExternalError is an error from a dependency
@@ -317,6 +322,11 @@ func ErrSpendsLength(codespace sdk.CodespaceType) sdk.Error {
 // ErrPaysLength throws an error
 func ErrPaysLength(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, PaysLength, PaysLengthMessage)
+}
+
+// ErrActionLength throws an error
+func ErrActionLength(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, ActionLength, ActionLengthMessage)
 }
 
 // ErrInvalidVin throws an error
