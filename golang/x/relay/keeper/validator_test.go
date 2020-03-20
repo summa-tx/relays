@@ -67,7 +67,7 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	s.Keeper.ingestHeader(s.Context, validProof.Proof.ConfirmingHeader)
 	s.Keeper.setLink(s.Context, validProof.Proof.ConfirmingHeader)
 	s.Keeper.ingestHeader(s.Context, validProof.BestKnown)
-	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 4)
+	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 4, types.Local, nil)
 	s.Nil(requestErr)
 
 	// errors if getConfs fails
@@ -98,7 +98,7 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	}
 
 	// errors if number of confirmations is less than the number of confirmations on the request
-	requestErr = s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 5)
+	requestErr = s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 5, types.Local, nil)
 	s.Nil(requestErr)
 
 	copiedRequest := tc[0].FilledRequests

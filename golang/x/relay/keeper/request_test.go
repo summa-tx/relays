@@ -9,7 +9,7 @@ import (
 )
 
 func (s *KeeperSuite) TestEmitProofRequest() {
-	s.Keeper.emitProofRequest(s.Context, []byte{0}, []byte{0}, 0, types.RequestID{})
+	s.Keeper.emitProofRequest(s.Context, []byte{0}, []byte{0}, 0, types.RequestID{}, types.Local)
 
 	events := s.Context.EventManager().Events()
 	e := events[0]
@@ -41,7 +41,7 @@ func (s *KeeperSuite) TestIncrementID() {
 func (s *KeeperSuite) TestHasRequest() {
 	hasRequest := s.Keeper.hasRequest(s.Context, types.RequestID{})
 	s.Equal(false, hasRequest)
-	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 4)
+	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 4, types.Local, nil)
 	s.Nil(requestErr)
 	hasRequest = s.Keeper.hasRequest(s.Context, types.RequestID{})
 	s.Equal(true, hasRequest)
@@ -52,7 +52,7 @@ func (s *KeeperSuite) TestSetRequest() {
 	idTag := []byte(types.RequestIDTag)
 	store.Set(idTag, bytes.Repeat([]byte{9}, 9))
 
-	err := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0)
+	err := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0, types.Local, nil)
 	s.Equal(sdk.CodeType(107), err.Code())
 }
 
@@ -62,7 +62,7 @@ func (s *KeeperSuite) TestSetRequestState() {
 	s.Equal(sdk.CodeType(601), activeErr.Code())
 
 	// set request
-	requestErr := s.Keeper.setRequest(s.Context, []byte{1}, []byte{1}, 0, 0)
+	requestErr := s.Keeper.setRequest(s.Context, []byte{1}, []byte{1}, 0, 0, types.Local, nil)
 	s.Nil(requestErr)
 	// change active state to false
 	activeErr = s.Keeper.setRequestState(s.Context, types.RequestID{}, false)
@@ -79,7 +79,7 @@ func (s *KeeperSuite) TestGetRequest() {
 	s.Equal(sdk.CodeType(601), err.Code())
 	s.Equal(types.ProofRequest{}, request)
 
-	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0)
+	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0, types.Local, nil)
 	s.Nil(requestErr)
 
 	request, err = s.Keeper.getRequest(s.Context, types.RequestID{})
@@ -102,7 +102,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 	s.Equal(sdk.CodeType(601), err.Code())
 
 	// set request
-	requestErr := s.Keeper.setRequest(s.Context, []byte{1}, []byte{1}, 0, 0)
+	requestErr := s.Keeper.setRequest(s.Context, []byte{1}, []byte{1}, 0, 0, types.Local, nil)
 	s.Nil(requestErr)
 	// change active state to false
 	activeErr := s.Keeper.setRequestState(s.Context, types.RequestID{}, false)
@@ -134,7 +134,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 	out, outErr := btcspv.ExtractOutputAtIndex(v.Vout, uint(v.OutputIdx))
 	s.Nil(outErr)
 	// out[8:] extracts the output script which we use to set the request
-	requestErr = s.Keeper.setRequest(s.Context, []byte{0}, out[8:], 1000, 0)
+	requestErr = s.Keeper.setRequest(s.Context, []byte{0}, out[8:], 1000, 0, types.Local, nil)
 	s.SDKNil(requestErr)
 	err = s.Keeper.checkRequests(
 		s.Context,
@@ -146,7 +146,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 	s.Equal(sdk.CodeType(608), err.Code())
 
 	// Errors if input value does not equal spends value
-	requestErr = s.Keeper.setRequest(s.Context, []byte{1}, []byte{0}, 0, 255)
+	requestErr = s.Keeper.setRequest(s.Context, []byte{1}, []byte{0}, 0, 255, types.Local, nil)
 	s.SDKNil(requestErr)
 	err = s.Keeper.checkRequests(
 		s.Context,
@@ -162,7 +162,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 	s.Nil(extractErr)
 	outpoint := btcspv.ExtractOutpoint(in)
 	// out[8:] extracts the output script which we use to set the request
-	requestErr = s.Keeper.setRequest(s.Context, outpoint, out[8:], 10, 255)
+	requestErr = s.Keeper.setRequest(s.Context, outpoint, out[8:], 10, 255, types.Local, nil)
 	s.SDKNil(requestErr)
 	err = s.Keeper.checkRequests(
 		s.Context,

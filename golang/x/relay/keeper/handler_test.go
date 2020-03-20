@@ -113,14 +113,14 @@ func (s *KeeperSuite) TestHandleNewRequest() {
 	handler := NewHandler(s.Keeper)
 
 	// Success
-	newRequest := types.NewMsgNewRequest(getAccAddress(), bytes.Repeat([]byte{0}, 36), []byte{0}, 0, 0)
+	newRequest := types.NewMsgNewRequest(getAccAddress(), bytes.Repeat([]byte{0}, 36), []byte{0}, 0, 0, types.Local, nil)
 	res := handler(s.Context, newRequest)
 	hasRequest := s.Keeper.hasRequest(s.Context, types.RequestID{})
 	s.Equal(true, hasRequest)
 	s.Equal("proof_request", res.Events[0].Type)
 
 	// Msg validation failed
-	newRequest = types.NewMsgNewRequest(getAccAddress(), []byte{0}, []byte{0}, 0, 0)
+	newRequest = types.NewMsgNewRequest(getAccAddress(), []byte{0}, []byte{0}, 0, 0, types.Local, nil)
 	res = handler(s.Context, newRequest)
 	s.Equal(sdk.CodeType(602), res.Code)
 
@@ -128,7 +128,7 @@ func (s *KeeperSuite) TestHandleNewRequest() {
 	store := s.Keeper.getRequestStore(s.Context)
 	store.Set([]byte(types.RequestIDTag), []byte("badID"))
 
-	newRequest = types.NewMsgNewRequest(getAccAddress(), bytes.Repeat([]byte{0}, 36), []byte{0}, 0, 0)
+	newRequest = types.NewMsgNewRequest(getAccAddress(), bytes.Repeat([]byte{0}, 36), []byte{0}, 0, 0, types.Local, nil)
 	res = handler(s.Context, newRequest)
 	s.Equal(sdk.CodeType(107), res.Code)
 }

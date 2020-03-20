@@ -19,6 +19,8 @@ type ProofRequest struct {
 	PaysValue   uint64        `json:"paysValue"`
 	ActiveState bool          `json:"activeState"`
 	NumConfs    uint8         `json:"numConfs"`
+	Origin      Origin        `json:"origin"`
+	Action      HexBytes      `json:"action"`
 }
 
 // NewRequestID instantiates a RequestID from a byte slice

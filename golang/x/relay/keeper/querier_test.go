@@ -448,7 +448,7 @@ func (s *KeeperSuite) TestQueryGetRequest() {
 	s.Equal(sdk.CodeType(601), err.Code())
 
 	// Set Request
-	err = s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0)
+	err = s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0, types.Local, nil)
 	s.SDKNil(err)
 
 	// Use querier handler to get request

@@ -155,7 +155,7 @@ func newRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		msg := types.NewMsgNewRequest(addr, req.Spends, req.Pays, req.PaysValue, req.NumConfs)
+		msg := types.NewMsgNewRequest(addr, req.Spends, req.Pays, req.PaysValue, req.NumConfs, types.Local, nil)
 		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

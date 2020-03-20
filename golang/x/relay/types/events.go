@@ -24,6 +24,7 @@ const (
 	AttributeKeyPays      = "pays"
 	AttributeKeySpends    = "spends"
 	AttributeKeyPaysValue = "value"
+	AttributeKeyOrigin    = "origin"
 )
 
 // NewReorgEvent instantiates a reorg event
@@ -46,12 +47,13 @@ func NewExtensionEvent(first, last BitcoinHeader) sdk.Event {
 }
 
 // NewProofRequestEvent instantiates a proof request event
-func NewProofRequestEvent(pays, spends []byte, paysValue uint64, id RequestID) sdk.Event {
+func NewProofRequestEvent(pays, spends []byte, paysValue uint64, id RequestID, origin Origin) sdk.Event {
 	return sdk.NewEvent(
 		EventTypeProofRequest,
 		sdk.NewAttribute(AttributeKeyRequestID, fmt.Sprintf("%d", id)),
 		sdk.NewAttribute(AttributeKeyPays, "0x"+hex.EncodeToString(pays[:])),
 		sdk.NewAttribute(AttributeKeySpends, "0x"+hex.EncodeToString(spends[:])),
 		sdk.NewAttribute(AttributeKeyPaysValue, fmt.Sprintf("%d", paysValue)),
+		sdk.NewAttribute(AttributeKeyOrigin, fmt.Sprintf("%d", origin)),
 	)
 }
