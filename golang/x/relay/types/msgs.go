@@ -151,16 +151,20 @@ type MsgNewRequest struct {
 	Pays      []byte         `json:"pays"`
 	PaysValue uint64         `json:"paysValue"`
 	NumConfs  uint8          `json:"numConfs"`
+	Origin    Origin         `json:"origin"`
+	Action    HexBytes       `json:"action"`
 }
 
 // NewMsgNewRequest instantiates a MsgNewRequest
-func NewMsgNewRequest(address sdk.AccAddress, spends, pays []byte, paysValue uint64, numConfs uint8) MsgNewRequest {
+func NewMsgNewRequest(address sdk.AccAddress, spends, pays []byte, paysValue uint64, numConfs uint8, origin Origin, action HexBytes) MsgNewRequest {
 	return MsgNewRequest{
 		address,
 		spends,
 		pays,
 		paysValue,
 		numConfs,
+		origin,
+		action,
 	}
 }
 
@@ -180,6 +184,9 @@ func (msg MsgNewRequest) ValidateBasic() sdk.Error {
 	}
 	if len(msg.Pays) > 50 {
 		return ErrPaysLength(DefaultCodespace)
+	}
+	if len(msg.Action) > 500 {
+		return ErrActionLength(DefaultCodespace)
 	}
 	return nil
 }

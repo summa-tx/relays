@@ -138,6 +138,8 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 				pays,
 				paysValue,
 				uint8(numConfs),
+				types.Local,
+				nil,
 			)
 			err := msg.ValidateBasic()
 			if err != nil {

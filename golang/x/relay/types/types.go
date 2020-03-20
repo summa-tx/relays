@@ -26,6 +26,16 @@ type BitcoinHeader = btcspv.BitcoinHeader
 // SPVProof is the base struct for an SPV proof
 type SPVProof = btcspv.SPVProof
 
+// Origin an enum of types denoting requests either from the local chain
+// or a remote chain
+type Origin int
+
+// Origin possible types
+const (
+	Local  Origin = 0
+	Remote Origin = 1
+)
+
 // Hash256DigestFromHex converts a hex into a Hash256Digest
 func Hash256DigestFromHex(hexStr string) (Hash256Digest, sdk.Error) {
 	data := hexStr

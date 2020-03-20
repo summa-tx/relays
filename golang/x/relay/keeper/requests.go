@@ -11,8 +11,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) emitProofRequest(ctx sdk.Context, pays, spends []byte, paysValue uint64, id types.RequestID) {
-	ctx.EventManager().EmitEvent(types.NewProofRequestEvent(pays, spends, paysValue, id))
+func (k Keeper) emitProofRequest(ctx sdk.Context, pays, spends []byte, paysValue uint64, id types.RequestID, origin types.Origin) {
+	ctx.EventManager().EmitEvent(types.NewProofRequestEvent(pays, spends, paysValue, id, origin))
 }
 
 func (k Keeper) getRequestStore(ctx sdk.Context) sdk.KVStore {
@@ -24,7 +24,7 @@ func (k Keeper) hasRequest(ctx sdk.Context, id types.RequestID) bool {
 	return store.Has(id[:])
 }
 
-func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValue uint64, numConfs uint8) sdk.Error {
+func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValue uint64, numConfs uint8, origin types.Origin, action types.HexBytes) sdk.Error {
 	store := k.getRequestStore(ctx)
 
 	spendsDigest := btcspv.Hash256(spends)
@@ -36,6 +36,8 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 		PaysValue:   paysValue,
 		ActiveState: true,
 		NumConfs:    numConfs,
+		Origin:      origin,
+		Action:      action,
 	}
 
 	// When a new request comes in, get the id and use it to store request
@@ -57,7 +59,7 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 	}
 
 	// Emit Proof Request event
-	k.emitProofRequest(ctx, pays, spends, request.PaysValue, id)
+	k.emitProofRequest(ctx, pays, spends, request.PaysValue, id, origin)
 	return nil
 }
 
