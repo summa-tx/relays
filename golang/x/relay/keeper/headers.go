@@ -238,7 +238,6 @@ func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.H
 
 // IngestHeaderChain ingests a chain of headers
 func (k Keeper) IngestHeaderChain(ctx sdk.Context, headers []types.BitcoinHeader) sdk.Error {
-	// Find the anchor in our store
 	return k.ingestHeaders(ctx, headers, false)
 }
 

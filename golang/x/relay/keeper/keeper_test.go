@@ -263,20 +263,20 @@ func TestKeeper(t *testing.T) {
 	suite.Run(t, keeperSuite)
 }
 
-func (suite *KeeperSuite) SDKNil(e sdk.Error) {
+func (s *KeeperSuite) SDKNil(e sdk.Error) {
 	var msg string
 	if e != nil {
 		msg = e.Error()
 	}
-	suite.Nil(e, msg)
+	s.Nil(e, msg)
 }
 
-func (suite *KeeperSuite) EqualError(e sdk.Error, code int) {
+func (s *KeeperSuite) EqualError(e sdk.Error, code int) {
 	var msg string
 	if e.Code() != sdk.CodeType(code) {
 		msg = fmt.Sprintf("%sExpected: %d\n", e.Error(), code)
 	}
-	suite.Equal(sdk.CodeType(code), e.Code(), msg)
+	s.Equal(sdk.CodeType(code), e.Code(), msg)
 }
 
 func (s *KeeperSuite) TestGetPrefixStore() {

@@ -8,7 +8,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-func (suite *KeeperSuite) TestDecodeUint32FromPath() {
+func (s *KeeperSuite) TestDecodeUint32FromPath() {
 	DecodeUintPass := []struct {
 		Path         []string
 		Idx          int
@@ -47,15 +47,15 @@ func (suite *KeeperSuite) TestDecodeUint32FromPath() {
 		index := DecodeUintPass[i].Idx
 		limit := DecodeUintPass[i].DefaultLimit
 		num, err := decodeUint32FromPath(path, index, limit)
-		suite.SDKNil(err)
-		suite.Equal(num, DecodeUintPass[i].Output)
+		s.SDKNil(err)
+		s.Equal(num, DecodeUintPass[i].Output)
 	}
 	for i := range DecodeUintFail {
 		path := DecodeUintFail[i].Path
 		index := DecodeUintFail[i].Idx
 		limit := DecodeUintFail[i].DefaultLimit
 		_, err := decodeUint32FromPath(path, index, limit)
-		suite.Equal(DecodeUintFail[i].Err, err.Code())
+		s.Equal(DecodeUintFail[i].Err, err.Code())
 	}
 }
 
