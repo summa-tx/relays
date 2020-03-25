@@ -27,8 +27,20 @@ func (k Keeper) hasRequest(ctx sdk.Context, id types.RequestID) bool {
 func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValue uint64, numConfs uint8, origin types.Origin, action types.HexBytes) sdk.Error {
 	store := k.getRequestStore(ctx)
 
-	spendsDigest := btcspv.Hash256(spends)
-	paysDigest := btcspv.Hash256(pays)
+	var spendsDigest types.Hash256Digest
+	if len(spends) == 0 {
+		spendsDigest = types.Hash256Digest{}
+	} else {
+		spendsDigest = btcspv.Hash256(spends)
+	}
+
+	var paysDigest types.Hash256Digest
+	if len(spends) == 0 {
+		paysDigest = types.Hash256Digest{}
+	} else {
+		paysDigest = btcspv.Hash256(pays)
+	}
+
 
 	request := types.ProofRequest{
 		Spends:      spendsDigest,
@@ -147,7 +159,7 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint32, v
 		return types.ErrClosedRequest(types.DefaultCodespace)
 	}
 
-	hasPays := req.Pays != btcspv.Hash256([]byte{0})
+	hasPays := req.Pays != btcspv.Hash256Digest{}
 	if hasPays {
 		// We can ignore this error because we know that ValidateVout passed
 		out, _ := btcspv.ExtractOutputAtIndex(vout, uint(outputIndex))
@@ -162,7 +174,7 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint32, v
 		}
 	}
 
-	hasSpends := req.Spends != btcspv.Hash256([]byte{0})
+	hasSpends := req.Spends != btcspv.Hash256Digest{}
 	if hasSpends {
 		in, err := btcspv.ExtractInputAtIndex(vin, uint(inputIndex))
 		if err != nil {

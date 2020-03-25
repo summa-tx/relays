@@ -147,8 +147,8 @@ func (msg MsgMarkNewHeaviest) Route() string { return RouterKey }
 // MsgNewRequest defines a NewRequest message
 type MsgNewRequest struct {
 	Signer    sdk.AccAddress `json:"signer"`
-	Spends    []byte         `json:"spends"`
-	Pays      []byte         `json:"pays"`
+	Spends    HexBytes       `json:"spends"`
+	Pays      HexBytes       `json:"pays"`
 	PaysValue uint64         `json:"paysValue"`
 	NumConfs  uint8          `json:"numConfs"`
 	Origin    Origin         `json:"origin"`
@@ -179,10 +179,10 @@ func (msg MsgNewRequest) Type() string { return "new_request" }
 // ValidateBasic runs stateless validation
 func (msg MsgNewRequest) ValidateBasic() sdk.Error {
 	// TODO: validate output types
-	if len(msg.Spends) != 36 {
+	if len(msg.Spends) != 36  && len(msg.Spends) != 0 {
 		return ErrSpendsLength(DefaultCodespace)
 	}
-	if len(msg.Pays) > 50 {
+	if len(msg.Pays) > 50 && len(msg.Spends) != 0 {
 		return ErrPaysLength(DefaultCodespace)
 	}
 	if len(msg.Action) > 500 {
