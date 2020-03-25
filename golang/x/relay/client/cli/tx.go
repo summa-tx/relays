@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -30,6 +31,10 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 
 	relayTxCmd.AddCommand(client.PostCommands(
 		GetCmdIngestHeaderChain(cdc),
+		GetCmdIngestDifficultyChange(cdc),
+		GetCmdNewRequest(cdc),
+		GetCmdProvideProof(cdc),
+		GetCmdMarkNewHeaviest(cdc),
 	)...)
 
 	return relayTxCmd
@@ -37,21 +42,33 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 
 // GetCmdIngestHeaderChain creates a CLI command to ingest a header chain
 func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "ingestheaders <json list of headers>",
 		Short: "Ingest a set of headers",
-		Long:  "Ingest a set of headers. The headers must be in order, and the header immediately before the first must already be known to the relay",
+		Long:  "Ingest a set of headers. The headers must be in order, and the header immediately before the first must already be known to the relay.\nUse flag --inputfile to submit a json filename as input from scripts/seed_data directory",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 
-			// note: unmarshalling json here is undesirable, but necessary
-			var headers []types.BitcoinHeader
-			jsonErr := json.Unmarshal([]byte(args[0]), &headers)
-			if jsonErr != nil {
-				return jsonErr
+			var headers = make([]types.BitcoinHeader, 0)
+
+			if viper.GetBool("inputfile") {
+				jsonFile, err := readJSONFromFile(args[0])
+				if err != nil {
+					return err
+				}
+				jsonErr := json.Unmarshal([]byte(jsonFile), &headers)
+				// headers = requestParams.Headers
+				if jsonErr != nil {
+					return jsonErr
+				}
+			} else {
+				jsonErr := json.Unmarshal([]byte(args[0]), &headers)
+				if jsonErr != nil {
+					return jsonErr
+				}
+				// headers = requestParams.Headers
 			}
 
 			msg := types.NewMsgIngestHeaderChain(
@@ -67,11 +84,14 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 
 		},
 	}
+
+	attachFlagFileinput(cmd)
+	return cmd
 }
 
 // GetCmdIngestDifficultyChange creates a CLI command to ingest a difficulty change
 func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "ingestdiffchange <prev epoch start> <json list of headers>",
 		Short: "Ingest a difficulty change.",
 		Long:  "Ingest a difficulty change. Prev Epoch Start is a hex digest.",
@@ -88,9 +108,21 @@ func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
 			}
 
 			var headers []types.BitcoinHeader
-			jsonErr := json.Unmarshal([]byte(args[1]), &headers)
-			if jsonErr != nil {
-				return jsonErr
+			if viper.GetBool("inputfile") {
+				jsonFile, err := readJSONFromFile(args[1])
+				if err != nil {
+					return err
+				}
+				jsonErr := json.Unmarshal([]byte(jsonFile), &headers)
+				// headers = requestParams.Headers
+				if jsonErr != nil {
+					return jsonErr
+				}
+			} else {
+				jsonErr := json.Unmarshal([]byte(args[1]), &headers)
+				if jsonErr != nil {
+					return jsonErr
+				}
 			}
 
 			msg := types.NewMsgIngestDifficultyChange(
@@ -107,6 +139,9 @@ func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
 
 		},
 	}
+
+	attachFlagFileinput(cmd)
+	return cmd
 }
 
 // GetCmdNewRequest stores a new proof request
@@ -154,7 +189,7 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 
 // GetCmdProvideProof stores a new proof request
 func GetCmdProvideProof(cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "provideproof <json proof> <json list of requests>",
 		Short: "validates proof of given requests",
 		Long:  "validates proof of given requests",
@@ -164,15 +199,33 @@ func GetCmdProvideProof(cdc *codec.Codec) *cobra.Command {
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			var proof types.SPVProof
-			jsonErr := json.Unmarshal([]byte(args[0]), &proof)
-			if jsonErr != nil {
-				return jsonErr
-			}
-
 			var requests []types.FilledRequestInfo
-			jsonErr = json.Unmarshal([]byte(args[1]), &requests)
-			if jsonErr != nil {
-				return jsonErr
+			if viper.GetBool("inputfile") {
+				jsonFileProof, err := readJSONFromFile(args[0])
+				if err != nil {
+					return err
+				}
+				jsonFileReq, err := readJSONFromFile(args[1])
+				if err != nil {
+					return err
+				}
+				jsonErr := json.Unmarshal([]byte(jsonFileProof), &proof)
+				if jsonErr != nil {
+					return jsonErr
+				}
+				jsonErr = json.Unmarshal([]byte(jsonFileReq), &requests)
+				if jsonErr != nil {
+					return jsonErr
+				}
+			} else {
+				jsonErr := json.Unmarshal([]byte(args[0]), &proof)
+				if jsonErr != nil {
+					return jsonErr
+				}
+				jsonErr = json.Unmarshal([]byte(args[1]), &requests)
+				if jsonErr != nil {
+					return jsonErr
+				}
 			}
 
 			filledRequests := types.NewFilledRequests(
@@ -194,6 +247,9 @@ func GetCmdProvideProof(cdc *codec.Codec) *cobra.Command {
 
 		},
 	}
+
+	attachFlagFileinput(cmd)
+	return cmd
 }
 
 // GetCmdMarkNewHeaviest creates a CLI command to update best known digest and LCA
