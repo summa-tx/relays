@@ -35,6 +35,7 @@ func ValidateGenesis(data GenesisState) error {
 		return err
 	}
 
+	// Genesis state must include first block of an epoch plus another block belonging to that same epoch
 	if data.PeriodStart.Height != (data.Headers[0].Height - (data.Headers[0].Height % 2016)) {
 		return errors.New("period start has incorrect height")
 	}
@@ -57,9 +58,11 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) []abci.Valid
 	if err != nil {
 		panic("already init!")
 	}
-	err = keeper.IngestHeaderChain(ctx, data.Headers[1:])
-	if err != nil {
-		panic("Bad header chain in genesis state!")
+	if (len(data.Headers) > 1) {
+		err = keeper.IngestHeaderChain(ctx, data.Headers[1:])
+		if err != nil {
+			panic("Bad header chain in genesis state! " + err.Error())
+		}
 	}
 	return []abci.ValidatorUpdate{}
 }
