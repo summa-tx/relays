@@ -8,6 +8,10 @@
 - - [X] Validate SPV Proofs
 - - [X] `ProvideProof` message
 - [ ] Milestone 3
+- - [ ] Provide tooling for manual testing (scripts, docs, json test files)
+- - [ ] Integration Tests
+- - [ ] Document relay design & architecture
+- - [ ] Document public interface
 - - [ ] Provide hooks to execute tasks + dispatch messages
 - - [ ] Add a basic web dashboard with Relay health
 
@@ -32,8 +36,8 @@
 | IsMostRecentCommonAncestor | Completed | Determine if a block is the LCA of two headers|
 | HeaviestFromAncestor | Completed | Check which of two descendents is heaviest from the LCA |
 | GetRequest | Completed | Get details of an SPV Proof Request|
-| CheckProof | TODO | Check the syntactic validity of an SPV Proof |
-| CheckRequests | TODO | Perform CheckProof and check the SPV Proof against a set of Requests |
+| CheckProof | Completed | Check the syntactic validity of an SPV Proof |
+| CheckRequests | Completed | Perform CheckProof and check the SPV Proof against a set of Requests |
 
 ## How to add a view function (queries)
 1. Add necessary getter(s) in `x/relay/keeper/keeper.go`
