@@ -59,7 +59,6 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 					return err
 				}
 				jsonErr := json.Unmarshal([]byte(jsonFile), &headers)
-				// headers = requestParams.Headers
 				if jsonErr != nil {
 					return jsonErr
 				}
@@ -68,7 +67,6 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 				if jsonErr != nil {
 					return jsonErr
 				}
-				// headers = requestParams.Headers
 			}
 
 			msg := types.NewMsgIngestHeaderChain(
@@ -114,7 +112,6 @@ func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
 					return err
 				}
 				jsonErr := json.Unmarshal([]byte(jsonFile), &headers)
-				// headers = requestParams.Headers
 				if jsonErr != nil {
 					return jsonErr
 				}
