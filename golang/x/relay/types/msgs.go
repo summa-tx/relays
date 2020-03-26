@@ -182,7 +182,7 @@ func (msg MsgNewRequest) ValidateBasic() sdk.Error {
 	if len(msg.Spends) != 36  && len(msg.Spends) != 0 {
 		return ErrSpendsLength(DefaultCodespace)
 	}
-	if len(msg.Pays) > 50 && len(msg.Spends) != 0 {
+	if len(msg.Pays) > 50 {
 		return ErrPaysLength(DefaultCodespace)
 	}
 	if len(msg.Action) > 500 {
