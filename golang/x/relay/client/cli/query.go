@@ -215,7 +215,7 @@ func GetCmdIsMostRecentCommonAncestor(queryRoute string, cdc *codec.Codec) *cobr
 				return nil
 			}
 
-			right, sdkErr := types.Hash256DigestFromHex(args[1])
+			right, sdkErr := types.Hash256DigestFromHex(args[2])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil

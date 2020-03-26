@@ -41,7 +41,6 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 		paysDigest = btcspv.Hash256(pays)
 	}
 
-
 	request := types.ProofRequest{
 		Spends:      spendsDigest,
 		Pays:        paysDigest,

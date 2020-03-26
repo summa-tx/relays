@@ -58,7 +58,7 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) []abci.Valid
 	if err != nil {
 		panic("already init!")
 	}
-	if (len(data.Headers) > 1) {
+	if len(data.Headers) > 1 {
 		err = keeper.IngestHeaderChain(ctx, data.Headers[1:])
 		if err != nil {
 			panic("Bad header chain in genesis state! " + err.Error())
