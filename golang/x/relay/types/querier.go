@@ -31,7 +31,7 @@ const (
 	// QueryGetRequest is a query string tag for getRequest
 	QueryGetRequest = "getrequest"
 
-	// QueryCheckRequest is a query string tag for checkRequests
+	// QueryCheckRequests is a query string tag for checkRequests
 	QueryCheckRequests = "checkrequests"
 
 	// QueryCheckProof is a query string tag for checkProof
