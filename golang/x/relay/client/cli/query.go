@@ -29,6 +29,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdFindAncestor(queryRoute, cdc),
 		GetCmdIsMostRecentCommonAncestor(queryRoute, cdc),
 		GetCmdHeaviestFromAncestor(queryRoute, cdc),
+		GetCmdCheckProof(queryRoute, cdc),
 	)...)
 	return relayQueryCommand
 }
@@ -437,7 +438,7 @@ func GetCmdCheckProof(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:  "checkproof <json proof>",
 		Long: "check proof has valid parameters",
-		Args: cobra.ExactArgs(2),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
