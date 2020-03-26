@@ -1,6 +1,8 @@
 #!/bin/bash
 rm -rf ~/.summa/cosmosrelay
 
+make install
+
 relayd init mynode --chain-id relay
 
 echo "12345678" | relaycli keys add me
