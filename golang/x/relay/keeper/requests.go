@@ -133,7 +133,7 @@ func (k Keeper) getNextID(ctx sdk.Context) (types.RequestID, sdk.Error) {
 	store := k.getRequestStore(ctx)
 	idTag := []byte(types.RequestIDTag)
 	if !store.Has(idTag) {
-		store.Set(idTag, bytes.Repeat([]byte{0}, 8))
+		store.Set(idTag, bytes.Repeat([]byte{1}, 8))
 	}
 	id := store.Get(idTag)
 	newID, err := types.NewRequestID(id)
