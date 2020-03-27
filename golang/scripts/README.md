@@ -77,4 +77,7 @@ relaycli tx relay provideproof 1_check_proof.json 3_filled_requests.json  --from
 # Ingest remaining headers to relay (without any change in difficulty)
 relaycli tx relay ingestheaders 4_ingest_headers.json  --from me  --inputfile --broadcast-mode block
 
+# Mark new heaviest to update the best known digest
+relaycli tx relay marknewheaviest 0x4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000 0x0000c020954ea1d980abc34fd5c260205e025a405f59cdf510960c000000000000000000ad864d04a6ca14e597da45c4936dd3a07946e7d72aab72a3ed7444f0f6da618dd150425eff3212173f0c982d 0x0000c020bc00d40ffb1b0e8850475b0ff71d990080bb0e8203d1090000000000000000008a317b377cc53010ed4c741bd6bcea5fe6748665a6a9374510ff77e5cdfac7e3b971425ed41a12174334a315  0 --broadcast-mode block --from me
+
 ```
