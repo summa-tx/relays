@@ -1,7 +1,13 @@
 #!/bin/bash
 rm -rf ~/.summa/cosmosrelay
 
-make install
+if make install
+then
+    echo SUCCESSFULLY BUILT
+else
+    echo ERROR: CANNOT BUILD
+    exit 1
+fi
 
 relayd init mynode --chain-id relay
 
