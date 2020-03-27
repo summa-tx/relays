@@ -25,7 +25,8 @@ relayd help
 relaycli help
 ```
 ## Running the CLI
-To run the CLI for manual testing, you can run `./scripts/init_chain.sh` to initialize a new chain.
+To run the CLI for manual testing, you can run `./scripts/init_chain.sh` to initialize a new chain.<br><br>
+All chain related data lives in `scripts/json_data`. Edit `scripts/json_data/genesis.json` to generate a customized genesis state. This JSON must be a list of block headers pertaining to one epoch. The first header must be the first block of the epoch. The remaining headers must be ordered headers beginning at any height in the epoch.
 ```bash
 # Set the executable rights if not done already
 chmod +x scripts/init_chain.sh
@@ -41,7 +42,7 @@ Querying neither requires the `--from` flag nor a password.
 # Retrieve the first digest of the relay
 relaycli query relay getrelaygenesis
 
-# Retrieve the best known digest 
+# Retrieve the best known digest
 relaycli query relay getlastreorglca
 
 # List other query options
