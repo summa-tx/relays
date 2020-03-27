@@ -118,7 +118,6 @@ func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, new
 		3. Both are in the same window, choose the higher one
 		4. They're in different new windows. Choose the heavier one
 	*/
-
 	if !leftInPeriod && rightInPeriod {
 		return leftBlock.HashLE, nil
 	}

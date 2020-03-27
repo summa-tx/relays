@@ -17,4 +17,5 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgIngestDifficultyChange{}, "relay/IngestDifficultyChange", nil)
 	cdc.RegisterConcrete(MsgMarkNewHeaviest{}, "relay/MarkNewHeaviest", nil)
 	cdc.RegisterConcrete(MsgNewRequest{}, "relay/NewRequest", nil)
+	cdc.RegisterConcrete(MsgProvideProof{}, "relay/ProvideProof", nil)
 }

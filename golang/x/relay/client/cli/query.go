@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
@@ -28,6 +29,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdFindAncestor(queryRoute, cdc),
 		GetCmdIsMostRecentCommonAncestor(queryRoute, cdc),
 		GetCmdHeaviestFromAncestor(queryRoute, cdc),
+		GetCmdCheckProof(queryRoute, cdc),
 	)...)
 	return relayQueryCommand
 }
@@ -119,7 +121,7 @@ func GetCmdGetRelayGenesis(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-// GetCmdIsAncestor returns the CLI command struct for IsAncestor
+// GetCmdGetLastReorgLCA returns the CLI command struct for GetLastReorgLCA
 func GetCmdGetLastReorgLCA(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "getlastreorglca",
@@ -142,6 +144,7 @@ func GetCmdGetLastReorgLCA(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
+// GetCmdFindAncestor returns the CLI command struct for FindAncestor
 func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "findancestor <digest> <offset>",
@@ -190,7 +193,7 @@ func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-// GetCmdIsAncestor returns the CLI command struct for IsAncestor
+// GetCmdIsMostRecentCommonAncestor returns the CLI command struct for IsMostRecentCommonAncestor
 func GetCmdIsMostRecentCommonAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "ismostrecentcommonancestor <ancestor> <left> <right> [limit]",
@@ -212,7 +215,7 @@ func GetCmdIsMostRecentCommonAncestor(queryRoute string, cdc *codec.Codec) *cobr
 				return nil
 			}
 
-			right, sdkErr := types.Hash256DigestFromHex(args[1])
+			right, sdkErr := types.Hash256DigestFromHex(args[2])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
@@ -359,9 +362,9 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-// GetCmdCheckRequest returns the CLI command struct for checkRequests
+// GetCmdCheckRequests returns the CLI command struct for checkRequests
 func GetCmdCheckRequests(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:  "checkrequests <json proof> <json list of requests>",
 		Long: "check whether proof successfully validates a set of requests",
 		Args: cobra.ExactArgs(2),
@@ -369,15 +372,33 @@ func GetCmdCheckRequests(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			var proof types.SPVProof
-			jsonErr := json.Unmarshal([]byte(args[0]), &proof)
-			if jsonErr != nil {
-				return jsonErr
-			}
-
 			var requests []types.FilledRequestInfo
-			jsonErr = json.Unmarshal([]byte(args[1]), &requests)
-			if jsonErr != nil {
-				return jsonErr
+			if viper.GetBool("inputfile") {
+				jsonFileProof, err := readJSONFromFile(args[0])
+				if err != nil {
+					return err
+				}
+				jsonFileReq, err := readJSONFromFile(args[1])
+				if err != nil {
+					return err
+				}
+				jsonErr := json.Unmarshal([]byte(jsonFileProof), &proof)
+				if jsonErr != nil {
+					return jsonErr
+				}
+				jsonErr = json.Unmarshal([]byte(jsonFileReq), &requests)
+				if jsonErr != nil {
+					return jsonErr
+				}
+			} else {
+				jsonErr := json.Unmarshal([]byte(args[0]), &proof)
+				if jsonErr != nil {
+					return jsonErr
+				}
+				jsonErr = json.Unmarshal([]byte(args[1]), &requests)
+				if jsonErr != nil {
+					return jsonErr
+				}
 			}
 
 			filledRequests := types.NewFilledRequests(
@@ -407,21 +428,35 @@ func GetCmdCheckRequests(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			return cliCtx.PrintOutput(&out)
 		},
 	}
+
+	attachFlagFileinput(cmd)
+	return cmd
 }
 
 // GetCmdCheckProof returns the CLI command struct for checkProof
 func GetCmdCheckProof(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:  "checkproof <json proof>",
 		Long: "check proof has valid parameters",
-		Args: cobra.ExactArgs(2),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			var proof types.SPVProof
-			jsonErr := json.Unmarshal([]byte(args[0]), &proof)
-			if jsonErr != nil {
-				return jsonErr
+			if viper.GetBool("inputfile") {
+				jsonFile, err := readJSONFromFile(args[0])
+				if err != nil {
+					return err
+				}
+				jsonErr := json.Unmarshal([]byte(jsonFile), &proof)
+				if jsonErr != nil {
+					return jsonErr
+				}
+			} else {
+				jsonErr := json.Unmarshal([]byte(args[0]), &proof)
+				if jsonErr != nil {
+					return jsonErr
+				}
 			}
 
 			params := types.QueryParamsCheckProof{
@@ -446,4 +481,7 @@ func GetCmdCheckProof(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			return cliCtx.PrintOutput(&out)
 		},
 	}
+
+	attachFlagFileinput(cmd)
+	return cmd
 }
