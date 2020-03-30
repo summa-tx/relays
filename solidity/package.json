@@ -14,10 +14,10 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@summa-tx/bitcoin-spv-sol": "^2.1.0",
-    "dotenv": "^8.1.0"
+    "dotenv": "^8.1.0",
+    "bn.js": "^5.1.1"
   },
   "devDependencies": {
-    "bn.js": "^5.0.0",
     "eslint": "^6.1.0",
     "eslint-config-airbnb-base": "^13.2.0",
     "eslint-plugin-import": "^2.18.0",
