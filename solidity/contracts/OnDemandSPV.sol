@@ -19,12 +19,12 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
     struct ProofRequest {
         bytes32 spends;
         bytes32 pays;
-        uint64 paysValue;
-        RequestStates state;
-        address consumer;
-        address owner;
-        uint8 numConfs;
         uint256 notBefore;
+        address consumer;
+        uint64 paysValue;
+        uint8 numConfs;
+        address owner;
+        RequestStates state;
     }
 
     enum RequestStates { NONE, ACTIVE, CLOSED }
