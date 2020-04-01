@@ -11,6 +11,7 @@ import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
+// IngestHeaderChainReq is the request struct for ingest header chain
 type IngestHeaderChainReq struct {
 	BaseReq rest.BaseReq          `json:"base_req"`
 	Headers []types.BitcoinHeader `json:"headers"`
@@ -48,6 +49,7 @@ func ingestHeaderChainHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
+// IngestDifficultyChangeReq is the request struct for ingest difficulty change
 type IngestDifficultyChangeReq struct {
 	BaseReq rest.BaseReq          `json:"base_req"`
 	Start   types.Hash256Digest   `json:"prevEpochStart"`
@@ -86,6 +88,7 @@ func ingestDifficultyChangeHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
+// MarkNewHeaviestReq is the request struct for mark new heaviest
 type MarkNewHeaviestReq struct {
 	BaseReq     rest.BaseReq        `json:"base_req"`
 	Ancestor    types.Hash256Digest `json:"ancestor"`
@@ -126,6 +129,7 @@ func markNewHeaviestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
+// NewRequestReq is the request struct for a new proof request
 type NewRequestReq struct {
 	BaseReq   rest.BaseReq `json:"base_req"`
 	Spends    []byte       `json:"spends"`
@@ -166,6 +170,7 @@ func newRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
+// ProvideProofReq is the request struct for a new provide proof message
 type ProvideProofReq struct {
 	BaseReq  rest.BaseReq              `json:"base_req"`
 	Proof    types.SPVProof            `json:"proof"`
