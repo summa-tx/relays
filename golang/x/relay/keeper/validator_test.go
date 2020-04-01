@@ -67,7 +67,7 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	s.Keeper.ingestHeader(s.Context, validProof.Proof.ConfirmingHeader)
 	s.Keeper.setLink(s.Context, validProof.Proof.ConfirmingHeader)
 	s.Keeper.ingestHeader(s.Context, validProof.BestKnown)
-	requestErr := s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 4, types.Local, nil)
+	requestErr := s.Keeper.setRequest(s.Context, []byte{}, []byte{}, 0, 4, types.Local, nil)
 	s.Nil(requestErr)
 
 	// errors if getConfs fails
