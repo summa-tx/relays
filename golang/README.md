@@ -42,13 +42,12 @@
 ## How to add a view function (queries)
 1. Add necessary getter(s) in `x/relay/keeper/keeper.go`
 1. Add response type to `x/relay/types/querier.go`
+    1. Add new string tag for the new query
     1. Response type is a struct with the return values
     1. Implement `String()` for the response type
 1. Add function to querier `x/relay/keeper/querier.go`
-    1. Add new string tag for the new query
     1. Add new `query___` function
     1. Add new case block to `switch` in `NewQuerier()`
-1. Add alias type in `x/relay/alias.go`
 1. Add to CLI  
     1. add to `x/relay/client/cli/query.go`
       1. `func GetCmd______`

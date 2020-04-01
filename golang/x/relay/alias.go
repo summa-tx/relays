@@ -25,7 +25,7 @@ var (
 	NewMsgIngestDifficultyChange = types.NewMsgIngestDifficultyChange
 	// NewMsgMarkNewHeaviest is what is says on the tin
 	NewMsgMarkNewHeaviest = types.NewMsgMarkNewHeaviest
-	// NewMsgGetRequest is what is says on the tin
+	// NewMsgNewRequest is what is says on the tin
 	NewMsgNewRequest = types.NewMsgNewRequest
 	// NewMsgProvideProof is what is says on the tin
 	NewMsgProvideProof = types.NewMsgProvideProof

@@ -19,6 +19,9 @@ const (
 	// QueryGetLastReorgLCA is a query string tag for GetLastReorgLCA
 	QueryGetLastReorgLCA = "getlastreorglca"
 
+	// QueryGetBestDigest is a query string tag for GetBestDigest
+	QueryGetBestDigest = "getbestdigest"
+
 	// QueryFindAncestor is a query string tag for FindAncestor
 	QueryFindAncestor = "findancestor"
 
@@ -81,6 +84,18 @@ func (r QueryResGetLastReorgLCA) String() string {
 	digest := "0x" + hex.EncodeToString(r.Res[:])
 	return fmt.Sprintf("%s\n", digest)
 }
+
+// QueryResGetBestDigest is the response struct for queryGetBestDigest
+type QueryResGetBestDigest struct {
+	Res Hash256Digest `json:"result"`
+}
+
+// String formats a QueryResGetBestDigest struct
+func (r QueryResGetBestDigest) String() string {
+	digest := "0x" + hex.EncodeToString(r.Res[:])
+	return fmt.Sprintf("%s\n", digest)
+}
+
 
 // QueryParamsFindAncestor represents the parameters for a FindAncestor query
 type QueryParamsFindAncestor struct {

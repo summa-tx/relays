@@ -26,6 +26,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdIsAncestor(queryRoute, cdc),
 		GetCmdGetRelayGenesis(queryRoute, cdc),
 		GetCmdGetLastReorgLCA(queryRoute, cdc),
+		GetCmdGetBestDigest(queryRoute, cdc),
 		GetCmdFindAncestor(queryRoute, cdc),
 		GetCmdIsMostRecentCommonAncestor(queryRoute, cdc),
 		GetCmdHeaviestFromAncestor(queryRoute, cdc),
@@ -126,7 +127,7 @@ func GetCmdGetLastReorgLCA(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "getlastreorglca",
 		Example: "getlastreorglca",
-		Long:    "Returns the best known digest in the relay",
+		Long:    "Returns the latest common ancestor of the last-known reorg",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
@@ -138,6 +139,29 @@ func GetCmdGetLastReorgLCA(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 
 			var out types.QueryResGetLastReorgLCA
+			cdc.MustUnmarshalJSON(res, &out)
+			return cliCtx.PrintOutput(&out)
+		},
+	}
+}
+
+// GetCmdGetBestDigest returns the CLI command struct for GetBestDigest
+func GetCmdGetBestDigest(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:     "getbestdigest",
+		Example: "getbestdigest",
+		Long:    "Returns the best known digest in the relay",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.QueryWithData("custom/relay/getbestdigest", nil)
+
+			if err != nil {
+				fmt.Println("could not get best known digest")
+				return nil
+			}
+
+			var out types.QueryResGetBestDigest
 			cdc.MustUnmarshalJSON(res, &out)
 			return cliCtx.PrintOutput(&out)
 		},

@@ -91,6 +91,19 @@ func getLastReorgLCAHandler(cliCtx context.CLIContext, storeName string) http.Ha
 	}
 }
 
+// handler function for getBestDigest queries
+func getBestDigest(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		res, _, err := cliCtx.QueryWithData("custom/relay/getbestdigest", nil)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
 // handler function for findAncestor queries. parses arguments from url string, and passes them through
 // as a QueryParamsFindAncestor struct
 func findAncestorHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {

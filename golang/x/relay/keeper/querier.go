@@ -32,6 +32,8 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 			return queryGetRelayGenesis(ctx, req, keeper)
 		case types.QueryGetLastReorgLCA:
 			return queryGetLastReorgLCA(ctx, req, keeper)
+		case types.QueryGetBestDigest:
+			return queryGetBestDigest(ctx, req, keeper)
 		case types.QueryFindAncestor:
 			return queryFindAncestor(ctx, req, keeper)
 		case types.QueryHeaviestFromAncestor:
@@ -109,6 +111,26 @@ func queryGetLastReorgLCA(ctx sdk.Context, req abci.RequestQuery, keeper Keeper)
 
 	// Now we format the answer as a response
 	response := types.QueryResGetLastReorgLCA{
+		Res: result,
+	}
+
+	// And we serialize that response as JSON
+	res, marshalErr := codec.MarshalJSONIndent(keeper.cdc, response)
+	if marshalErr != nil {
+		return []byte{}, types.ErrMarshalJSON(types.DefaultCodespace)
+	}
+	return res, nil
+}
+
+func queryGetBestDigest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+	// This calls the keeper and gets an answer
+	result, err := keeper.GetBestKnownDigest(ctx)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	// Now we format the answer as a response
+	response := types.QueryResGetBestDigest{
 		Res: result,
 	}
 
