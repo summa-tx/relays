@@ -35,7 +35,7 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 	}
 
 	var paysDigest types.Hash256Digest
-	if len(spends) == 0 {
+	if len(pays) == 0 {
 		paysDigest = types.Hash256Digest{}
 	} else {
 		paysDigest = btcspv.Hash256(pays)

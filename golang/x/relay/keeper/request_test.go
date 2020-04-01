@@ -146,7 +146,7 @@ func (s *KeeperSuite) TestCheckRequests() {
 	s.Equal(sdk.CodeType(608), err.Code())
 
 	// Errors if input value does not equal spends value
-	requestErr = s.Keeper.setRequest(s.Context, []byte{1}, []byte{0}, 0, 255, types.Local, nil)
+	requestErr = s.Keeper.setRequest(s.Context, []byte{1}, []byte{}, 0, 255, types.Local, nil)
 	s.SDKNil(requestErr)
 	err = s.Keeper.checkRequests(
 		s.Context,
