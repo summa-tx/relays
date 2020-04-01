@@ -25,14 +25,14 @@ relayd help
 relaycli help
 ```
 ## Running the CLI
-To run the CLI for manual testing, you can run `./scripts/init_chain.sh` to initialize a new chain.<br><br>
+To run the CLI for manual testing, you can run `make init` to initialize a new chain.<br><br>
 All chain related data lives in `scripts/json_data`. Edit `scripts/json_data/genesis.json` to generate a customized genesis state. This JSON must be a list of block headers pertaining to one epoch. The first header must be the first block of the epoch. The remaining headers must be ordered headers beginning at any height in the epoch.
 ```bash
 # Set the executable rights if not done already
 chmod +x scripts/init_chain.sh
 
-#run script
-./scripts/init_chain.sh
+# initialize chain with data from scripts/json_data/genesis.json
+make init
 ```
 Open up a new terminal tab in the same directory to begin interacting with the chain. As per the setup script, you can now interact via username/password `me / 12345678` such that when submitting transactions using flag `--from me` when prompted for the password enter: `12345678`
 
