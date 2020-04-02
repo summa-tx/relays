@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"encoding/hex"
 	"fmt"
 
@@ -12,6 +13,7 @@ const (
 	EventTypeExtension    = "extension"
 	EventTypeReorg        = "reorg"
 	EventTypeProofRequest = "proof_request"
+	EventTypeProofProvided = "proof_provided"
 
 	AttributeKeyFirstBlock = "first_block"
 	AttributeKeyLastBlock  = "last_block"
@@ -25,6 +27,9 @@ const (
 	AttributeKeySpends    = "spends"
 	AttributeKeyPaysValue = "value"
 	AttributeKeyOrigin    = "origin"
+
+	AttributeKeyTXID = "txid"
+	AttributeKeyFilled = "filled"
 )
 
 // NewReorgEvent instantiates a reorg event
@@ -55,5 +60,15 @@ func NewProofRequestEvent(pays, spends []byte, paysValue uint64, id RequestID, o
 		sdk.NewAttribute(AttributeKeySpends, "0x"+hex.EncodeToString(spends[:])),
 		sdk.NewAttribute(AttributeKeyPaysValue, fmt.Sprintf("%d", paysValue)),
 		sdk.NewAttribute(AttributeKeyOrigin, fmt.Sprintf("%d", origin)),
+	)
+}
+
+// NewProofProvidedEvent instantiates a proof provided event
+func NewProofProvidedEvent(txid Hash256Digest, filled []RequestID) sdk.Event {
+	filledJSON, _ := json.Marshal(filled)
+	return sdk.NewEvent(
+		EventTypeProofProvided,
+		sdk.NewAttribute(AttributeKeyTXID, "0x" + hex.EncodeToString(txid[:])),
+		sdk.NewAttribute(AttributeKeyFilled, string(filledJSON)),
 	)
 }
