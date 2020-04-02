@@ -28,3 +28,6 @@ lint:
 
 test:
 	@go test -mod=readonly $(PACKAGES)
+
+init:
+	./scripts/init_chain.sh
