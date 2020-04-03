@@ -2,7 +2,6 @@ package clitest
 
 import (
 	"testing"
-    "fmt"
 	"encoding/json"
 	"encoding/hex"
 
@@ -10,84 +9,142 @@ import (
 	rtypes "github.com/summa-tx/relays/golang/x/relay/types"
 )
 
-// func TestRelayCLIGetRelayGenesis(t *testing.T) {
-// 	// Get Expected Value
-// 	var genesisHeaders []rtypes.BitcoinHeader
-// 	genesisJSON := readJSONFile(t, "genesis")
-// 	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
-// 	require.NoError(t, err)
-// 	expected := genesisHeaders[1].HashLE
-//
-// 	// Query Chain for Actual Value
-//     f := InitFixtures(t)
-// 	proc := f.RelayDStart()
-// 	defer proc.Stop(false)
-// 	fooAddr := f.KeyAddress(keyFoo)
-// 	genesisRelay := f.QueryGetRelayGenesis(fooAddr)
-// 	actual := genesisRelay.Res
-//
-// 	// Condition
-// 	require.Equal(t, expected, actual)
-//
-// 	//Cleanup
-// 	f.Cleanup()
-// }
-//
-// func TestRelayCLIGetLastReorgLCA(t *testing.T) {
-// 	// Get Expected Value
-// 	var genesisHeaders []rtypes.BitcoinHeader
-// 	genesisJSON := readJSONFile(t, "genesis")
-// 	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
-// 	require.NoError(t, err)
-// 	expected := genesisHeaders[1].HashLE
-//
-// 	// Query Chain for Actual Value
-// 	f := InitFixtures(t)
-// 	proc := f.RelayDStart()
-// 	defer proc.Stop(false)
-// 	fooAddr := f.KeyAddress(keyFoo)
-// 	lastReorgLCA := f.QueryGetLastReorgLCA(fooAddr)
-// 	actual := lastReorgLCA.Res
-//
-// 	// Condition
-// 	require.Equal(t, expected, actual)
-//
-// 	//Cleanup
-// 	f.Cleanup()
-// }
-
-
-func TestRelayCLITXIngestDiffChange(t *testing.T) {
-	// Extracted needed data for transaction
+func TestRelayCLIGetRelayGenesis(t *testing.T) {
+	// Get Expected Value
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
 	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
 	require.NoError(t, err)
+	expected := genesisHeaders[1].HashLE
+
+	// Query Chain for Actual Value
+    f := InitFixtures(t)
+	proc := f.RelayDStart()
+	defer proc.Stop(false)
+	fooAddr := f.KeyAddress(keyFoo)
+	genesisRelay := f.QueryGetRelayGenesis(fooAddr)
+	actual := genesisRelay.Res
+
+	// Condition
+	require.Equal(t, expected, actual)
+
+	//Cleanup
+	f.Cleanup()
+}
+
+func TestRelayCLIGetLastReorgLCA(t *testing.T) {
+	// Get Expected Value
+	var genesisHeaders []rtypes.BitcoinHeader
+	genesisJSON := readJSONFile(t, "genesis")
+	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
+	require.NoError(t, err)
+	expected := genesisHeaders[1].HashLE
+
+	// Query Chain for Actual Value
+	f := InitFixtures(t)
+	proc := f.RelayDStart()
+	defer proc.Stop(false)
+	fooAddr := f.KeyAddress(keyFoo)
+	lastReorgLCA := f.QueryGetLastReorgLCA(fooAddr)
+	actual := lastReorgLCA.Res
+
+	// Condition
+	require.Equal(t, expected, actual)
+
+	//Cleanup
+	f.Cleanup()
+}
+
+func TestRelayCLIGetBestDigest(t *testing.T) {
+	// Get Expected Value
+	var genesisHeaders []rtypes.BitcoinHeader
+	genesisJSON := readJSONFile(t, "genesis")
+	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
+	require.NoError(t, err)
+	expected := genesisHeaders[1].HashLE
+
+	// Query Chain for Actual Value
+	f := InitFixtures(t)
+	proc := f.RelayDStart()
+	defer proc.Stop(false)
+	fooAddr := f.KeyAddress(keyFoo)
+	bestDigest := f.QueryGetBestDigest(fooAddr)
+	actual := bestDigest.Res
+
+	// Condition
+	require.Equal(t, expected, actual)
+
+	//Cleanup
+	f.Cleanup()
+}
+
+func TestRelayCLITXIngestDiffChange(t *testing.T) {
+	// Extract data for transaction
+	var genesisHeaders []rtypes.BitcoinHeader
+	genesisJSON := readJSONFile(t, "genesis")
+	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
+	require.NoError(t, err)
+
+	var newDifficultyHeaders []rtypes.BitcoinHeader
+	newDiffJSON := readJSONFile(t, "0_new_difficulty")
+	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
+	require.NoError(t, err)
+
 	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-	// prevEpochStart := "5c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000"
-
-	// hexPrevEpoch := hex.EncodeToString(prevEpochStart)
-	fmt.Println("HERE!!!!")
-	fmt.Println(prevEpochStart)
-
+	ancestor := hex.EncodeToString(genesisHeaders[1].HashLE[:])
+	newBest := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
 
 	// Transact with Chain
 	f := InitFixtures(t)
 	proc := f.RelayDStart()
 	defer proc.Stop(false)
 	fooAddr := f.KeyAddress(keyFoo)
-	success, stout, sterr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
-	if len(stout) > 1 {
-		fmt.Println("STOUT!!!!!!!!!!")
-		fmt.Println(stout)
-	}
-	if len(sterr) > 1 {
-		fmt.Println("STERR!!!!!!!!!!")
-		fmt.Println(sterr)
-	}
-	fmt.Println("SUCCESS!!!!!!!!!!")
-	fmt.Println(success)
+	success, _, sterr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 	require.True(t, success)
 
+	//Cleanup
+	f.Cleanup()
+}
 
+func TestRelayCLITxMarkNewHeaviest(t *testing.T) {
+	// Extract data for transaction
+	var genesisHeaders []rtypes.BitcoinHeader
+	genesisJSON := readJSONFile(t, "genesis")
+	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
+	require.NoError(t, err)
+
+	var newDifficultyHeaders []rtypes.BitcoinHeader
+	newDiffJSON := readJSONFile(t, "0_new_difficulty")
+	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
+	require.NoError(t, err)
+
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+	ancestor := hex.EncodeToString(genesisHeaders[1].HashLE[:])
+	bestKnown := hex.EncodeToString(genesisHeaders[1].Raw[:])
+	newBest := hex.EncodeToString(newDifficultyHeaders[1].Raw[:])
+	limit := "10"
+
+	// Get Expected Value
+	expected := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
+
+	// Query Chain for Actual Value
+	f := InitFixtures(t)
+	proc := f.RelayDStart()
+	defer proc.Stop(false)
+	fooAddr := f.KeyAddress(keyFoo)
+
+	success, _, _ := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
+	require.True(t, success)
+
+	success, _, _ = f.TxMarkNewHeaviest(fooAddr, ancestor, bestKnown, newBest, limit, "-y")
+	require.True(t, success)
+
+	bestDigest := f.QueryGetBestDigest(fooAddr)
+	actual := hex.EncodeToString(bestDigest.Res[:])
+
+	// Condition
+	require.Equal(t, expected, actual)
+
+	//Cleanup
+	f.Cleanup()
 }

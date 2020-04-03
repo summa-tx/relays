@@ -2,7 +2,8 @@ package keeper
 
 import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
-
+	"fmt"
+	"encoding/hex"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
@@ -146,6 +147,7 @@ func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, new
 
 // MarkNewHeaviest updates the best known digest and LCA
 func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, currentBest, newBest types.RawHeader, limit uint32) sdk.Error {
+	fmt.Println("HERE!!!!!!!!!!")
 	newBestDigest := btcspv.Hash256(newBest[:])
 	currentBestDigest := btcspv.Hash256(currentBest[:])
 
@@ -155,6 +157,10 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 
 	knownBestDigest, err := k.GetBestKnownDigest(ctx)
 	if err != nil || currentBestDigest != knownBestDigest {
+		fmt.Println("CURRENTBEST!!!!!")
+		fmt.Println(hex.EncodeToString(currentBestDigest[:]))
+		fmt.Println("KNOWNBEST!!!!!")
+		fmt.Println(hex.EncodeToString(knownBestDigest[:]))
 		return types.ErrNotBestKnown(types.DefaultCodespace)
 	}
 

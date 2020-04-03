@@ -254,11 +254,31 @@ func (f *Fixtures) QueryGetLastReorgLCA(delAddr sdk.AccAddress, flags ...string)
 	return lastreorglca
 }
 
-// QueryGetLastReorgLCA returns Last Common Anscestor
+// QueryGetBestDigest returns the Best Known Digest
+func (f *Fixtures) QueryGetBestDigest(delAddr sdk.AccAddress, flags ...string) rtypes.QueryResGetBestDigest {
+	cmd := fmt.Sprintf("%s query relay getbestdigest %s %s", f.RelaycliBinary, delAddr, f.Flags())
+	res, errStr := tests.ExecuteT(f.T, cmd, "")
+	require.Empty(f.T, errStr)
+	cdc := app.MakeCodec()
+	var bestknowndigest rtypes.QueryResGetBestDigest
+	err := cdc.UnmarshalJSON([]byte(res), &bestknowndigest)
+	require.NoError(f.T, err)
+	return bestknowndigest
+}
+
+
+// TxIngestDiffChange returns Last Common Anscestor
 func (f *Fixtures) TxIngestDiffChange(delAddr sdk.AccAddress, prevEpochStart, jsonHeaders string, flags ...string) (bool, string, string) {
 	cmd := fmt.Sprintf("%s tx relay ingestdiffchange %s %s --from %s %s",  f.RelaycliBinary, prevEpochStart, jsonHeaders, delAddr, f.Flags())
     return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
 }
+
+// TxMarkNewHeaviest returns Last Common Anscestor
+func (f *Fixtures) TxMarkNewHeaviest(delAddr sdk.AccAddress, ancestor, currentBest, newBest, limit string, flags ...string) (bool, string, string) {
+	cmd := fmt.Sprintf("%s tx relay marknewheaviest %s %s %s %s --from %s %s",  f.RelaycliBinary, ancestor, currentBest, newBest, limit, delAddr, f.Flags())
+    return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
+}
+
 
 /////////////////////////////////////////////////////////////////////
 // Executors ////////////////////////////////////////////////////////
