@@ -31,3 +31,12 @@ test:
 
 init:
 	./scripts/init_chain.sh
+
+build: go.sum
+ifeq ($(OS),Windows_NT)
+	go build -mod=readonly $(BUILD_FLAGS) -o build/relayd.exe ./cmd/relayd
+	go build -mod=readonly $(BUILD_FLAGS) -o build/relaycli.exe ./cmd/relaycli
+else
+	go build -mod=readonly $(BUILD_FLAGS) -o build/relayd ./cmd/relayd
+	go build -mod=readonly $(BUILD_FLAGS) -o build/relaycli ./cmd/relaycli
+endif
