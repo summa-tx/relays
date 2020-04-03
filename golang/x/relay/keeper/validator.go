@@ -5,6 +5,17 @@ import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
+func (k Keeper) emitProofProvided(
+	ctx sdk.Context,
+	filled types.FilledRequests,
+) {
+	filledIDs := []types.RequestID{}
+	for _, f := range filled.Filled {
+		filledIDs = append(filledIDs, f.ID)
+	}
+	ctx.EventManager().EmitEvent(types.NewProofProvidedEvent(filled.Proof.TxIDLE, filledIDs))
+}
+
 func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, sdk.Error) {
 	bestKnown, err := k.GetBestKnownDigest(ctx)
 	if err != nil {
@@ -71,5 +82,7 @@ func (k Keeper) checkRequestsFilled(ctx sdk.Context, filledRequests types.Filled
 			return err
 		}
 	}
+
+	k.emitProofProvided(ctx, filledRequests)
 	return nil
 }
