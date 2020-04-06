@@ -230,8 +230,12 @@ func (f *Fixtures) GenTx(name string, flags ...string) {
 	executeWriteCheckErr(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
 }
 
+/////////////////////////////////////////////////////////////////////
+// CLI Queries //////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
 // QueryGetRelayGenesis returns the relay genesis block HashLE
-func (f *Fixtures) QueryGetRelayGenesis(delAddr sdk.AccAddress, flags ...string) rtypes.QueryResGetRelayGenesis {
+func (f *Fixtures) QueryGetRelayGenesis(delAddr sdk.AccAddress) rtypes.QueryResGetRelayGenesis {
 	cmd := fmt.Sprintf("%s query relay getrelaygenesis %s %s", f.RelaycliBinary, delAddr, f.Flags())
 	res, errStr := tests.ExecuteT(f.T, cmd, "")
 	require.Empty(f.T, errStr)
@@ -243,7 +247,7 @@ func (f *Fixtures) QueryGetRelayGenesis(delAddr sdk.AccAddress, flags ...string)
 }
 
 // QueryGetLastReorgLCA returns Last Common Anscestor
-func (f *Fixtures) QueryGetLastReorgLCA(delAddr sdk.AccAddress, flags ...string) rtypes.QueryResGetLastReorgLCA {
+func (f *Fixtures) QueryGetLastReorgLCA(delAddr sdk.AccAddress) rtypes.QueryResGetLastReorgLCA {
 	cmd := fmt.Sprintf("%s query relay getlastreorglca %s %s", f.RelaycliBinary, delAddr, f.Flags())
 	res, errStr := tests.ExecuteT(f.T, cmd, "")
 	require.Empty(f.T, errStr)
@@ -255,7 +259,7 @@ func (f *Fixtures) QueryGetLastReorgLCA(delAddr sdk.AccAddress, flags ...string)
 }
 
 // QueryGetBestDigest returns the Best Known Digest
-func (f *Fixtures) QueryGetBestDigest(delAddr sdk.AccAddress, flags ...string) rtypes.QueryResGetBestDigest {
+func (f *Fixtures) QueryGetBestDigest(delAddr sdk.AccAddress) rtypes.QueryResGetBestDigest {
 	cmd := fmt.Sprintf("%s query relay getbestdigest %s %s", f.RelaycliBinary, delAddr, f.Flags())
 	res, errStr := tests.ExecuteT(f.T, cmd, "")
 	require.Empty(f.T, errStr)
@@ -266,10 +270,93 @@ func (f *Fixtures) QueryGetBestDigest(delAddr sdk.AccAddress, flags ...string) r
 	return bestknowndigest
 }
 
+// QueryIsAncestor returns the Boolean
+func (f *Fixtures) QueryIsAncestor(digest, ancestor, limit string) rtypes.QueryResIsAncestor {
+	cmd := fmt.Sprintf("%s query relay isancestor %s %s %s %s", f.RelaycliBinary, digest, ancestor, limit, f.Flags())
+	res, errStr := tests.ExecuteT(f.T, cmd, "")
+	require.Empty(f.T, errStr)
+	cdc := app.MakeCodec()
+	var isancestor rtypes.QueryResIsAncestor
+	err := cdc.UnmarshalJSON([]byte(res), &isancestor)
+	require.NoError(f.T, err)
+	return isancestor
+}
 
-// TxIngestDiffChange returns Last Common Anscestor
+// QueryFindAncestor returns the Boolean
+func (f *Fixtures) QueryFindAncestor(digest, offset string) rtypes.QueryResFindAncestor {
+	cmd := fmt.Sprintf("%s query relay findancestor %s %s %s", f.RelaycliBinary, digest, offset, f.Flags())
+	res, errStr := tests.ExecuteT(f.T, cmd, "")
+	require.Empty(f.T, errStr)
+	cdc := app.MakeCodec()
+	var findancestor rtypes.QueryResFindAncestor
+	err := cdc.UnmarshalJSON([]byte(res), &findancestor)
+	require.NoError(f.T, err)
+	return findancestor
+}
+
+// QueryFindAncestorInvalid require proper response for invalid query
+func (f *Fixtures) QueryFindAncestorInvalid(errStr, digest, offset string) {
+	cmd := fmt.Sprintf("%s query relay findancestor %s %s %s", f.RelaycliBinary, digest, offset, f.Flags())
+	res, _ := tests.ExecuteT(f.T, cmd, "")
+	require.Contains(f.T, res, errStr)
+}
+
+// QueryIsMostRecentCommonAncestor returns a Boolean
+func (f *Fixtures) QueryIsMostRecentCommonAncestor(ancestor, left, right, limit string) rtypes.QueryResIsMostRecentCommonAncestor {
+	cmd := fmt.Sprintf("%s query relay ismostrecentcommonancestor %s %s %s %s %s", f.RelaycliBinary, ancestor, left, right, limit, f.Flags())
+	res, errStr := tests.ExecuteT(f.T, cmd, "")
+	require.Empty(f.T, errStr)
+	cdc := app.MakeCodec()
+	var ismostrecentcommonancestor rtypes.QueryResIsMostRecentCommonAncestor
+	err := cdc.UnmarshalJSON([]byte(res), &ismostrecentcommonancestor)
+	require.NoError(f.T, err)
+	return ismostrecentcommonancestor
+}
+
+// QueryHeaviestFromAncestor returns a Boolean
+func (f *Fixtures) QueryHeaviestFromAncestor(ancestor, currentBest, newBest, limit string) rtypes.QueryResHeaviestFromAncestor {
+	cmd := fmt.Sprintf("%s query relay heaviestfromancestor %s %s %s %s %s", f.RelaycliBinary, ancestor, currentBest, newBest, limit, f.Flags())
+	res, errStr := tests.ExecuteT(f.T, cmd, "")
+	require.Empty(f.T, errStr)
+	cdc := app.MakeCodec()
+	var heaviestfromancestor rtypes.QueryResHeaviestFromAncestor
+	err := cdc.UnmarshalJSON([]byte(res), &heaviestfromancestor)
+	require.NoError(f.T, err)
+	return heaviestfromancestor
+}
+
+// QueryHeaviestFromAncestorInvalid require proper response for invalid query
+func (f *Fixtures) QueryHeaviestFromAncestorInvalid(errStr, ancestor, currentBest, newBest, limit string) {
+	cmd := fmt.Sprintf("%s query relay heaviestfromancestor %s %s %s %s %s", f.RelaycliBinary, ancestor, currentBest, newBest, limit, f.Flags())
+	res, _ := tests.ExecuteT(f.T, cmd, "")
+	require.Contains(f.T, res, errStr)
+}
+
+// QueryCheckProof returns the Boolean
+func (f *Fixtures) QueryCheckProof(proof string, flags ...string) rtypes.QueryResCheckProof {
+    cmd := fmt.Sprintf("%s query relay checkproof %s %s", f.RelaycliBinary, proof, f.Flags())
+	res, errStr := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
+	require.Empty(f.T, errStr)
+	cdc := app.MakeCodec()
+	var checkproof rtypes.QueryResCheckProof
+	err := cdc.UnmarshalJSON([]byte(res), &checkproof)
+	require.NoError(f.T, err)
+	return checkproof
+}
+
+/////////////////////////////////////////////////////////////////////
+// CLI Transactions /////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
+// TxIngestDiffChange is relaycli tx that ingests headers with new difficulty
 func (f *Fixtures) TxIngestDiffChange(delAddr sdk.AccAddress, prevEpochStart, jsonHeaders string, flags ...string) (bool, string, string) {
 	cmd := fmt.Sprintf("%s tx relay ingestdiffchange %s %s --from %s %s",  f.RelaycliBinary, prevEpochStart, jsonHeaders, delAddr, f.Flags())
+    return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
+}
+
+// TxIngestHeaders is a relaycli tx that ingests headers with same difficulty as previous headers
+func (f *Fixtures) TxIngestHeaders(delAddr sdk.AccAddress, headers string, flags ...string) (bool, string, string) {
+	cmd := fmt.Sprintf("%s tx relay ingestheaders %s --from %s %s",  f.RelaycliBinary, headers, delAddr, f.Flags())
     return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
 }
 
@@ -294,8 +381,6 @@ func executeWrite(t *testing.T, cmdStr string, writes ...string) (exitSuccess bo
 }
 
 func executeWriteRetStdStreams(t *testing.T, cmdStr string, writes ...string) (bool, string, string) {
-    fmt.Println("HERE!!!!!!!")
-    fmt.Println(cmdStr)
 	proc := tests.GoExecuteT(t, cmdStr)
 
 	// Enables use of interactive commands
@@ -320,7 +405,6 @@ func executeWriteRetStdStreams(t *testing.T, cmdStr string, writes ...string) (b
 
 	// Wait for process to exit
 	proc.Wait()
-
 	// Return succes, stdout, stderr
 	return proc.ExitState.Success(), string(stdout), string(stderr)
 }
