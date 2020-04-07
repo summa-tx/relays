@@ -3,3 +3,6 @@ coverage/
 coverage.json
 .env
 build/
+.mypy_cache
+.pytest_cache
+.coverage

@@ -224,7 +224,7 @@ contract Relay is IRelay {
         // update the stored prevEpochDiff
         // Don't update if this is a deep past epoch
         uint256 _oldDiff = _oldPeriodStartHeader.extractDifficulty();
-        if (prevEpochDiff != _oldDiff && _findHeight(_oldPeriodEndHeader) > _findHeight(bestKnownDigest).sub(2016)) {
+        if (prevEpochDiff != _oldDiff && _endHeight > _findHeight(bestKnownDigest).sub(2016)) {
           prevEpochDiff = _oldDiff;
         }
 

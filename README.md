@@ -4,7 +4,7 @@ This is a Bitcoin Relay. It uses 1 + 1/n slots per header relayed (n is
 currently 4), and 2 slots to externalize useful information (best chain tip and
 best shared ancestor of latest reorg).
 
-At present, only a Solidity implementation is available, but we intend to add 
+At present, only a Solidity implementation is available, but we intend to add
 more implementations soon :)
 
 ### How does it work?
@@ -40,3 +40,14 @@ information for relay-consuming smart contracts.
 This model provides large gas savings compared to previous relay designs (TODO:
 benchmarking). It also gets especially attractive if EIP2028 activates,
 reducing calldata gas costs.
+
+### Project Notes
+
+The Python relay mainter in `./relay/` is not thoroughly tested, and does not
+yet support the cosmos-sdk relay.
+
+### How do I develop for it?
+
+install `pipenv` and `pyenv`
+
+$ pipenv install --python=$(pyenv which python3.7)

@@ -13,18 +13,18 @@
   "author": "James Prestwich",
   "license": "UNLICENSED",
   "dependencies": {
-    "@summa-tx/bitcoin-spv-sol": "^2.1.0",
-    "dotenv": "^8.1.0",
-    "bn.js": "^5.1.1"
+    "@summa-tx/bitcoin-spv-sol": "^2.2.0",
+    "bn.js": "^5.1.1",
+    "dotenv": "^8.2.0"
   },
   "devDependencies": {
-    "eslint": "^6.1.0",
+    "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^13.2.0",
-    "eslint-plugin-import": "^2.18.0",
-    "eth-gas-reporter": "^0.2.4",
-    "solidity-coverage": "^0.6.3",
+    "eslint-plugin-import": "^2.20.2",
+    "eth-gas-reporter": "^0.2.16",
+    "solidity-coverage": "^0.7.2",
     "solium": "^1.2.4",
     "truffle-hdwallet-provider": "^1.0.17",
-    "truffle-plugin-verify": "^0.3.2"
+    "truffle-plugin-verify": "^0.3.10"
   }
 }
