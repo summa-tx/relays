@@ -10,6 +10,45 @@ import (
 	rtypes "github.com/summa-tx/relays/golang/x/relay/types"
 )
 
+
+func TestRelayCLIIsAncestor(t *testing.T) {
+	// Get data needed for transaction
+	var genesisHeaders []rtypes.BitcoinHeader
+	genesisJSON := readJSONFile(t, "genesis")
+	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
+	require.NoError(t, err)
+
+	var newDifficultyHeaders []rtypes.BitcoinHeader
+	newDiffJSON := readJSONFile(t, "0_new_difficulty")
+	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
+	require.NoError(t, err)
+
+	// Query Chain for Actual Value
+	f := InitFixtures(t)
+	proc := f.RelayDStart()
+	defer proc.Stop(false)
+	// Set transaction parameter values
+	fooAddr := f.KeyAddress(keyFoo)
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+	ancestor := hex.EncodeToString(newDifficultyHeaders[0].HashLE[:])
+	digest := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
+	limit := "5"
+
+	// must ingest headers in order to perform query
+	success, _, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
+	require.True(t, success, stderr)
+
+	isancestor := f.QueryIsAncestor(digest, ancestor, limit)
+
+	// Condition
+	expected := true
+	actual := isancestor.Res
+	require.Equal(t, expected, actual)
+
+	//Cleanup
+	f.Cleanup()
+}
+
 func TestRelayCLIGetRelayGenesis(t *testing.T) {
 	// Get Expected Value
 	fmt.Println("tired of commenting and uncommenting fmt")
@@ -115,44 +154,6 @@ func TestRelayCLIQueryFindAncestor(t *testing.T) {
 	expected := hex.EncodeToString(newDifficultyHeaders[0].HashLE[:])
 	actual := hex.EncodeToString(findancestor.Res[:])
 	require.Equal(t, expected, actual)
-}
-
-func TestRelayCLIIsAncestor(t *testing.T) {
-	// Get data needed for transaction
-	var genesisHeaders []rtypes.BitcoinHeader
-	genesisJSON := readJSONFile(t, "genesis")
-	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
-	require.NoError(t, err)
-
-	var newDifficultyHeaders []rtypes.BitcoinHeader
-	newDiffJSON := readJSONFile(t, "0_new_difficulty")
-	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
-	require.NoError(t, err)
-
-	// Query Chain for Actual Value
-	f := InitFixtures(t)
-	proc := f.RelayDStart()
-	defer proc.Stop(false)
-	// Set transaction parameter values
-	fooAddr := f.KeyAddress(keyFoo)
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-	ancestor := hex.EncodeToString(newDifficultyHeaders[0].HashLE[:])
-	digest := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
-	limit := "5"
-
-	// must ingest headers in order to perform query
-	success, _, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
-	require.True(t, success, stderr)
-
-	isancestor := f.QueryIsAncestor(digest, ancestor, limit)
-
-	// Condition
-	expected := true
-	actual := isancestor.Res
-	require.Equal(t, expected, actual)
-
-	//Cleanup
-	f.Cleanup()
 }
 
 // func TestRelayCLIIsMostRecentCommonAncestor(t *testing.T) {
@@ -275,35 +276,6 @@ func TestRelayCLIQueryCheckProof(t *testing.T) {
 	require.Equal(t, true, checkProof.Valid)
 }
 
-func TestRelayCLITXIngestDiffChange(t *testing.T) {
-	// Extract data for transaction
-	var genesisHeaders []rtypes.BitcoinHeader
-	genesisJSON := readJSONFile(t, "genesis")
-	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
-	require.NoError(t, err)
-
-	var newDifficultyHeaders []rtypes.BitcoinHeader
-	newDiffJSON := readJSONFile(t, "0_new_difficulty")
-	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
-	require.NoError(t, err)
-
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-
-	// Transact with Chain
-	f := InitFixtures(t)
-	proc := f.RelayDStart()
-	defer proc.Stop(false)
-	fooAddr := f.KeyAddress(keyFoo)
-	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
-
-	// require successful transaction
-	require.True(t, success, stderr)
-	require.Contains(t, stdout, `"success":true`)
-
-	//Cleanup
-	f.Cleanup()
-}
-
 func TestRelayCLITXIngestHeaders(t *testing.T) {
 	// Extract data for transaction
 	var genesisHeaders []rtypes.BitcoinHeader
@@ -333,6 +305,35 @@ func TestRelayCLITXIngestHeaders(t *testing.T) {
 	require.Contains(t, stdout, `"success":true`)
 
 	success, stdout, stderr = f.TxIngestHeaders(fooAddr, "2_ingest_headers.json", "--inputfile -y")
+	require.True(t, success, stderr)
+	require.Contains(t, stdout, `"success":true`)
+
+	//Cleanup
+	f.Cleanup()
+}
+
+func TestRelayCLITXIngestDiffChange(t *testing.T) {
+	// Extract data for transaction
+	var genesisHeaders []rtypes.BitcoinHeader
+	genesisJSON := readJSONFile(t, "genesis")
+	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
+	require.NoError(t, err)
+
+	var newDifficultyHeaders []rtypes.BitcoinHeader
+	newDiffJSON := readJSONFile(t, "0_new_difficulty")
+	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
+	require.NoError(t, err)
+
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+
+	// Transact with Chain
+	f := InitFixtures(t)
+	proc := f.RelayDStart()
+	defer proc.Stop(false)
+	fooAddr := f.KeyAddress(keyFoo)
+	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
+
+	// require successful transaction
 	require.True(t, success, stderr)
 	require.Contains(t, stdout, `"success":true`)
 
