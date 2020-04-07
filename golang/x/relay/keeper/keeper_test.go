@@ -299,15 +299,15 @@ func (s *KeeperSuite) TestSetGenesisState() {
 
 	gen, err := s.Keeper.GetRelayGenesis(s.Context)
 	s.SDKNil(err)
-	s.Equal(genesis.HashLE, gen)
+	s.Equal(genesis.Hash, gen)
 
 	lca, err := s.Keeper.GetLastReorgLCA(s.Context)
 	s.SDKNil(err)
-	s.Equal(genesis.HashLE, lca)
+	s.Equal(genesis.Hash, lca)
 
 	best, err := s.Keeper.GetBestKnownDigest(s.Context)
 	s.SDKNil(err)
-	s.Equal(genesis.HashLE, best)
+	s.Equal(genesis.Hash, best)
 
 	diff := s.Keeper.getCurrentEpochDifficulty(s.Context)
 	s.Equal(btcspv.ExtractDifficulty(genesis.Raw), diff)

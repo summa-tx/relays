@@ -1,8 +1,8 @@
 package types
 
 import (
-	"encoding/json"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -10,9 +10,9 @@ import (
 
 // Relay module event types
 const (
-	EventTypeExtension    = "extension"
-	EventTypeReorg        = "reorg"
-	EventTypeProofRequest = "proof_request"
+	EventTypeExtension     = "extension"
+	EventTypeReorg         = "reorg"
+	EventTypeProofRequest  = "proof_request"
 	EventTypeProofProvided = "proof_provided"
 
 	AttributeKeyFirstBlock = "first_block"
@@ -28,7 +28,7 @@ const (
 	AttributeKeyPaysValue = "value"
 	AttributeKeyOrigin    = "origin"
 
-	AttributeKeyTXID = "txid"
+	AttributeKeyTXID   = "txid"
 	AttributeKeyFilled = "filled"
 )
 
@@ -46,8 +46,8 @@ func NewReorgEvent(prev, new, lca Hash256Digest) sdk.Event {
 func NewExtensionEvent(first, last BitcoinHeader) sdk.Event {
 	return sdk.NewEvent(
 		EventTypeExtension,
-		sdk.NewAttribute(AttributeKeyFirstBlock, "0x"+hex.EncodeToString(first.HashLE[:])),
-		sdk.NewAttribute(AttributeKeyLastBlock, "0x"+hex.EncodeToString(last.HashLE[:])),
+		sdk.NewAttribute(AttributeKeyFirstBlock, "0x"+hex.EncodeToString(first.Hash[:])),
+		sdk.NewAttribute(AttributeKeyLastBlock, "0x"+hex.EncodeToString(last.Hash[:])),
 	)
 }
 
@@ -68,7 +68,7 @@ func NewProofProvidedEvent(txid Hash256Digest, filled []RequestID) sdk.Event {
 	filledJSON, _ := json.Marshal(filled)
 	return sdk.NewEvent(
 		EventTypeProofProvided,
-		sdk.NewAttribute(AttributeKeyTXID, "0x" + hex.EncodeToString(txid[:])),
+		sdk.NewAttribute(AttributeKeyTXID, "0x"+hex.EncodeToString(txid[:])),
 		sdk.NewAttribute(AttributeKeyFilled, string(filledJSON)),
 	)
 }
