@@ -2,7 +2,6 @@ package clitest
 
 import (
 	"testing"
-	"fmt"
 	"encoding/json"
 	"encoding/hex"
 
@@ -52,7 +51,6 @@ func TestRelayCLIIsAncestor(t *testing.T) {
 
 func TestRelayCLIGetRelayGenesis(t *testing.T) {
 	// Get Expected Value
-	fmt.Println("tired of commenting and uncommenting fmt")
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
 	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
