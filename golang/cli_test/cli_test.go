@@ -10,7 +10,6 @@ import (
 	rtypes "github.com/summa-tx/relays/golang/x/relay/types"
 )
 
-
 func TestRelayCLIIsAncestor(t *testing.T) {
 	// Get data needed for transaction
 	var genesisHeaders []rtypes.BitcoinHeader
@@ -23,21 +22,23 @@ func TestRelayCLIIsAncestor(t *testing.T) {
 	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
 	require.NoError(t, err)
 
-	// Query Chain for Actual Value
+	// Initialize CHain
 	f := InitFixtures(t)
 	proc := f.RelayDStart()
 	defer proc.Stop(false)
-	// Set transaction parameter values
-	fooAddr := f.KeyAddress(keyFoo)
+
+	// define param values
+	fooAddr        := f.KeyAddress(keyFoo)
 	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-	ancestor := hex.EncodeToString(newDifficultyHeaders[0].HashLE[:])
-	digest := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
-	limit := "5"
+	ancestor       := hex.EncodeToString(newDifficultyHeaders[0].HashLE[:])
+	digest         := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
+	limit          := "5"
 
 	// must ingest headers in order to perform query
 	success, _, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 	require.True(t, success, stderr)
 
+	// query chain for ancestor
 	isancestor := f.QueryIsAncestor(digest, ancestor, limit)
 
 	// Condition
@@ -132,20 +133,23 @@ func TestRelayCLIQueryFindAncestor(t *testing.T) {
 	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
 	require.NoError(t, err)
 
-	// Transact with Chain for Actual Value
+	// Initialize chain
 	f := InitFixtures(t)
 	proc := f.RelayDStart()
 	defer proc.Stop(false)
-	fooAddr := f.KeyAddress(keyFoo)
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
 
+	// define paramater values
+	fooAddr        := f.KeyAddress(keyFoo)
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+	digest         := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
+	offset         := "5"
+
+	// ingest headers
 	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 	require.True(t, success, stderr)
 	require.Contains(t, stdout, `"success":true`)
 
 	// Require findancestor fails if ancestor does not exist on relay
-	digest := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
-	offset := "5"
 	f.QueryFindAncestorInvalid("could not find ancestor", digest, offset)
 
 	// Require findancestor returns ancestor if valid query
@@ -212,31 +216,33 @@ func TestRelayCLIQueryHeaviestFromAncestor(t *testing.T) {
 	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
 	require.NoError(t, err)
 
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-
 	// Transact with Chain for Actual Value
 	f := InitFixtures(t)
 	proc := f.RelayDStart()
 	defer proc.Stop(false)
-	fooAddr := f.KeyAddress(keyFoo)
+
+	// define paramteer values
+	fooAddr        := f.KeyAddress(keyFoo)
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+	ancestor       := hex.EncodeToString(genesisHeaders[1].HashLE[:])
+	currentBest    := hex.EncodeToString(genesisHeaders[1].HashLE[:])
+	validNewBest   := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
+	invalidNewBest := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+	limit          := "10"
 
 	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 	require.True(t, success, stderr)
 	require.Contains(t, stdout, `"success":true`)
 
-	// Require heaviestfromancestor returns valid newBest
-	ancestor := hex.EncodeToString(genesisHeaders[1].HashLE[:])
-	currentBest := hex.EncodeToString(genesisHeaders[1].HashLE[:])
-	newBest := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
-	limit := "10"
-	heaviestfromancestor := f.QueryHeaviestFromAncestor(ancestor, currentBest, newBest, limit)
-	expected := newBest
+	// Query chain
+	heaviestfromancestor := f.QueryHeaviestFromAncestor(ancestor, currentBest, validNewBest, limit)
+
+	// Condition (query returns newBest)
 	actual := hex.EncodeToString(heaviestfromancestor.Res[:])
-	require.Equal(t, expected, actual)
+	require.Equal(t, validNewBest, actual)
 
 	// Require heaviestfromancestor fails with invalid params
-	invalidNewBest := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-	f.QueryHeaviestFromAncestorInvalid("could not determine if", ancestor, currentBest, invalidNewBest, limit)
+	f.QueryHeaviestFromAncestorInvalid("could not determine", ancestor, currentBest, invalidNewBest, limit)
 }
 
 func TestRelayCLIQueryCheckProof(t *testing.T) {
@@ -251,22 +257,23 @@ func TestRelayCLIQueryCheckProof(t *testing.T) {
 	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
 	require.NoError(t, err)
 
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-
-	// Transact with Chain for Actual Value
+	// Initialize chain
 	f := InitFixtures(t)
 	proc := f.RelayDStart()
 	defer proc.Stop(false)
-	fooAddr := f.KeyAddress(keyFoo)
+	fooAddr        := f.KeyAddress(keyFoo)
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
 
+	// Ingest headers
 	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 	require.True(t, success, stderr)
 	require.Contains(t, stdout, `"success":true`)
 
-	// Require checkproof fails without associated headers with
+	// Require checkproof fails without headers associated with proof
 	checkProof := f.QueryCheckProof("1_check_proof.json", "--inputfile")
 	require.Equal(t, false, checkProof.Valid)
 
+	// Ingest associated header
 	success, stdout, stderr = f.TxIngestHeaders(fooAddr, "2_ingest_headers.json", "--inputfile -y")
 	require.True(t, success, stderr)
 	require.Contains(t, stdout, `"success":true`)
@@ -293,17 +300,21 @@ func TestRelayCLITXIngestHeaders(t *testing.T) {
 	err = json.Unmarshal([]byte(ingestHeadersJSON), &newHeaders)
 	require.NoError(t, err)
 
-	// Transact with Chain
+	// Initialize chain
 	f := InitFixtures(t)
 	proc := f.RelayDStart()
 	defer proc.Stop(false)
-	fooAddr := f.KeyAddress(keyFoo)
 
+	// define parameter valuse
+	fooAddr         := f.KeyAddress(keyFoo)
 	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+
+	//Ingest Headers
 	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 	require.True(t, success, stderr)
 	require.Contains(t, stdout, `"success":true`)
 
+	// Require successful IngestDiffChange
 	success, stdout, stderr = f.TxIngestHeaders(fooAddr, "2_ingest_headers.json", "--inputfile -y")
 	require.True(t, success, stderr)
 	require.Contains(t, stdout, `"success":true`)
@@ -324,16 +335,17 @@ func TestRelayCLITXIngestDiffChange(t *testing.T) {
 	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
 	require.NoError(t, err)
 
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-
-	// Transact with Chain
+	// Initialize chain
 	f := InitFixtures(t)
 	proc := f.RelayDStart()
 	defer proc.Stop(false)
-	fooAddr := f.KeyAddress(keyFoo)
-	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 
-	// require successful transaction
+	// Define parameter values
+	fooAddr        := f.KeyAddress(keyFoo)
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+
+	// Require successful IngestDiffChange
+	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 	require.True(t, success, stderr)
 	require.Contains(t, stdout, `"success":true`)
 
@@ -357,7 +369,9 @@ func TestRelayCLITXProvideProof(t *testing.T) {
 	f := InitFixtures(t)
 	proc := f.RelayDStart()
 	defer proc.Stop(false)
-	fooAddr := f.KeyAddress(keyFoo)
+
+	// Define parameter values
+	fooAddr        := f.KeyAddress(keyFoo)
 	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
 
 	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
@@ -368,11 +382,11 @@ func TestRelayCLITXProvideProof(t *testing.T) {
 	require.True(t, success, stderr)
 	require.Contains(t, stdout, `"success":true`)
 
-	// checkproof fails given invalid requests
+	// require checkproof fails given invalid proof requests
 	success, stdout, stderr = f.TxProvideProof(fooAddr, "1_check_proof.json", "3_filled_requests.json", "--inputfile -y")
 	require.Contains(t, stdout, `"Request not found`)
 
-	// submit request
+	// submit proof request
 	spends   := "0x"
 	pays     := "0x17a91423737cd98bb6b2da5a11bcd82e5de36591d69f9f87"
 	value    := "0"
@@ -399,33 +413,34 @@ func TestRelayCLITxMarkNewHeaviest(t *testing.T) {
 	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
 	require.NoError(t, err)
 
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-	ancestor := hex.EncodeToString(genesisHeaders[1].HashLE[:])
-	bestKnown := hex.EncodeToString(genesisHeaders[1].Raw[:])
-	newBest := hex.EncodeToString(newDifficultyHeaders[1].Raw[:])
-	limit := "10"
-
-	// Get Expected Value
-	expected := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
-
-	// Transact with Chain for Actual Value
+	// Initialize chain
 	f := InitFixtures(t)
 	proc := f.RelayDStart()
 	defer proc.Stop(false)
-	fooAddr := f.KeyAddress(keyFoo)
 
+	// Define parameter values
+	fooAddr        := f.KeyAddress(keyFoo)
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+	ancestor       := hex.EncodeToString(genesisHeaders[1].HashLE[:])
+	bestKnown      := hex.EncodeToString(genesisHeaders[1].Raw[:])
+	newBest        := hex.EncodeToString(newDifficultyHeaders[1].Raw[:])
+	limit          := "10"
+
+	// Ingest new headers
 	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 	require.True(t, success, stderr)
 	require.Contains(t, stdout, `"success":true`)
 
+	// Mark new heaviest digest
 	success, stdout, stderr = f.TxMarkNewHeaviest(fooAddr, ancestor, bestKnown, newBest, limit, "-y")
 	require.True(t, success, stderr)
 	require.Contains(t, stdout, `"success":true`)
 
 	bestDigest := f.QueryGetBestDigest(fooAddr)
-	actual := hex.EncodeToString(bestDigest.Res[:])
 
 	// Condition
+	expected := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
+	actual   := hex.EncodeToString(bestDigest.Res[:])
 	require.Equal(t, expected, actual)
 
 	//Cleanup
