@@ -2,7 +2,6 @@ package clitest
 
 import (
 	"testing"
-	//nolint:deadcode,unused
 	"fmt"
 	"encoding/json"
 	"encoding/hex"
@@ -94,13 +93,12 @@ func TestRelayCLIQueryFindAncestor(t *testing.T) {
 	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
 	require.NoError(t, err)
 
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-
 	// Transact with Chain for Actual Value
 	f := InitFixtures(t)
 	proc := f.RelayDStart()
 	defer proc.Stop(false)
 	fooAddr := f.KeyAddress(keyFoo)
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
 
 	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 	require.True(t, success, stderr)
@@ -131,24 +129,26 @@ func TestRelayCLIIsAncestor(t *testing.T) {
 	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
 	require.NoError(t, err)
 
+	// Query Chain for Actual Value
+	f := InitFixtures(t)
+	proc := f.RelayDStart()
+	defer proc.Stop(false)
+	// Set transaction parameter values
+	fooAddr := f.KeyAddress(keyFoo)
 	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
 	ancestor := hex.EncodeToString(newDifficultyHeaders[0].HashLE[:])
 	digest := hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
 	limit := "5"
 
-	// Query Chain for Actual Value
-	f := InitFixtures(t)
-	proc := f.RelayDStart()
-	defer proc.Stop(false)
-	fooAddr := f.KeyAddress(keyFoo)
 	// must ingest headers in order to perform query
 	success, _, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 	require.True(t, success, stderr)
+
 	isancestor := f.QueryIsAncestor(digest, ancestor, limit)
-	actual := isancestor.Res
 
 	// Condition
 	expected := true
+	actual := isancestor.Res
 	require.Equal(t, expected, actual)
 
 	//Cleanup
@@ -321,14 +321,13 @@ func TestRelayCLITXIngestHeaders(t *testing.T) {
 	err = json.Unmarshal([]byte(ingestHeadersJSON), &newHeaders)
 	require.NoError(t, err)
 
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-
 	// Transact with Chain
 	f := InitFixtures(t)
 	proc := f.RelayDStart()
 	defer proc.Stop(false)
 	fooAddr := f.KeyAddress(keyFoo)
 
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
 	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 	require.True(t, success, stderr)
 	require.Contains(t, stdout, `"success":true`)
@@ -339,6 +338,52 @@ func TestRelayCLITXIngestHeaders(t *testing.T) {
 
 	//Cleanup
 	f.Cleanup()
+}
+
+func TestRelayCLITXProvideProof(t *testing.T) {
+	// Extract data for transactions
+	var genesisHeaders []rtypes.BitcoinHeader
+	genesisJSON := readJSONFile(t, "genesis")
+	err := json.Unmarshal([]byte(genesisJSON), &genesisHeaders)
+	require.NoError(t, err)
+
+	var newDifficultyHeaders []rtypes.BitcoinHeader
+	newDiffJSON := readJSONFile(t, "0_new_difficulty")
+	err = json.Unmarshal([]byte(newDiffJSON), &newDifficultyHeaders)
+	require.NoError(t, err)
+
+	// Transact with Chain for Actual Value
+	f := InitFixtures(t)
+	proc := f.RelayDStart()
+	defer proc.Stop(false)
+	fooAddr := f.KeyAddress(keyFoo)
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+
+	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
+	require.True(t, success, stderr)
+	require.Contains(t, stdout, `"success":true`)
+
+	success, stdout, stderr = f.TxIngestHeaders(fooAddr, "2_ingest_headers.json", "--inputfile -y")
+	require.True(t, success, stderr)
+	require.Contains(t, stdout, `"success":true`)
+
+	// checkproof fails given invalid requests
+	success, stdout, stderr = f.TxProvideProof(fooAddr, "1_check_proof.json", "3_filled_requests.json", "--inputfile -y")
+	require.Contains(t, stdout, `"Request not found`)
+
+	// submit request
+	spends   := "0x"
+	pays     := "0x17a91423737cd98bb6b2da5a11bcd82e5de36591d69f9f87"
+	value    := "0"
+	numConfs := "1"
+	success, stdout, stderr = f.TxNewRequest(fooAddr, spends, pays, value, numConfs, "-y")
+	require.True(t, success, stderr)
+	require.Contains(t, stdout, `"success":true`)
+
+	// checkproof succeeds given valid proof and requests
+	success, stdout, stderr = f.TxProvideProof(fooAddr, "1_check_proof.json", "3_filled_requests.json", "--inputfile -y")
+	require.True(t, success, stderr)
+	require.Contains(t, stdout, `"success":true`)
 }
 
 func TestRelayCLITxMarkNewHeaviest(t *testing.T) {

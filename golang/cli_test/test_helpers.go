@@ -360,12 +360,23 @@ func (f *Fixtures) TxIngestHeaders(delAddr sdk.AccAddress, headers string, flags
     return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
 }
 
+// TxNewRequest is a relaycli tx that submits a new Proof Request
+func (f *Fixtures) TxNewRequest(delAddr sdk.AccAddress, spends, pays, value, numConfs string, flags ...string) (bool, string, string) {
+	cmd := fmt.Sprintf("%s tx relay newrequest %s %s %s %s --from %s %s",  f.RelaycliBinary, spends, pays, value, numConfs, delAddr, f.Flags())
+    return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
+}
+
+// TxProvideProof is a relaycli tx that submits a new Proof Request
+func (f *Fixtures) TxProvideProof(delAddr sdk.AccAddress, proof, listofrequests string, flags ...string) (bool, string, string) {
+	cmd := fmt.Sprintf("%s tx relay provideproof %s %s --from %s %s",  f.RelaycliBinary, proof, listofrequests, delAddr, f.Flags())
+    return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
+}
+
 // TxMarkNewHeaviest returns Last Common Anscestor
 func (f *Fixtures) TxMarkNewHeaviest(delAddr sdk.AccAddress, ancestor, currentBest, newBest, limit string, flags ...string) (bool, string, string) {
 	cmd := fmt.Sprintf("%s tx relay marknewheaviest %s %s %s %s --from %s %s",  f.RelaycliBinary, ancestor, currentBest, newBest, limit, delAddr, f.Flags())
     return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
 }
-
 
 /////////////////////////////////////////////////////////////////////
 // Executors ////////////////////////////////////////////////////////

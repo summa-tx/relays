@@ -2,8 +2,6 @@ package keeper
 
 import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
-	"fmt"
-	"encoding/hex"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
