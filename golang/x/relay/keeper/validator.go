@@ -13,7 +13,7 @@ func (k Keeper) emitProofProvided(
 	for _, f := range filled.Filled {
 		filledIDs = append(filledIDs, f.ID)
 	}
-	ctx.EventManager().EmitEvent(types.NewProofProvidedEvent(filled.Proof.TxIDLE, filledIDs))
+	ctx.EventManager().EmitEvent(types.NewProofProvidedEvent(filled.Proof.TxID, filledIDs))
 }
 
 func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, sdk.Error) {
@@ -39,7 +39,7 @@ func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof) sdk.Error {
 	if lcaErr != nil {
 		return lcaErr
 	}
-	isAncestor := k.IsAncestor(ctx, proof.ConfirmingHeader.HashLE, lca, 240)
+	isAncestor := k.IsAncestor(ctx, proof.ConfirmingHeader.Hash, lca, 240)
 	if !isAncestor {
 		return types.ErrNotAncestor(types.DefaultCodespace)
 	}

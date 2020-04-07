@@ -8,7 +8,7 @@ import (
 func (s *KeeperSuite) TestGetHeader() {
 	// errors if header is not found
 	header := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers[0]
-	_, err := s.Keeper.GetHeader(s.Context, header.HashLE)
+	_, err := s.Keeper.GetHeader(s.Context, header.Hash)
 	s.Equal(types.CodeType(103), err.Code())
 }
 
@@ -83,9 +83,9 @@ func (s *KeeperSuite) TestIngestHeader() {
 
 	for _, tc := range cases {
 		s.Keeper.ingestHeader(s.Context, tc.Headers[0])
-		hasHeader := s.Keeper.HasHeader(s.Context, tc.Headers[0].HashLE)
+		hasHeader := s.Keeper.HasHeader(s.Context, tc.Headers[0].Hash)
 		s.Equal(true, hasHeader)
-		header, err := s.Keeper.GetHeader(s.Context, tc.Headers[0].HashLE)
+		header, err := s.Keeper.GetHeader(s.Context, tc.Headers[0].Hash)
 		s.SDKNil(err)
 		s.Equal(tc.Headers[0], header)
 	}
@@ -110,18 +110,18 @@ func (s *KeeperSuite) TestIngestDifficultyChange() {
 	cases := s.Fixtures.HeaderTestCases.ValidateDiffChange
 
 	// errors if PrevEpochStart is not found
-	err := s.Keeper.IngestDifficultyChange(s.Context, cases[0].PrevEpochStart.HashLE, cases[0].Headers)
+	err := s.Keeper.IngestDifficultyChange(s.Context, cases[0].PrevEpochStart.Hash, cases[0].Headers)
 	s.Equal(types.CodeType(103), err.Code())
 
 	// errors if anchor is not found
 	s.Keeper.ingestHeader(s.Context, cases[0].PrevEpochStart)
-	err = s.Keeper.IngestDifficultyChange(s.Context, cases[0].PrevEpochStart.HashLE, cases[0].Headers)
+	err = s.Keeper.IngestDifficultyChange(s.Context, cases[0].PrevEpochStart.Hash, cases[0].Headers)
 	s.Equal(types.CodeType(103), err.Code())
 
 	for _, tc := range cases {
 		s.Keeper.ingestHeader(s.Context, tc.PrevEpochStart)
 		s.Keeper.ingestHeader(s.Context, tc.Anchor)
-		err := s.Keeper.IngestDifficultyChange(s.Context, tc.PrevEpochStart.HashLE, tc.Headers)
+		err := s.Keeper.IngestDifficultyChange(s.Context, tc.PrevEpochStart.Hash, tc.Headers)
 		if tc.Output == 0 {
 			logIfTestCaseError(tc, err)
 			s.SDKNil(err)
