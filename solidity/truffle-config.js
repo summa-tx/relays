@@ -20,6 +20,16 @@ const kovan = {
   timeoutBlocks: 200
 }
 
+const alfajores = {
+  host: process.env.ALFAJORES_NODE_URL,
+  port: 8545,            // Standard Ethereum port (default: none)
+  network_id: 44786,
+  port: process.env.ALFAJORES_NODE_PORT,
+  from: process.env.ALFAJORES_FROM,
+  gas: 8000000,
+  gasPrice: 100000000000
+}
+
 module.exports = {
   api_keys: {
     etherscan: process.env.ETHERSCAN_KEY
@@ -41,6 +51,9 @@ module.exports = {
 
     kovan: kovan,
     kovan_test: kovan,
+
+    alfajores: alfajores,
+    alfajores_test: alfajores,
   },
 
   // mocha: {
