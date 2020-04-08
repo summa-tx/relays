@@ -91,6 +91,7 @@ async def _PUT(
 async def get_header_by_hash_le(
         hash: Union[str, bytes],
         session: S = SESSION) -> Optional[RelayHeader]:
+    hash_hex: str
     try:
         hash_hex = cast(bytes, hash)[::-1].hex()
     except AttributeError:

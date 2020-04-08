@@ -71,6 +71,8 @@ async def get_best_block() -> str:
     Get the contract's marked best known digest.
     Counterintuitively, the contract may know of a better digest
       that hasn't been marked yet
+
+    returns LE digest
     '''
     f = abi.find('getBestKnownDigest', relay_ABI)[0]
     selector = calldata.make_selector(f)
@@ -85,5 +87,4 @@ async def get_best_block() -> str:
             'latest'  # block height parameter
         ]
     )
-    digest = bytes.fromhex(res[2:])[::-1].hex()  # block-explorer format
-    return digest
+    return res[2:]  # block-explorer format
