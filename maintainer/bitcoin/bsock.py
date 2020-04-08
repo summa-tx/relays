@@ -2,7 +2,7 @@ import asyncio
 import logging
 import socketio
 
-from relay import config
+from maintainer import config
 
 from typing import Dict, List, Tuple, Union
 

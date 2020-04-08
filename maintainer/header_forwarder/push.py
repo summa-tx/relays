@@ -1,10 +1,10 @@
 import asyncio
 import logging
 
-from relay import config, utils
-from relay.bitcoin import bcoin_rpc
-from relay.ethereum import contract, shared
-from relay.relay_abi import ABI as relay_ABI
+from maintainer import config, utils
+from maintainer.bitcoin import bcoin_rpc
+from maintainer.ethereum import contract, shared
+from maintainer.relay_abi import ABI as relay_ABI
 
 from typing import cast, List
 from btcspv.types import RelayHeader

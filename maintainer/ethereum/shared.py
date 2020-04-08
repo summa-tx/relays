@@ -3,7 +3,7 @@ import logging
 
 from ether import calldata, ethrpc
 
-from relay import config
+from maintainer import config
 
 from ether.ether_types import Receipt
 from ether.transactions import UnsignedEthTx

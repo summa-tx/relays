@@ -38,6 +38,11 @@ module.exports = {
     bitcoin: bitcoinTest,
     firstID: ID_SPACE_SIZE.muln(truffleConf.networks.kovan_test.network_id)
   },
+  alfajores: {
+    network_id: truffleConf.networks.alfajores_test.network_id,
+    bitcoin: bitcoinTest,
+    firstID: ID_SPACE_SIZE.muln(truffleConf.networks.alfajores_test.network_id)
+  },
   alfajores_test: {
     network_id: truffleConf.networks.alfajores_test.network_id,
     bitcoin: bitcoinTest,

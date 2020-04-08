@@ -2,10 +2,10 @@ import sys
 import asyncio
 import logging
 
-from relay import base, utils
-from relay.bitcoin import bcoin_rpc, bsock
-from relay.ethereum import contract, shared
-from relay.header_forwarder import pull, push
+from maintainer import base, utils
+from maintainer.bitcoin import bcoin_rpc, bsock
+from maintainer.ethereum import contract, shared
+from maintainer.header_forwarder import pull, push
 
 from typing import cast
 from btcspv.types import RelayHeader

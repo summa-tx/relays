@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from relay.bitcoin import bcoin_rpc
+from maintainer.bitcoin import bcoin_rpc
 
 from typing import cast
 from btcspv.types import RelayHeader

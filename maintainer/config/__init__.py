@@ -3,7 +3,7 @@ import os
 from ether import crypto
 
 from typing import cast, Tuple, Optional
-from relay.relay_types import RelayConfig
+from maintainer.relay_types import RelayConfig
 
 CONFIG: RelayConfig
 

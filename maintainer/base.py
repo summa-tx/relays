@@ -6,7 +6,7 @@ from pathlib import Path
 from functools import partial
 from dotenv import load_dotenv
 
-from relay import config
+from maintainer import config
 
 from typing import Awaitable, Callable
 from asyncio.events import AbstractEventLoop

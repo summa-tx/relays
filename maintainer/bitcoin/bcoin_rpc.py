@@ -1,9 +1,9 @@
 import aiohttp
 import logging
 
-from relay import config
+from maintainer import config
 
-from relay.relay_types import BCoinTx
+from maintainer.relay_types import BCoinTx
 from btcspv.types import RelayHeader
 from typing import Any, cast, Dict, List, Optional, Tuple, Union
 S = aiohttp.ClientSession

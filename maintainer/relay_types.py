@@ -72,6 +72,5 @@ class RelayConfig(TypedDict):
     GETH_UNLOCK: Optional[str]
     BCOIN_URL: str
     BCOIN_WS_URL: str
-    PLUGIN_WS_URL: str
     PROJECT_ID: str
     CONTRACT: str

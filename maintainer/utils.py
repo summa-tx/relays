@@ -1,6 +1,6 @@
 from riemann import tx
 from btcspv.types import RelayHeader
-from relay.relay_types import RelayRequest
+from maintainer.relay_types import RelayRequest
 
 
 def format_header(h: RelayHeader) -> str:

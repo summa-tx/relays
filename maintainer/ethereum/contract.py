@@ -1,9 +1,9 @@
 import logging
 from ether import abi, calldata, events
 
-from relay import config
-from relay.ethereum import shared
-from relay.relay_abi import ABI as relay_ABI
+from maintainer import config
+from maintainer.ethereum import shared
+from maintainer.relay_abi import ABI as relay_ABI
 
 EXPIRED = events._make_topic0(
     abi.find('SubscriptionExpired', relay_ABI)[0])
