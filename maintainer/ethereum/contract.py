@@ -31,6 +31,10 @@ async def find_height(digest_le: bytes) -> int:
             'latest'  # block height parameter
         ]
     )
+    # if more than 1 ABI slot long, return 0
+    if len(res) > 36:
+        logger.debug(f'findHeight for {digest_le.hex()} is unknown')
+        return 0
     logger.debug(f'findHeight for {digest_le.hex()} is {res}')
     return int(res, 16)
 

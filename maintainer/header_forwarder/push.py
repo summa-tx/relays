@@ -122,9 +122,35 @@ async def _add_diff_change(headers: List[RelayHeader]) -> None:
     asyncio.create_task(shared.sign_and_broadcast(tx))
 
 
+async def find_lca(
+    new_best: RelayHeader,
+    current_best: RelayHeader
+) -> RelayHeader:
+    # find the latest block in current's history that is an ancestor of new
+    is_ancestor = False
+
+    for i in range(1, 6):
+        logger.info(f'Attempt {i} to find LCA in previous 20 blocks')
+
+        ancestor = current_best
+        for _ in range(20):
+            is_ancestor = await contract.is_ancestor(
+                ancestor['hash'],
+                new_best['hash']
+            )
+            if is_ancestor:
+                return ancestor
+            ancestor = cast(
+                RelayHeader,
+                await bcoin_rpc.get_header_by_hash_le(ancestor['prevhash']))
+        await asyncio.sleep(15)
+    raise RuntimeError('Unable to find LCA after 5 attempts')
+
+
 # TODO: refactor this to not be shit
 async def _update_best_digest(
-        new_best: RelayHeader) -> None:
+    new_best: RelayHeader
+) -> None:
     '''Send an ethereum transaction that marks a new best known chain tip'''
     nonce = next(shared.NONCE)
     will_succeed = False
@@ -135,29 +161,15 @@ async def _update_best_digest(
             RelayHeader,
             await bcoin_rpc.get_header_by_hash_le(current_best_digest))
 
-        delta = new_best['height'] - current_best['height'] + 1
-
-        # find the latest block in current's history that is an ancestor of new
-        is_ancestor = False
-        ancestor = current_best
-        while True:
-            is_ancestor = await contract.is_ancestor(
-                ancestor['hash'],
-                new_best['hash'])
-            if is_ancestor:
-                break
-            ancestor = cast(
-                RelayHeader,
-                await bcoin_rpc.get_header_by_hash_le(ancestor['prevhash']))
-
-        ancestor_le = ancestor['hash']
+        ancestor = await find_lca(new_best, current_best)
+        delta = new_best['height'] - ancestor['height'] + 1
 
         tx = shared.make_call_tx(
             contract=config.get()['CONTRACT'],
             abi=relay_ABI,
             method='markNewHeaviest',
             args=[
-                ancestor_le,
+                ancestor['hash'],
                 current_best["raw"],
                 new_best["raw"],
                 delta],
