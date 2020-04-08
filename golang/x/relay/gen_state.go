@@ -15,7 +15,7 @@ func getGenesisHeaders() (BitcoinHeader, []BitcoinHeader) {
 		panic(err.Error())
 	}
 	// if running this function from cli_test directory do not include it in golang path
-	path = strings.Trim(path, "/cli_test")
+	path = strings.TrimSuffix(path, "/cli_test")
 
 	headerJSON, jsonErr := ioutil.ReadFile("/" + path + "/scripts/json_data/genesis.json")
 	if jsonErr != nil {

@@ -14,7 +14,7 @@ func readJSONFromFile(filename string) ([]byte, error) {
 		return nil, err
 	}
 	// if running this function from cli_test directory do not include it in golang path
-	path = strings.Trim(path, "/cli_test")
+	path = strings.TrimSuffix(path, "/cli_test")
 	return ioutil.ReadFile("/" + path + "/scripts/json_data/" + filename)
 }
 

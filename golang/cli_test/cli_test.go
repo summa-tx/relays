@@ -10,6 +10,7 @@ import (
 )
 
 func TestRelayCLIIsAncestor(t *testing.T) {
+	t.Parallel()
 	// Get data needed for transaction
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
@@ -50,6 +51,7 @@ func TestRelayCLIIsAncestor(t *testing.T) {
 }
 
 func TestRelayCLIGetRelayGenesis(t *testing.T) {
+	t.Parallel()
 	// Get Expected Value
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
@@ -74,6 +76,7 @@ func TestRelayCLIGetRelayGenesis(t *testing.T) {
 }
 
 func TestRelayCLIGetLastReorgLCA(t *testing.T) {
+	t.Parallel()
 	// Get Expected Value
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
@@ -97,6 +100,7 @@ func TestRelayCLIGetLastReorgLCA(t *testing.T) {
 }
 
 func TestRelayCLIGetBestDigest(t *testing.T) {
+	t.Parallel()
 	// Get Expected Value
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
@@ -120,6 +124,7 @@ func TestRelayCLIGetBestDigest(t *testing.T) {
 }
 
 func TestRelayCLIQueryFindAncestor(t *testing.T) {
+	t.Parallel()
 	// Extract data for transactions
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
@@ -159,6 +164,7 @@ func TestRelayCLIQueryFindAncestor(t *testing.T) {
 }
 
 // func TestRelayCLIIsMostRecentCommonAncestor(t *testing.T) {
+// 	t.Parallel()
 // 	// Get data needed for transaction
 // 	var genesisHeaders []rtypes.BitcoinHeader
 // 	genesisJSON := readJSONFile(t, "genesis")
@@ -196,13 +202,13 @@ func TestRelayCLIQueryFindAncestor(t *testing.T) {
 // 	// Require query returns error if invalid
 // 	ancestor = hex.EncodeToString(newDifficultyHeaders[1].HashLE[:])
 // 	ismostrecentcommonancestor = f.QueryIsMostRecentCommonAncestor(ancestor, left, right, limit)
-// 	fmt.Println(ismostrecentcommonancestor)
 //
 // 	//Cleanup
 // 	f.Cleanup()
 // }
 
 func TestRelayCLIQueryHeaviestFromAncestor(t *testing.T) {
+	t.Parallel()
 	// Extract data for transactions
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
@@ -244,6 +250,7 @@ func TestRelayCLIQueryHeaviestFromAncestor(t *testing.T) {
 }
 
 func TestRelayCLIQueryCheckProof(t *testing.T) {
+	t.Parallel()
 	// Extract data for transactions
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
@@ -282,6 +289,7 @@ func TestRelayCLIQueryCheckProof(t *testing.T) {
 }
 
 func TestRelayCLITXIngestHeaders(t *testing.T) {
+	t.Parallel()
 	// Extract data for transaction
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
@@ -322,6 +330,7 @@ func TestRelayCLITXIngestHeaders(t *testing.T) {
 }
 
 func TestRelayCLITXIngestDiffChange(t *testing.T) {
+	t.Parallel()
 	// Extract data for transaction
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
@@ -352,6 +361,7 @@ func TestRelayCLITXIngestDiffChange(t *testing.T) {
 }
 
 func TestRelayCLITXProvideProof(t *testing.T) {
+	t.Parallel()
 	// Extract data for transactions
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
@@ -400,6 +410,7 @@ func TestRelayCLITXProvideProof(t *testing.T) {
 }
 
 func TestRelayCLITxMarkNewHeaviest(t *testing.T) {
+	t.Parallel()
 	// Extract data for transactions
 	var genesisHeaders []rtypes.BitcoinHeader
 	genesisJSON := readJSONFile(t, "genesis")
