@@ -16,7 +16,7 @@ pytest-cov = "*"
 atomicwrites = "*"
 
 [packages]
-riemann-ether = "==6.0.5"
+riemann-ether = "==6.0.6"
 aiohttp = "*"
 riemann-keys = "*"
 mypy-extensions = "*"

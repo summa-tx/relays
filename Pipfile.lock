@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "10b48b44e058d0a64ad4d277d1fe5bbbfab26336458c286416739ef10737a140"
+            "sha256": "da94996eb6aeaa92d8861fe59c46b3be43326d39e2d4d73c6c79ebf7bd3a795a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -239,11 +239,11 @@
         },
         "riemann-ether": {
             "hashes": [
-                "sha256:4b40264b3e53c88a66939e18f082845d4ce931860008d69e43939b30ebd7b07d",
-                "sha256:bccf83a246bc000f41eccfcb4cfd4750196dafc8395275017440e00572ea0f2f"
+                "sha256:105c4ed41c6dc5f345cd9a7d18a8591e19467893a732ad187d6568d8d1f721eb",
+                "sha256:4f777cc2be070521e9e47106aa3eba0b6f8cbe19cd1ccc5e7cf0ee04d2398af9"
             ],
             "index": "pypi",
-            "version": "==6.0.5"
+            "version": "==6.0.6"
         },
         "riemann-keys": {
             "hashes": [
@@ -565,10 +565,10 @@
         },
         "pyparsing": {
             "hashes": [
-                "sha256:4c830582a84fb022400b85429791bc551f1f4871c33f23e44f353119e92f969f",
-                "sha256:c342dccb5250c08d45fd6f8b4a559613ca603b57498511740e65cd11a2e7dcec"
+                "sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1",
+                "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"
             ],
-            "version": "==2.4.6"
+            "version": "==2.4.7"
         },
         "pytest": {
             "hashes": [

@@ -29,9 +29,13 @@ async def run() -> None:
             f'Received {len(latest_digest) // 2} bytes instead. '
             'Hint: is this account authorized?')
 
-    latest = cast(
-        RelayHeader,
-        await bcoin_rpc.get_header_by_hash(latest_digest))
+    latest_or_none = await bcoin_rpc.get_header_by_hash(latest_digest)
+    if latest_or_none is None:
+        raise ValueError(
+            'Relay\'s latest digest is not known to the Bitcoin node. '
+            f'Got {latest_digest}. '
+            'Hint: is your node on the same Bitcoin network as the relay?')
+    latest = cast(RelayHeader, latest_or_none)
     better_or_same = cast(
         RelayHeader,
         await bcoin_rpc.get_header_by_height(latest['height']))
