@@ -5,8 +5,8 @@ from maintainer import config
 from maintainer.ethereum import shared
 from maintainer.relay_abi import ABI as relay_ABI
 
-EXPIRED = events._make_topic0(
-    abi.find('SubscriptionExpired', relay_ABI)[0])
+from typing import cast
+
 CLOSED = events._make_topic0(
     abi.find('RequestClosed', relay_ABI)[0])
 FILLED = events._make_topic0(
@@ -46,7 +46,10 @@ async def is_ancestor(
         ancestor: bytes,
         descendant: bytes,
         limit: int = 240) -> bool:
-    '''Determine if ancestor precedes descendant'''
+    '''
+    Determine if ancestor precedes descendant
+    ancestor and descendant MUST be LE
+    '''
     data = calldata.call(
         "isAncestor",
         [ancestor, descendant, limit],
@@ -87,4 +90,4 @@ async def get_best_block() -> str:
             'latest'  # block height parameter
         ]
     )
-    return res[2:]  # block-explorer format
+    return cast(str, res[2:])  # block-explorer format
