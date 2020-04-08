@@ -124,13 +124,10 @@ async def get_header_by_hash(
 
     return RelayHeader(
         raw=bytes.fromhex(raw)[:80],
-        hash=digest,
-        hash_le=digest[::-1],
+        hash=digest[::-1],
         height=block_info['height'],
-        merkle_root=merkle_root,
-        merkle_root_le=merkle_root[::-1],
-        prevhash=prevhash,
-        prevhash_le=prevhash[::-1])
+        merkle_root=merkle_root[::-1],
+        prevhash=prevhash[::-1])
 
 
 async def _get_header_by_height(

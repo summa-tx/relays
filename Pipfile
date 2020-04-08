@@ -23,7 +23,7 @@ mypy-extensions = "*"
 python-dotenv = "*"
 python-socketio = {extras = ["asyncio_client"],version = "*"}
 riemann-tx = "==2.1.0"
-bitcoin-spv-py = "==2.0.0"
+bitcoin-spv-py = "==3.0.1"
 python-engineio = "==3.10.0"
 
 [requires]

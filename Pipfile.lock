@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "da94996eb6aeaa92d8861fe59c46b3be43326d39e2d4d73c6c79ebf7bd3a795a"
+            "sha256": "e7da5761168c4f0dc6b2b3063e4b9c5515bf3aed2e23f940d057d1ddbf4209c9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -50,11 +50,11 @@
         },
         "bitcoin-spv-py": {
             "hashes": [
-                "sha256:1e2240b33e5ea26ce8bc3919495914d44f548e16a2a99aba59ff8ab62ce086d1",
-                "sha256:5e53e1f1f14c95e42f870e826b727030053cc1ec8059e5419f3ab58be8c84e88"
+                "sha256:a0c3e7047505f958ae820f094982f7f5fb52323fb5c220820435b0465899205f",
+                "sha256:eff76d4c6931c12c2eb082dc2c32eeef1f339c50476a24086ca9d67e15c010b2"
             ],
             "index": "pypi",
-            "version": "==2.0.0"
+            "version": "==3.0.1"
         },
         "cffi": {
             "hashes": [

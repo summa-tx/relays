@@ -104,8 +104,8 @@ async def _add_diff_change(headers: List[RelayHeader]) -> None:
     # we know these casts won't fail
     old_start = cast(RelayHeader, old_start_or_none)
     old_end = cast(RelayHeader, old_end_or_none)
-    logger.debug(f'old start is {old_start["hash_le"].hex()}')
-    logger.debug(f'old end is {old_end["hash_le"].hex()}')
+    logger.debug(f'old start is {old_start["hash"].hex()}')
+    logger.debug(f'old end is {old_end["hash"].hex()}')
 
     headers_hex = ''.join(h['raw'].hex() for h in headers)
 
@@ -136,20 +136,21 @@ async def _update_best_digest(
             await bcoin_rpc.get_header_by_hash(current_best_digest))
 
         delta = new_best['height'] - current_best['height'] + 1
+
         # find the latest block in current's history that is an ancestor of new
         is_ancestor = False
         ancestor = current_best
         while True:
             is_ancestor = await contract.is_ancestor(
-                ancestor['hash_le'],
-                new_best['hash_le'])
+                ancestor['hash'],
+                new_best['hash'])
             if is_ancestor:
                 break
             ancestor = cast(
                 RelayHeader,
                 await bcoin_rpc.get_header_by_hash(ancestor['prevhash']))
 
-        ancestor_le = ancestor['hash_le']
+        ancestor_le = ancestor['hash']
 
         tx = shared.make_call_tx(
             contract=config.get()['CONTRACT'],
