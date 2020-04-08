@@ -91,13 +91,13 @@ async def _PUT(
 async def get_header_by_hash(
         hash: Union[str, bytes],
         session: S = SESSION) -> Optional[RelayHeader]:
-
+    '''Gets a header by it's LE hash'''
     hash_hex: str
 
     try:
-        hash_hex = cast(bytes, hash).hex()
+        hash_hex = cast(bytes, hash)[::-1].hex()
     except AttributeError:
-        hash_hex = cast(str, hash)
+        hash_hex = bytes.fromhex(cast(str, hash))[::-1].hex()
 
     logger.debug(f'retrieving info on {hash_hex}')
     payload = {
