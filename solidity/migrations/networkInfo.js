@@ -26,7 +26,7 @@ module.exports = {
   ropsten_test: {
     network_id: truffleConf.networks.ropsten_test.network_id,
     bitcoin: bitcoinTest,
-    firstID: ID_SPACE_SIZE.muln(truffleConf.networks.ropsten_test.network_id)
+    firstID: ID_SPACE_SIZE.muln(truffleConf.networks.ropsten_test.network_id + 0x800000)
   },
   kovan: {
     network_id: truffleConf.networks.kovan.network_id,
@@ -36,16 +36,16 @@ module.exports = {
   kovan_test: {
     network_id: truffleConf.networks.kovan_test.network_id,
     bitcoin: bitcoinTest,
-    firstID: ID_SPACE_SIZE.muln(truffleConf.networks.kovan_test.network_id)
+    firstID: ID_SPACE_SIZE.muln(truffleConf.networks.kovan_test.network_id + 0x800000)
   },
   alfajores: {
     network_id: truffleConf.networks.alfajores_test.network_id,
-    bitcoin: bitcoinTest,
-    firstID: ID_SPACE_SIZE.muln(truffleConf.networks.alfajores_test.network_id)
+    bitcoin: bitcoinMain,
+    firstID: ID_SPACE_SIZE.muln(truffleConf.networks.alfajores.network_id)
   },
   alfajores_test: {
     network_id: truffleConf.networks.alfajores_test.network_id,
     bitcoin: bitcoinTest,
-    firstID: ID_SPACE_SIZE.muln(truffleConf.networks.alfajores_test.network_id)
+    firstID: ID_SPACE_SIZE.muln(truffleConf.networks.alfajores_test.network_id + 0x800000)
   },
 };
