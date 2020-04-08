@@ -74,8 +74,8 @@ async def _add_headers(headers: List[RelayHeader]) -> None:
                 f'first is {utils.format_header(headers[0])}\n'
                 f'last is {utils.format_header(headers[-1])}\n')
     nonce = next(shared.NONCE)
-    anchor_or_none = await bcoin_rpc.get_header_by_hash(
-        headers[0]['prevhash'].hex())
+    anchor_or_none = await bcoin_rpc.get_header_by_hash_le(
+        headers[0]['prevhash'])
     anchor = cast(RelayHeader, anchor_or_none)
 
     headers_hex = ''.join(h['raw'].hex() for h in headers)
@@ -133,7 +133,7 @@ async def _update_best_digest(
         current_best_digest = await contract.get_best_block()
         current_best = cast(
             RelayHeader,
-            await bcoin_rpc.get_header_by_hash(current_best_digest))
+            await bcoin_rpc.get_header_by_hash_le(current_best_digest))
 
         delta = new_best['height'] - current_best['height'] + 1
 
@@ -148,7 +148,7 @@ async def _update_best_digest(
                 break
             ancestor = cast(
                 RelayHeader,
-                await bcoin_rpc.get_header_by_hash(ancestor['prevhash']))
+                await bcoin_rpc.get_header_by_hash_le(ancestor['prevhash']))
 
         ancestor_le = ancestor['hash']
 

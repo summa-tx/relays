@@ -88,16 +88,26 @@ async def _PUT(
     return status, result
 
 
-async def get_header_by_hash(
+async def get_header_by_hash_le(
+        hash: Union[str, bytes],
+        session: S = SESSION) -> Optional[RelayHeader]:
+    try:
+        hash_hex = cast(bytes, hash)[::-1].hex()
+    except AttributeError:
+        hash_hex = bytes.fromhex(cast(str, hash))[::-1].hex()
+    return await get_header_by_hash_be(hash_hex)
+
+
+async def get_header_by_hash_be(
         hash: Union[str, bytes],
         session: S = SESSION) -> Optional[RelayHeader]:
     '''Gets a header by it's LE hash'''
     hash_hex: str
 
     try:
-        hash_hex = cast(bytes, hash)[::-1].hex()
+        hash_hex = cast(bytes, hash).hex()
     except AttributeError:
-        hash_hex = bytes.fromhex(cast(str, hash))[::-1].hex()
+        hash_hex = cast(str, hash)
 
     logger.debug(f'retrieving info on {hash_hex}')
     payload = {
@@ -153,7 +163,7 @@ async def get_header_by_height(
         return None
 
     block_info = cast(dict, block_info_or_none)
-    return await get_header_by_hash(block_info['hash'])
+    return await get_header_by_hash_be(block_info['hash'])
 
 
 async def get_chain_tips(session: S = SESSION) -> List[str]:

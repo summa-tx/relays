@@ -29,7 +29,7 @@ async def run() -> None:
             f'Received {len(latest_digest) // 2} bytes instead. '
             'Hint: is this account authorized?')
 
-    latest_or_none = await bcoin_rpc.get_header_by_hash(latest_digest)
+    latest_or_none = await bcoin_rpc.get_header_by_hash_le(latest_digest)
     if latest_or_none is None:
         raise ValueError(
             'Relay\'s latest digest is not known to the Bitcoin node. '
@@ -45,7 +45,7 @@ async def run() -> None:
     while latest != better_or_same:
         latest = cast(
             RelayHeader,
-            await bcoin_rpc.get_header_by_hash(latest['prevhash']))
+            await bcoin_rpc.get_header_by_hash_le(latest['prevhash']))
         better_or_same = cast(
             RelayHeader,
             await bcoin_rpc.get_header_by_height(latest['height']))
