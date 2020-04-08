@@ -31,6 +31,13 @@ var startCoins = sdk.NewCoins(
     sdk.NewCoin(fooDenom, sdk.TokensFromConsensusPower(2000000)),
 )
 
+
+type TestData struct {
+    GenesisHeaders []rtypes.BitcoinHeader
+    NewDiffHeaders []rtypes.BitcoinHeader
+    NewHeaders     []rtypes.BitcoinHeader
+}
+
 // Fixtures is used to setup the testing environment
 type Fixtures struct {
 	BuildDir       string
@@ -52,7 +59,7 @@ type Fixtures struct {
 
 // NewFixtures creates a new instance of Fixtures with many vars set
 func NewFixtures(t *testing.T) *Fixtures {
-	tmpDir, err := ioutil.TempDir("", "relay_integration_"+t.Name()+"_")
+	tmpDir, err := ioutil.TempDir("", "relay_integration_"+strings.TrimPrefix(t.Name(), "TestRelay/")+"_")
 	require.NoError(t, err)
 	servAddr, port, err := server.FreeTCPAddr()
 	require.NoError(t, err)
@@ -108,6 +115,24 @@ func InitFixtures(t *testing.T) (f *Fixtures) {
 	f.CollectGenTxs()
 
 	return f
+}
+
+func GrabTestData(t *testing.T) TestData {
+    testData := TestData{}
+	genesisJSON := readJSONFile(t, "genesis")
+	err := json.Unmarshal([]byte(genesisJSON), &testData.GenesisHeaders)
+	require.NoError(t, err)
+
+    newDiffJSON := readJSONFile(t, "0_new_difficulty")
+    err = json.Unmarshal([]byte(newDiffJSON), &testData.NewDiffHeaders)
+    require.NoError(t, err)
+    return testData
+
+    newHeadersJSON := readJSONFile(t, "2_ingest_headers")
+    err = json.Unmarshal([]byte(newHeadersJSON), &testData.NewHeaders)
+    require.NoError(t, err)
+
+    return testData
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
