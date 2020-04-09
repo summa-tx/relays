@@ -30,8 +30,8 @@ func (suite *UtilsSuite) TestRelayCLIIsAncestor() {
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
 	defer func() {
-	  err := proc.Stop(false)
-	  suite.NoError(err)
+		err := proc.Stop(false)
+		suite.NoError(err)
 	}()
 
 	// define param values
@@ -73,8 +73,8 @@ func (suite *UtilsSuite) TestRelayCLIGetRelayGenesis() {
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
 	defer func() {
-	  err := proc.Stop(false)
-	  suite.NoError(err)
+		err := proc.Stop(false)
+		suite.NoError(err)
 	}()
 	fooAddr := f.KeyAddress(keyFoo)
 	genesisRelay := f.QueryGetRelayGenesis(fooAddr)
@@ -97,8 +97,8 @@ func (suite *UtilsSuite) TestRelayCLIGetLastReorgLCA() {
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
 	defer func() {
-	  err := proc.Stop(false)
-	  suite.NoError(err)
+		err := proc.Stop(false)
+		suite.NoError(err)
 	}()
 	fooAddr := f.KeyAddress(keyFoo)
 	lastReorgLCA := f.QueryGetLastReorgLCA(fooAddr)
@@ -121,8 +121,8 @@ func (suite *UtilsSuite) TestRelayCLIGetBestDigest() {
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
 	defer func() {
-	  err := proc.Stop(false)
-	  suite.NoError(err)
+		err := proc.Stop(false)
+		suite.NoError(err)
 	}()
 	fooAddr := f.KeyAddress(keyFoo)
 	bestDigest := f.QueryGetBestDigest(fooAddr)
@@ -146,8 +146,8 @@ func (suite *UtilsSuite) TestRelayCLIQueryFindAncestor() {
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
 	defer func() {
-	  err := proc.Stop(false)
-	  suite.NoError(err)
+		err := proc.Stop(false)
+		suite.NoError(err)
 	}()
 
 	// define paramater values
@@ -182,8 +182,8 @@ func (suite *UtilsSuite) TestRelayCLIIsMostRecentCommonAncestor() {
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
 	defer func() {
-	  err := proc.Stop(false)
-	  suite.NoError(err)
+		err := proc.Stop(false)
+		suite.NoError(err)
 	}()
 
 	// must ingest headers in order to perform query
@@ -225,8 +225,8 @@ func (suite *UtilsSuite) TestRelayCLIQueryHeaviestFromAncestor() {
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
 	defer func() {
-	  err := proc.Stop(false)
-	  suite.NoError(err)
+		err := proc.Stop(false)
+		suite.NoError(err)
 	}()
 
 	// define paramteer values
@@ -262,8 +262,8 @@ func (suite *UtilsSuite) TestRelayCLIQueryCheckProof() {
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
 	defer func() {
-	  err := proc.Stop(false)
-	  suite.NoError(err)
+		err := proc.Stop(false)
+		suite.NoError(err)
 	}()
 	fooAddr := f.KeyAddress(keyFoo)
 	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
@@ -300,8 +300,8 @@ func (suite *UtilsSuite) TestRelayCLITXIngestHeaders() {
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
 	defer func() {
-	  err := proc.Stop(false)
-	  suite.NoError(err)
+		err := proc.Stop(false)
+		suite.NoError(err)
 	}()
 
 	// define parameter valuse
@@ -336,8 +336,8 @@ func (suite *UtilsSuite) TestRelayCLITXIngestDiffChange() {
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
 	defer func() {
-	  err := proc.Stop(false)
-	  suite.NoError(err)
+		err := proc.Stop(false)
+		suite.NoError(err)
 	}()
 
 	// Define parameter values
@@ -366,8 +366,8 @@ func (suite *UtilsSuite) TestRelayCLITXProvideProof() {
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
 	defer func() {
-	  err := proc.Stop(false)
-	  suite.NoError(err)
+		err := proc.Stop(false)
+		suite.NoError(err)
 	}()
 
 	// Define parameter values
@@ -417,8 +417,8 @@ func (suite *UtilsSuite) TestRelayCLITxMarkNewHeaviest() {
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
 	defer func() {
-	  err := proc.Stop(false)
-	  suite.NoError(err)
+		err := proc.Stop(false)
+		suite.NoError(err)
 	}()
 
 	// Define parameter values
