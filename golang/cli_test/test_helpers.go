@@ -67,6 +67,13 @@ func NewFixtures(t *testing.T) *Fixtures {
 
 	buildDir := os.Getenv("BUILDDIR")
 
+    if buildDir == "" {
+        dir := os.Getenv("GOPATH") + "/bin"
+        if fileExists(dir + "relayd") && fileExists(dir + "relaycli") {
+            buildDir = dir
+        }
+    }
+
 	if buildDir == "" {
 		buildDir, err = filepath.Abs("../build/")
 		require.NoError(t, err)
@@ -442,4 +449,12 @@ func readJSONFile(t *testing.T, filename string) []byte {
 	headerJSON, jsonErr := ioutil.ReadFile("../scripts/json_data/" + filename + ".json")
 	require.NoError(t, jsonErr)
 	return headerJSON
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
