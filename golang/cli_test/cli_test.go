@@ -29,7 +29,10 @@ func (suite *UtilsSuite) TestRelayCLIIsAncestor() {
 	// Initialize CHain
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
-	defer proc.Stop(false) /// nolint:errcheck
+	defer func() {
+	  err := proc.Stop(false)
+	  suite.NoError(err)
+	}()
 
 	// define param values
 	fooAddr := f.KeyAddress(keyFoo)
@@ -69,7 +72,10 @@ func (suite *UtilsSuite) TestRelayCLIGetRelayGenesis() {
 	// Query Chain for Actual Value
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
-	defer proc.Stop(false) // nolint:errcheck
+	defer func() {
+	  err := proc.Stop(false)
+	  suite.NoError(err)
+	}()
 	fooAddr := f.KeyAddress(keyFoo)
 	genesisRelay := f.QueryGetRelayGenesis(fooAddr)
 	actual := genesisRelay.Res
@@ -90,7 +96,10 @@ func (suite *UtilsSuite) TestRelayCLIGetLastReorgLCA() {
 	// Query Chain for Actual Value
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
-	defer proc.Stop(false) // nolint:errcheck
+	defer func() {
+	  err := proc.Stop(false)
+	  suite.NoError(err)
+	}()
 	fooAddr := f.KeyAddress(keyFoo)
 	lastReorgLCA := f.QueryGetLastReorgLCA(fooAddr)
 	actual := lastReorgLCA.Res
@@ -111,7 +120,10 @@ func (suite *UtilsSuite) TestRelayCLIGetBestDigest() {
 	// Query Chain for Actual Value
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
-	defer proc.Stop(false) // nolint:errcheck
+	defer func() {
+	  err := proc.Stop(false)
+	  suite.NoError(err)
+	}()
 	fooAddr := f.KeyAddress(keyFoo)
 	bestDigest := f.QueryGetBestDigest(fooAddr)
 	actual := bestDigest.Res
@@ -133,7 +145,10 @@ func (suite *UtilsSuite) TestRelayCLIQueryFindAncestor() {
 	// Initialize chain
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
-	defer proc.Stop(false) // nolint:errcheck
+	defer func() {
+	  err := proc.Stop(false)
+	  suite.NoError(err)
+	}()
 
 	// define paramater values
 	fooAddr := f.KeyAddress(keyFoo)
@@ -166,7 +181,10 @@ func (suite *UtilsSuite) TestRelayCLIIsMostRecentCommonAncestor() {
 	// Initialize chain
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
-	defer proc.Stop(false) // nolint:errcheck
+	defer func() {
+	  err := proc.Stop(false)
+	  suite.NoError(err)
+	}()
 
 	// must ingest headers in order to perform query
 	fooAddr := f.KeyAddress(keyFoo)
@@ -206,7 +224,10 @@ func (suite *UtilsSuite) TestRelayCLIQueryHeaviestFromAncestor() {
 	// Transact with Chain for Actual Value
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
-	defer proc.Stop(false) // nolint:errcheck
+	defer func() {
+	  err := proc.Stop(false)
+	  suite.NoError(err)
+	}()
 
 	// define paramteer values
 	fooAddr := f.KeyAddress(keyFoo)
@@ -240,7 +261,10 @@ func (suite *UtilsSuite) TestRelayCLIQueryCheckProof() {
 	// Initialize chain
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
-	defer proc.Stop(false) // nolint:errcheck
+	defer func() {
+	  err := proc.Stop(false)
+	  suite.NoError(err)
+	}()
 	fooAddr := f.KeyAddress(keyFoo)
 	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
 
@@ -275,7 +299,10 @@ func (suite *UtilsSuite) TestRelayCLITXIngestHeaders() {
 	// Initialize chain
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
-	defer proc.Stop(false) // nolint:errcheck
+	defer func() {
+	  err := proc.Stop(false)
+	  suite.NoError(err)
+	}()
 
 	// define parameter valuse
 	fooAddr := f.KeyAddress(keyFoo)
@@ -308,7 +335,10 @@ func (suite *UtilsSuite) TestRelayCLITXIngestDiffChange() {
 	// Initialize chain
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
-	defer proc.Stop(false) // nolint:errcheck
+	defer func() {
+	  err := proc.Stop(false)
+	  suite.NoError(err)
+	}()
 
 	// Define parameter values
 	fooAddr := f.KeyAddress(keyFoo)
@@ -335,7 +365,10 @@ func (suite *UtilsSuite) TestRelayCLITXProvideProof() {
 	// Initialize chain
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
-	defer proc.Stop(false) // nolint:errcheck
+	defer func() {
+	  err := proc.Stop(false)
+	  suite.NoError(err)
+	}()
 
 	// Define parameter values
 	fooAddr := f.KeyAddress(keyFoo)
@@ -383,7 +416,10 @@ func (suite *UtilsSuite) TestRelayCLITxMarkNewHeaviest() {
 	// Initialize chain
 	f := InitFixtures(suite.T())
 	proc := f.RelayDStart()
-	defer proc.Stop(false) // nolint:errcheck
+	defer func() {
+	  err := proc.Stop(false)
+	  suite.NoError(err)
+	}()
 
 	// Define parameter values
 	fooAddr := f.KeyAddress(keyFoo)
