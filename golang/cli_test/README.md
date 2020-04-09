@@ -3,8 +3,13 @@
 The relay cli integration tests live in this folder. You can run the full suite by running:
 
 ```bash
-go test -mod=readonly -p 4 `go list ./cli_test/...` -tags=cli_test
+go test -mod=readonly -p 4 `go list ./cli_test/...`
 ```
+
+ To run a single test run:
+ ```bash
+ go test -mod=readonly -p 4 `go list ./cli_test/...` -testify.m TestName
+ ```
 
 > NOTE: While the full suite runs in parallel, some of the tests can take up to a minute to complete
 
