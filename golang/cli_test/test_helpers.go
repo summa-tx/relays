@@ -68,7 +68,7 @@ func NewFixtures(t *testing.T) *Fixtures {
 	buildDir := os.Getenv("BUILDDIR")
 
 	if buildDir == "" {
-		dir := os.Getenv("GOPATH") + "/bin"
+		dir := os.Getenv("GOPATH") + "/bin/"
 		if fileExists(dir+"relayd") && fileExists(dir+"relaycli") {
 			buildDir = dir
 		}
