@@ -43,11 +43,5 @@ reducing calldata gas costs.
 
 ### Project Notes
 
-The Python relay mainter in `./relay/` is not thoroughly tested, and does not
+The Python relay mainter in `./maintainer/` is not thoroughly tested, and does not
 yet support the cosmos-sdk relay.
-
-### How do I develop for it?
-
-install `pipenv` and `pyenv`
-
-$ pipenv install --python=$(pyenv which python3.7)
