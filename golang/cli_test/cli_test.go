@@ -328,7 +328,7 @@ func (suite *UtilsSuite) TestRelayCLITXProvideProof() {
 	suite.Contains(stdout, `"success":true`)
 
 	// require checkproof fails given invalid proof requests
-	success, stdout, stderr = f.TxProvideProof(fooAddr, "1_check_proof.json", "3_filled_requests.json", "--inputfile -y")
+	_, stdout, _ = f.TxProvideProof(fooAddr, "1_check_proof.json", "3_filled_requests.json", "--inputfile -y")
 	suite.Contains(stdout, `"Request not found`)
 
 	// submit proof request

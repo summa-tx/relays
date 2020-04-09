@@ -21,14 +21,13 @@ import(
 
 const (
 	keyFoo       = "foo"
-	keyBar       = "bar"
     stakeDenom   = "stake"
     fooDenom     = "footoken"
 )
 
 var startCoins = sdk.NewCoins(
-    sdk.NewCoin(stakeDenom, sdk.TokensFromConsensusPower(2000000)),
-    sdk.NewCoin(fooDenom, sdk.TokensFromConsensusPower(2000000)),
+    sdk.NewCoin(stakeDenom, sdk.TokensFromConsensusPower(1000000)),
+    sdk.NewCoin(fooDenom, sdk.TokensFromConsensusPower(1000000)),
 )
 
 
@@ -126,7 +125,6 @@ func GrabTestData(t *testing.T) TestData {
     newDiffJSON := readJSONFile(t, "0_new_difficulty")
     err = json.Unmarshal([]byte(newDiffJSON), &testData.NewDiffHeaders)
     require.NoError(t, err)
-    return testData
 
     newHeadersJSON := readJSONFile(t, "2_ingest_headers")
     err = json.Unmarshal([]byte(newHeadersJSON), &testData.NewHeaders)
