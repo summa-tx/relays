@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-
 func getGenesisHeaders() (BitcoinHeader, []BitcoinHeader) {
 	// get path to root directory
 	path, err := os.Getwd()

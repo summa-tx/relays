@@ -1,40 +1,39 @@
 package clitest
 
-import(
-    "testing"
+import (
 	"encoding/json"
-    "os"
-    "fmt"
-    "io/ioutil"
-    "path/filepath"
-    "strings"
-    "github.com/stretchr/testify/require"
-    app "github.com/summa-tx/relays/golang"
-    rtypes "github.com/summa-tx/relays/golang/x/relay/types"
+	"fmt"
+	"github.com/stretchr/testify/require"
+	app "github.com/summa-tx/relays/golang"
+	rtypes "github.com/summa-tx/relays/golang/x/relay/types"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
 
+	clientkeys "github.com/cosmos/cosmos-sdk/client/keys"
+	"github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/tests"
-    clientkeys "github.com/cosmos/cosmos-sdk/client/keys"
-    "github.com/cosmos/cosmos-sdk/crypto/keys"
-    "github.com/cosmos/cosmos-sdk/server"
-    sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
-	keyFoo       = "foo"
-    stakeDenom   = "stake"
-    fooDenom     = "footoken"
+	keyFoo     = "foo"
+	stakeDenom = "stake"
+	fooDenom   = "footoken"
 )
 
 var startCoins = sdk.NewCoins(
-    sdk.NewCoin(stakeDenom, sdk.TokensFromConsensusPower(1000000)),
-    sdk.NewCoin(fooDenom, sdk.TokensFromConsensusPower(1000000)),
+	sdk.NewCoin(stakeDenom, sdk.TokensFromConsensusPower(1000000)),
+	sdk.NewCoin(fooDenom, sdk.TokensFromConsensusPower(1000000)),
 )
 
-
 type TestData struct {
-    GenesisHeaders []rtypes.BitcoinHeader
-    NewDiffHeaders []rtypes.BitcoinHeader
-    NewHeaders     []rtypes.BitcoinHeader
+	GenesisHeaders []rtypes.BitcoinHeader
+	NewDiffHeaders []rtypes.BitcoinHeader
+	NewHeaders     []rtypes.BitcoinHeader
 }
 
 // Fixtures is used to setup the testing environment
@@ -117,20 +116,20 @@ func InitFixtures(t *testing.T) (f *Fixtures) {
 }
 
 func GrabTestData(t *testing.T) TestData {
-    testData := TestData{}
+	testData := TestData{}
 	genesisJSON := readJSONFile(t, "genesis")
 	err := json.Unmarshal([]byte(genesisJSON), &testData.GenesisHeaders)
 	require.NoError(t, err)
 
-    newDiffJSON := readJSONFile(t, "0_new_difficulty")
-    err = json.Unmarshal([]byte(newDiffJSON), &testData.NewDiffHeaders)
-    require.NoError(t, err)
+	newDiffJSON := readJSONFile(t, "0_new_difficulty")
+	err = json.Unmarshal([]byte(newDiffJSON), &testData.NewDiffHeaders)
+	require.NoError(t, err)
 
-    newHeadersJSON := readJSONFile(t, "2_ingest_headers")
-    err = json.Unmarshal([]byte(newHeadersJSON), &testData.NewHeaders)
-    require.NoError(t, err)
+	newHeadersJSON := readJSONFile(t, "2_ingest_headers")
+	err = json.Unmarshal([]byte(newHeadersJSON), &testData.NewHeaders)
+	require.NoError(t, err)
 
-    return testData
+	return testData
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -190,8 +189,8 @@ func (f *Fixtures) Flags() string {
 
 // KeysAdd is relaycli keys add
 func (f *Fixtures) KeysAdd(name string, flags ...string) {
-	cmd := fmt.Sprintf("%s keys add --home=%s %s", f.RelaycliBinary,f.RelaycliHome, name)
-    executeWriteCheckErr(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
+	cmd := fmt.Sprintf("%s keys add --home=%s %s", f.RelaycliBinary, f.RelaycliHome, name)
+	executeWriteCheckErr(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
 }
 
 // CLIConfig is relaycli config
@@ -343,7 +342,7 @@ func (f *Fixtures) QueryHeaviestFromAncestorInvalid(errStr, ancestor, currentBes
 
 // QueryCheckProof returns the Boolean
 func (f *Fixtures) QueryCheckProof(proof string, flags ...string) rtypes.QueryResCheckProof {
-    cmd := fmt.Sprintf("%s query relay checkproof %s %s", f.RelaycliBinary, proof, f.Flags())
+	cmd := fmt.Sprintf("%s query relay checkproof %s %s", f.RelaycliBinary, proof, f.Flags())
 	res, errStr := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
 	require.Empty(f.T, errStr)
 	cdc := app.MakeCodec()
@@ -359,32 +358,32 @@ func (f *Fixtures) QueryCheckProof(proof string, flags ...string) rtypes.QueryRe
 
 // TxIngestDiffChange is relaycli tx that ingests headers with new difficulty
 func (f *Fixtures) TxIngestDiffChange(delAddr sdk.AccAddress, prevEpochStart, jsonHeaders string, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx relay ingestdiffchange %s %s --from %s %s",  f.RelaycliBinary, prevEpochStart, jsonHeaders, delAddr, f.Flags())
-    return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
+	cmd := fmt.Sprintf("%s tx relay ingestdiffchange %s %s --from %s %s", f.RelaycliBinary, prevEpochStart, jsonHeaders, delAddr, f.Flags())
+	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
 }
 
 // TxIngestHeaders is a relaycli tx that ingests headers with same difficulty as previous headers
 func (f *Fixtures) TxIngestHeaders(delAddr sdk.AccAddress, headers string, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx relay ingestheaders %s --from %s %s",  f.RelaycliBinary, headers, delAddr, f.Flags())
-    return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
+	cmd := fmt.Sprintf("%s tx relay ingestheaders %s --from %s %s", f.RelaycliBinary, headers, delAddr, f.Flags())
+	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
 }
 
 // TxNewRequest is a relaycli tx that submits a new Proof Request
 func (f *Fixtures) TxNewRequest(delAddr sdk.AccAddress, spends, pays, value, numConfs string, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx relay newrequest %s %s %s %s --from %s %s",  f.RelaycliBinary, spends, pays, value, numConfs, delAddr, f.Flags())
-    return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
+	cmd := fmt.Sprintf("%s tx relay newrequest %s %s %s %s --from %s %s", f.RelaycliBinary, spends, pays, value, numConfs, delAddr, f.Flags())
+	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
 }
 
 // TxProvideProof is a relaycli tx that submits a new Proof Request
 func (f *Fixtures) TxProvideProof(delAddr sdk.AccAddress, proof, listofrequests string, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx relay provideproof %s %s --from %s %s",  f.RelaycliBinary, proof, listofrequests, delAddr, f.Flags())
-    return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
+	cmd := fmt.Sprintf("%s tx relay provideproof %s %s --from %s %s", f.RelaycliBinary, proof, listofrequests, delAddr, f.Flags())
+	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
 }
 
 // TxMarkNewHeaviest returns Last Common Anscestor
 func (f *Fixtures) TxMarkNewHeaviest(delAddr sdk.AccAddress, ancestor, currentBest, newBest, limit string, flags ...string) (bool, string, string) {
-	cmd := fmt.Sprintf("%s tx relay marknewheaviest %s %s %s %s --from %s %s",  f.RelaycliBinary, ancestor, currentBest, newBest, limit, delAddr, f.Flags())
-    return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
+	cmd := fmt.Sprintf("%s tx relay marknewheaviest %s %s %s %s --from %s %s", f.RelaycliBinary, ancestor, currentBest, newBest, limit, delAddr, f.Flags())
+	return executeWriteRetStdStreams(f.T, addFlags(cmd, flags), clientkeys.DefaultKeyPass)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -440,7 +439,7 @@ func addFlags(cmd string, flags []string) string {
 }
 
 func readJSONFile(t *testing.T, filename string) []byte {
-    headerJSON, jsonErr := ioutil.ReadFile("../scripts/json_data/" + filename + ".json")
-    require.NoError(t, jsonErr)
-    return headerJSON
+	headerJSON, jsonErr := ioutil.ReadFile("../scripts/json_data/" + filename + ".json")
+	require.NoError(t, jsonErr)
+	return headerJSON
 }
