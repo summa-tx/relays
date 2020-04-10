@@ -2,8 +2,9 @@ package clitest
 
 import (
 	"encoding/hex"
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type UtilsSuite struct {

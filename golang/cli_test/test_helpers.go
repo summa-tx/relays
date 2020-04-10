@@ -3,14 +3,15 @@ package clitest
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/require"
-	app "github.com/summa-tx/relays/golang"
-	rtypes "github.com/summa-tx/relays/golang/x/relay/types"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	app "github.com/summa-tx/relays/golang"
+	rtypes "github.com/summa-tx/relays/golang/x/relay/types"
 
 	clientkeys "github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
