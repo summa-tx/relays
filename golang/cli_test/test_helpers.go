@@ -240,7 +240,7 @@ func (f *Fixtures) GenTx(name string, flags ...string) {
 // CLI Queries ///////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 
-// QueryGetRelayGenesis returns the relay genesis block HashLE
+// QueryGetRelayGenesis returns the relay genesis block Hash
 func (f *Fixtures) QueryGetRelayGenesis(delAddr sdk.AccAddress) rtypes.QueryResGetRelayGenesis {
 	cmd := fmt.Sprintf("%s query relay getrelaygenesis %s %s", f.RelaycliBinary, delAddr, f.Flags())
 	res, errStr := tests.ExecuteT(f.T, cmd, "")
