@@ -22,7 +22,6 @@ const kovan = {
 
 const alfajores = {
   host: process.env.ALFAJORES_NODE_URL,
-  port: 8545,            // Standard Ethereum port (default: none)
   network_id: 44786,
   port: process.env.ALFAJORES_NODE_PORT,
   from: process.env.ALFAJORES_FROM,
