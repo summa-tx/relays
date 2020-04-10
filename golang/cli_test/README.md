@@ -17,7 +17,7 @@ go test -mod=readonly -p 4 `go list ./cli_test/...`
 
 This integration suite [uses a thin wrapper](https://godoc.org/github.com/cosmos/cosmos-sdk/tests) over the [`os/exec`](https://golang.org/pkg/os/exec/) package. This allows the integration test to run against built binaries (both `relayd` and `relaycli` are used) while being written in golang. This allows tests to take advantage of the various golang code we have for operations like marshal/unmarshal, crypto, etc...
 
-> NOTE: The tests will use whatever `relayd` or `relaycli` binaries are available in your `$PATH`. You can check which binary will be run by the suite by running `which relayd` or `which relaycli`. If you have your `$GOPATH` properly setup they should be in `$GOPATH/bin/relay*`. This will ensure that your test uses the latest binary you have built
+> NOTE: The tests will use whatever `relayd` or `relaycli` binaries are available in your `$GOPATH/bin`. You can check which binary will be run by the suite by running `which relayd` or `which relaycli`. If you have your `$GOPATH` properly setup they should be in `$GOPATH/bin/relay*`. This will ensure that your test uses the latest binary you have built
 
 Tests generally follow this structure:
 

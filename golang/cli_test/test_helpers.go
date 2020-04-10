@@ -38,7 +38,7 @@ type TestData struct {
 
 // Fixtures is used to setup the testing environment
 type Fixtures struct {
-	BuildDir       string
+	BinDir         string
 	RootDir        string
 	RelaydBinary   string
 	RelaycliBinary string
@@ -65,26 +65,16 @@ func NewFixtures(t *testing.T) *Fixtures {
 	p2pAddr, _, err := server.FreeTCPAddr()
 	require.NoError(t, err)
 
-	buildDir := os.Getenv("BUILDDIR")
-
-	if buildDir == "" {
-		dir := os.Getenv("GOPATH") + "/bin/"
-		if fileExists(dir+"relayd") && fileExists(dir+"relaycli") {
-			buildDir = dir
-		}
-	}
-
-	if buildDir == "" {
-		buildDir, err = filepath.Abs("../build/")
-		require.NoError(t, err)
-	}
+	binDir := os.Getenv("GOPATH") + "/bin/"
+	require.True(t, fileExists(binDir+"relayd"), "relayd binary does not exist")
+	require.True(t, fileExists(binDir+"relaycli"), "relaycli binary does not exist")
 
 	return &Fixtures{
 		T:              t,
-		BuildDir:       buildDir,
+		BinDir:         binDir,
 		RootDir:        tmpDir,
-		RelaydBinary:   filepath.Join(buildDir, "relayd"),
-		RelaycliBinary: filepath.Join(buildDir, "relaycli"),
+		RelaydBinary:   filepath.Join(binDir, "relayd"),
+		RelaycliBinary: filepath.Join(binDir, "relaycli"),
 		RelaydHome:     filepath.Join(tmpDir, ".relayd"),
 		RelaycliHome:   filepath.Join(tmpDir, ".relaycli"),
 		RPCAddr:        servAddr,
