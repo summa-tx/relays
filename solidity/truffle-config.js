@@ -1,8 +1,12 @@
 /* eslint-disable */
 require('dotenv').config();
+
+const Kit = require('@celo/contractkit')
+
 const HDWalletProvider = require('truffle-hdwallet-provider');
 const infuraKey = process.env.SUMMA_RELAY_INFURA_KEY;
 const mnemonic = process.env.MNEMONIC;
+
 
 const ropsten = {
   provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/${infuraKey}`),
@@ -21,12 +25,21 @@ const kovan = {
 }
 
 const alfajores = {
-  host: process.env.ALFAJORES_NODE_URL,
+  provider: () => {
+    const provider = new HDWalletProvider(mnemonic, 'http://127.0.0.1:9999'); // sinkhole any requests
+    // slip44
+    const celoBIP44 = "m/44'/52752'/0'/0/0";
+    const hdkey = provider.hdwallet.derivePath(celoBIP44);
+    // Get the privkey and hand it to the kit
+    const privkey = hdkey._hdkey.privateKey.toString('hex');
+    const kit = Kit.newKit('https://alfajores-forno.celo-testnet.org');
+    kit.addAccount(privkey);
+    return kit.web3.currentProvider;
+  },
   network_id: 44786,
-  port: process.env.ALFAJORES_NODE_PORT,
-  from: process.env.ALFAJORES_FROM,
-  gas: 8000000,
-  gasPrice: 100000000000
+  gas: 5500000,
+  confirmations: 2,
+  timeoutBlocks: 200
 }
 
 module.exports = {
