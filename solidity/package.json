@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "compile": "truffle compile",
-    "test:coverage": "npx solidity-coverage",
+    "test:coverage": "truffle run coverage",
     "lint": "solium -d contracts/ && eslint ./test",
     "lint:fix": "solium --fix -d contracts/ && eslint --fix ./test",
     "test": "truffle test"
@@ -23,7 +23,7 @@
     "eslint-config-airbnb-base": "^13.2.0",
     "eslint-plugin-import": "^2.20.2",
     "eth-gas-reporter": "^0.2.16",
-    "solidity-coverage": "^0.7.2",
+    "solidity-coverage": "^0.7.4",
     "solium": "^1.2.4",
     "truffle-hdwallet-provider": "^1.0.17",
     "truffle-plugin-verify": "^0.3.10"
