@@ -54,8 +54,6 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         nextID = _firstID;
     }
 
-    function () external payable {}
-
     /// @notice                 Cancel a bitcoin event request.
     /// @dev                    Prevents the relay from forwarding tx infromation
     /// @param  _requestID      The ID of the request to be cancelled
