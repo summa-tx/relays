@@ -474,9 +474,9 @@ contract('Relay', async () => {
     const POST_CHAIN = REORG_AND_RETARGET_CHAIN.postRetargetChain;
 
     const orphan = REORG_AND_RETARGET_CHAIN.orphan_437478;
-    const pre = utils.concatenateHeadersHexes(PRE_CHAIN)
-    const post = utils.concatenateHeadersHexes(POST_CHAIN)
-    const shortPost = utils.concatenateHeadersHexes(POST_CHAIN.slice(0, POST_CHAIN.length - 2))
+    const pre = utils.concatenateHeadersHexes(PRE_CHAIN);
+    const post = utils.concatenateHeadersHexes(POST_CHAIN);
+    const shortPost = utils.concatenateHeadersHexes(POST_CHAIN.slice(0, POST_CHAIN.length - 2));
     const postWithOrphan = utils.concatenateHexStrings([shortPost, orphan.hex]);
 
     before(async () => {
@@ -539,9 +539,9 @@ contract('Relay', async () => {
     const POST_CHAIN = REORG_AND_RETARGET_CHAIN.postRetargetChain;
 
     const orphan = REORG_AND_RETARGET_CHAIN.orphan_437478;
-    const pre = utils.concatenateHeadersHexes(PRE_CHAIN)
-    const post = utils.concatenateHeadersHexes(POST_CHAIN)
-    const shortPost = utils.concatenateHeadersHexes(POST_CHAIN.slice(0, POST_CHAIN.length - 2))
+    const pre = utils.concatenateHeadersHexes(PRE_CHAIN);
+    const post = utils.concatenateHeadersHexes(POST_CHAIN);
+    const shortPost = utils.concatenateHeadersHexes(POST_CHAIN.slice(0, POST_CHAIN.length - 2));
     const postWithOrphan = utils.concatenateHexStrings([shortPost, orphan.hex]);
 
     before(async () => {
@@ -620,9 +620,9 @@ contract('Relay', async () => {
     const POST_CHAIN = REORG_AND_RETARGET_CHAIN.postRetargetChain;
 
     const orphan = REORG_AND_RETARGET_CHAIN.orphan_437478;
-    const pre = utils.concatenateHeadersHexes(PRE_CHAIN)
-    const post = utils.concatenateHeadersHexes(POST_CHAIN)
-    const shortPost = utils.concatenateHeadersHexes(POST_CHAIN.slice(0, POST_CHAIN.length - 2))
+    const pre = utils.concatenateHeadersHexes(PRE_CHAIN);
+    const post = utils.concatenateHeadersHexes(POST_CHAIN);
+    const shortPost = utils.concatenateHeadersHexes(POST_CHAIN.slice(0, POST_CHAIN.length - 2));
     const postWithOrphan = utils.concatenateHexStrings([shortPost, orphan.hex]);
 
     before(async () => {
