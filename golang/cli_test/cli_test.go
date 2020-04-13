@@ -36,10 +36,10 @@ func (suite *UtilsSuite) TestRelayCLIIsAncestor() {
 
 	// define param values
 	fooAddr := f.KeyAddress(keyFoo)
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-	validAncestor := hex.EncodeToString(genesisHeaders[1].HashLE[:])
-	invalidAncestor := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-	digest := hex.EncodeToString(newDiffHeaders[1].HashLE[:])
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].Hash[:])
+	validAncestor := hex.EncodeToString(genesisHeaders[1].Hash[:])
+	invalidAncestor := hex.EncodeToString(genesisHeaders[0].Hash[:])
+	digest := hex.EncodeToString(newDiffHeaders[1].Hash[:])
 	limit := "5"
 
 	// must ingest headers in order to perform query
@@ -81,7 +81,7 @@ func (suite *UtilsSuite) TestRelayCLIGetRelayGenesis() {
 	actual := genesisRelay.Res
 
 	// Condition
-	expected := genesisHeaders[1].HashLE
+	expected := genesisHeaders[1].Hash
 	suite.Equal(expected, actual)
 
 	//Cleanup
@@ -105,7 +105,7 @@ func (suite *UtilsSuite) TestRelayCLIGetLastReorgLCA() {
 	actual := lastReorgLCA.Res
 
 	// Condition
-	expected := genesisHeaders[1].HashLE
+	expected := genesisHeaders[1].Hash
 	suite.Equal(expected, actual)
 
 	//Cleanup
@@ -129,7 +129,7 @@ func (suite *UtilsSuite) TestRelayCLIGetBestDigest() {
 	actual := bestDigest.Res
 
 	// Condition
-	expected := genesisHeaders[1].HashLE
+	expected := genesisHeaders[1].Hash
 	suite.Equal(expected, actual)
 
 	//Cleanup
@@ -152,8 +152,8 @@ func (suite *UtilsSuite) TestRelayCLIQueryFindAncestor() {
 
 	// define paramater values
 	fooAddr := f.KeyAddress(keyFoo)
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-	digest := hex.EncodeToString(newDiffHeaders[1].HashLE[:])
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].Hash[:])
+	digest := hex.EncodeToString(newDiffHeaders[1].Hash[:])
 	invalidOffset := "5"
 	validOffset := "1"
 
@@ -168,7 +168,7 @@ func (suite *UtilsSuite) TestRelayCLIQueryFindAncestor() {
 	// Require findancestor returns ancestor if valid query
 	findancestor := f.QueryFindAncestor(digest, validOffset)
 	actual := hex.EncodeToString(findancestor.Res[:])
-	expected := hex.EncodeToString(newDiffHeaders[0].HashLE[:])
+	expected := hex.EncodeToString(newDiffHeaders[0].Hash[:])
 	suite.Equal(expected, actual)
 }
 
@@ -188,14 +188,14 @@ func (suite *UtilsSuite) TestRelayCLIIsMostRecentCommonAncestor() {
 
 	// must ingest headers in order to perform query
 	fooAddr := f.KeyAddress(keyFoo)
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].Hash[:])
 	success, _, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
 	suite.True(success, stderr)
 
 	//perform query
-	ancestor := hex.EncodeToString(newDiffHeaders[0].HashLE[:])
-	left := hex.EncodeToString(newDiffHeaders[0].HashLE[:])
-	right := hex.EncodeToString(newDiffHeaders[1].HashLE[:])
+	ancestor := hex.EncodeToString(newDiffHeaders[0].Hash[:])
+	left := hex.EncodeToString(newDiffHeaders[0].Hash[:])
+	right := hex.EncodeToString(newDiffHeaders[1].Hash[:])
 	limit := "3"
 	commonancestor := f.QueryIsMostRecentCommonAncestor(ancestor, left, right, limit)
 	actual := commonancestor.Res
@@ -205,7 +205,7 @@ func (suite *UtilsSuite) TestRelayCLIIsMostRecentCommonAncestor() {
 	suite.Equal(expected, actual)
 
 	// False Condition
-	invalidAncestor := hex.EncodeToString(newDiffHeaders[1].HashLE[:])
+	invalidAncestor := hex.EncodeToString(newDiffHeaders[1].Hash[:])
 	commonancestor = f.QueryIsMostRecentCommonAncestor(invalidAncestor, left, right, limit)
 	expected = false
 	actual = commonancestor.Res
@@ -231,11 +231,11 @@ func (suite *UtilsSuite) TestRelayCLIQueryHeaviestFromAncestor() {
 
 	// define paramteer values
 	fooAddr := f.KeyAddress(keyFoo)
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-	ancestor := hex.EncodeToString(genesisHeaders[1].HashLE[:])
-	currentBest := hex.EncodeToString(genesisHeaders[1].HashLE[:])
-	validNewBest := hex.EncodeToString(newDiffHeaders[1].HashLE[:])
-	invalidNewBest := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].Hash[:])
+	ancestor := hex.EncodeToString(genesisHeaders[1].Hash[:])
+	currentBest := hex.EncodeToString(genesisHeaders[1].Hash[:])
+	validNewBest := hex.EncodeToString(newDiffHeaders[1].Hash[:])
+	invalidNewBest := hex.EncodeToString(genesisHeaders[0].Hash[:])
 	limit := "10"
 
 	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
@@ -266,7 +266,7 @@ func (suite *UtilsSuite) TestRelayCLIQueryCheckProof() {
 		suite.NoError(err)
 	}()
 	fooAddr := f.KeyAddress(keyFoo)
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].Hash[:])
 
 	// Ingest headers
 	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
@@ -306,7 +306,7 @@ func (suite *UtilsSuite) TestRelayCLITXIngestHeaders() {
 
 	// define parameter valuse
 	fooAddr := f.KeyAddress(keyFoo)
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].Hash[:])
 
 	// Require IngestDiffChange fails with invalid headers
 	success, stdout, stderr := f.TxIngestHeaders(fooAddr, "2_ingest_headers.json", "--inputfile -y")
@@ -342,7 +342,7 @@ func (suite *UtilsSuite) TestRelayCLITXIngestDiffChange() {
 
 	// Define parameter values
 	fooAddr := f.KeyAddress(keyFoo)
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].Hash[:])
 
 	// Require IngestDiffChange fails with invalid headers
 	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "2_ingest_headers.json", "--inputfile -y")
@@ -372,7 +372,7 @@ func (suite *UtilsSuite) TestRelayCLITXProvideProof() {
 
 	// Define parameter values
 	fooAddr := f.KeyAddress(keyFoo)
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].Hash[:])
 
 	// Ingest Headers w/ Diff Change
 	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
@@ -423,8 +423,8 @@ func (suite *UtilsSuite) TestRelayCLITxMarkNewHeaviest() {
 
 	// Define parameter values
 	fooAddr := f.KeyAddress(keyFoo)
-	prevEpochStart := hex.EncodeToString(genesisHeaders[0].HashLE[:])
-	ancestor := hex.EncodeToString(genesisHeaders[1].HashLE[:])
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].Hash[:])
+	ancestor := hex.EncodeToString(genesisHeaders[1].Hash[:])
 	bestKnown := hex.EncodeToString(genesisHeaders[1].Raw[:])
 	invalidBestKnown := hex.EncodeToString(newHeaders[1].Raw[:])
 	newBest := hex.EncodeToString(newDiffHeaders[1].Raw[:])
@@ -448,7 +448,7 @@ func (suite *UtilsSuite) TestRelayCLITxMarkNewHeaviest() {
 	bestDigest := f.QueryGetBestDigest(fooAddr)
 
 	// Condition
-	expected := hex.EncodeToString(newDiffHeaders[1].HashLE[:])
+	expected := hex.EncodeToString(newDiffHeaders[1].Hash[:])
 	actual := hex.EncodeToString(bestDigest.Res[:])
 	suite.Equal(expected, actual)
 

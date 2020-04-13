@@ -3,14 +3,15 @@ package clitest
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/require"
-	app "github.com/summa-tx/relays/golang"
-	rtypes "github.com/summa-tx/relays/golang/x/relay/types"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	app "github.com/summa-tx/relays/golang"
+	rtypes "github.com/summa-tx/relays/golang/x/relay/types"
 
 	clientkeys "github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
@@ -239,7 +240,7 @@ func (f *Fixtures) GenTx(name string, flags ...string) {
 // CLI Queries ///////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 
-// QueryGetRelayGenesis returns the relay genesis block HashLE
+// QueryGetRelayGenesis returns the relay genesis block Hash
 func (f *Fixtures) QueryGetRelayGenesis(delAddr sdk.AccAddress) rtypes.QueryResGetRelayGenesis {
 	cmd := fmt.Sprintf("%s query relay getrelaygenesis %s %s", f.RelaycliBinary, delAddr, f.Flags())
 	res, errStr := tests.ExecuteT(f.T, cmd, "")
