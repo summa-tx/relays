@@ -3,16 +3,26 @@ package relay
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
+	"strings"
 )
 
 func getGenesisHeaders() (BitcoinHeader, []BitcoinHeader) {
-	headerJSON, jsonErr := ioutil.ReadFile("scripts/json_data/genesis.json")
+	// get path to root directory
+	path, err := os.Getwd()
+	if err != nil {
+		panic(err.Error())
+	}
+	// if running this function from cli_test directory do not include it in golang path
+	path = strings.TrimSuffix(path, "/cli_test")
+
+	headerJSON, jsonErr := ioutil.ReadFile("/" + path + "/scripts/json_data/genesis.json")
 	if jsonErr != nil {
 		panic("could not retreive data in gen_state: " + jsonErr.Error())
 	}
 
 	var genesisHeaders []BitcoinHeader
-	err := json.Unmarshal([]byte(headerJSON), &genesisHeaders)
+	err = json.Unmarshal([]byte(headerJSON), &genesisHeaders)
 	if err != nil {
 		panic("bad json in gen_state: " + err.Error())
 	}

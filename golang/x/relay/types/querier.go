@@ -96,7 +96,6 @@ func (r QueryResGetBestDigest) String() string {
 	return fmt.Sprintf("%s\n", digest)
 }
 
-
 // QueryParamsFindAncestor represents the parameters for a FindAncestor query
 type QueryParamsFindAncestor struct {
 	DigestLE Hash256Digest `json:"digestLE"`
