@@ -43,5 +43,8 @@ reducing calldata gas costs.
 
 ### Project Notes
 
-The Python relay mainter in `./maintainer/` is not thoroughly tested, and does not
-yet support the cosmos-sdk relay.
+Complete relays are available in Solidity, for EVM-based chains (like Ethereum)
+and Golang using the cosmos-sdk framework.
+
+The Python relay mainter in `./maintainer/` is not thoroughly tested, and does
+not yet support the cosmos-sdk relay.
