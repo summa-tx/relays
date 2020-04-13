@@ -195,7 +195,7 @@ func NewRelayApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 	app.relayKeeper = relay.NewKeeper(
 		keys[relay.StoreKey],
 		app.cdc,
-		true, // TODO: pass this in somehow
+		true, // Mainnet // TODO: pass this in somehow
 	)
 
 	app.mm = module.NewManager(

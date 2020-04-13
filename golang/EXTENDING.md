@@ -5,7 +5,24 @@ queries. Generally, this module is feature-complete, and should not be
 extended. The main exception is the WIP hooks system on proof validation. All
 other functionality should likely be put into a separate module.
 
-In order to extend this module, follow these steps: 
+### Integrating with other modules
+
+An instance of `relay.Keeper` should be added to your app in `app.go`. It can
+be instantiated as follows:
+
+```
+app.relayKeeper = relay.NewKeeper(
+  keys[relay.StoreKey],
+  app.cdc,
+  true, // Mainnet // TODO: pass this in somehow
+)
+```
+
+After that, the relay can be accessed via the Keeper's public interface.
+
+### Extending this module
+
+In order to extend this module, follow these steps:
 
 ## How to add a view function (queries)
 1. Add necessary getter(s) in `x/relay/keeper/keeper.go`
