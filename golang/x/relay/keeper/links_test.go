@@ -9,10 +9,10 @@ func (s *KeeperSuite) TestGetLink() {
 
 	// stores and retrieves link
 	s.Keeper.setLink(s.Context, child)
-	hasHeader := s.Keeper.hasLink(s.Context, child.HashLE)
+	hasHeader := s.Keeper.hasLink(s.Context, child.Hash)
 	s.Equal(true, hasHeader)
-	getHeader := s.Keeper.getLink(s.Context, child.HashLE)
-	s.Equal(parent.HashLE, getHeader)
+	getHeader := s.Keeper.getLink(s.Context, child.Hash)
+	s.Equal(parent.Hash, getHeader)
 }
 
 func (s *KeeperSuite) TestFindAncestor() {

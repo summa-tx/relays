@@ -53,9 +53,9 @@ func (k Keeper) SetGenesisState(ctx sdk.Context, genesis, epochStart btcspv.Bitc
 	k.ingestHeader(ctx, genesis)
 	k.ingestHeader(ctx, epochStart)
 
-	k.setRelayGenesis(ctx, genesis.HashLE)
-	k.setBestKnownDigest(ctx, genesis.HashLE)
-	k.setLastReorgLCA(ctx, genesis.HashLE)
+	k.setRelayGenesis(ctx, genesis.Hash)
+	k.setBestKnownDigest(ctx, genesis.Hash)
+	k.setLastReorgLCA(ctx, genesis.Hash)
 
 	// this will only fail if the genesis state is corrupt
 	_ = k.setCurrentEpochDifficulty(ctx, btcspv.ExtractDifficulty(genesis.Raw))

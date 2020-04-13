@@ -9,7 +9,7 @@ import (
 
 func (s *KeeperSuite) TestEmitReorg() {
 	headers := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers
-	s.Keeper.emitReorg(s.Context, headers[0].HashLE, headers[1].HashLE, headers[2].HashLE)
+	s.Keeper.emitReorg(s.Context, headers[0].Hash, headers[1].Hash, headers[2].Hash)
 
 	events := s.Context.EventManager().Events()
 	e := events[0]
@@ -28,14 +28,14 @@ func (s *KeeperSuite) TestGetDigestByStoreKey() {
 }
 
 func (s *KeeperSuite) TestGetBestKnownDigest() {
-	digest := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers[0].HashLE
+	digest := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers[0].Hash
 	s.Keeper.setBestKnownDigest(s.Context, digest)
 	bestKnown, _ := s.Keeper.GetBestKnownDigest(s.Context)
 	s.Equal(digest, bestKnown)
 }
 
 func (s *KeeperSuite) TestGetLastReorgLCA() {
-	digest := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers[0].HashLE
+	digest := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers[0].Hash
 	s.Keeper.setLastReorgLCA(s.Context, digest)
 	lca, _ := s.Keeper.GetLastReorgLCA(s.Context)
 	s.Equal(digest, lca)
@@ -55,9 +55,9 @@ func (s *KeeperSuite) TestIsMostRecentCommonAncestor() {
 
 	err = s.Keeper.IngestHeaderChain(s.Context, pre)
 	s.SDKNil(err)
-	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, post)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.Hash, post)
 	s.SDKNil(err)
-	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.Hash, postWithOrphan)
 	s.SDKNil(err)
 
 	for i := range tv.TestCases {
@@ -116,7 +116,7 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 
 	err = s.Keeper.MarkNewHeaviest(
 		s.Context,
-		tv.Genesis.HashLE,
+		tv.Genesis.Hash,
 		pre[0].Raw,
 		pre[1].Raw,
 		10,
@@ -125,15 +125,15 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 
 	err = s.Keeper.IngestHeaderChain(s.Context, pre)
 	s.SDKNil(err)
-	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, post)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.Hash, post)
 	s.SDKNil(err)
-	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.Hash, postWithOrphan)
 	s.SDKNil(err)
 
 	// errors if the ancestor is not the heaviest common ancestor
 	err = s.Keeper.MarkNewHeaviest(
 		s.Context,
-		tv.Genesis.HashLE,
+		tv.Genesis.Hash,
 		tv.Genesis.Raw,
 		pre[0].Raw,
 		10,
@@ -141,7 +141,7 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 	s.SDKNil(err)
 	err = s.Keeper.MarkNewHeaviest(
 		s.Context,
-		tv.Genesis.HashLE,
+		tv.Genesis.Hash,
 		pre[0].Raw,
 		pre[1].Raw,
 		10,

@@ -15,7 +15,7 @@ func (s *KeeperSuite) TestGetConfs() {
 	s.Equal(uint32(0), confs)
 
 	// errors if Best Known Digest header is not found
-	s.Keeper.setBestKnownDigest(s.Context, bestKnown.HashLE)
+	s.Keeper.setBestKnownDigest(s.Context, bestKnown.Hash)
 
 	confs, err = s.Keeper.getConfs(s.Context, header)
 	s.Equal(sdk.CodeType(103), err.Code())
@@ -74,7 +74,7 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	err := s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
 	s.Equal(sdk.CodeType(105), err.Code())
 
-	s.Keeper.setBestKnownDigest(s.Context, validProof.BestKnown.HashLE)
+	s.Keeper.setBestKnownDigest(s.Context, validProof.BestKnown.Hash)
 
 	// errors if checkRequest errors
 	// deactivate request
