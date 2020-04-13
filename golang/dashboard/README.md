@@ -24,11 +24,41 @@ The dashboard displays the Cosmos Relay chain data and verifies it against an ex
 
 ## Getting Started
 
-### Cosmos Relay
+### Start Cosmos Relay
 
-The dashboard connects with a locally run `relay`. Follow [these instructions](https://github.com/summa-tx/relays/blob/master/golang/scripts/README.md) to build and run the the chain.
+The dashboard connects with a locally run `relay`.
 
-Once the chain is up, start the `REST` routes in a separate terminal. This will make the relay application available on `http://localhost:1317`.
+1. If you don't have Go installed, install Go.
+2. If you haven't used the `go mod` before, add this to your environment:
+
+```bash
+$ mkdir -p $HOME/go/bin
+$ echo "export GOBIN=\$GOPATH/bin" >> ~/.bash_profile
+$ echo "export PATH=\$PATH:\$GOBIN" >> ~/.bash_profile
+$ source ~/.bash_profile
+```
+
+3. Make sure you are in the `relays/golang` directory and install the app into your $GOBIN
+
+```bash
+$ make install
+```
+
+4. Initialize a new chain for testing
+
+```bash
+$ make init
+```
+
+5. Run the REST routes `rest-server`. This will make the relay application routes available on `http://localhost:1317`. In another terminal window:
+
+```bash
+$ relaycli rest-server --chain-id relay
+```
+
+All routes are at `/relay/${route}`
+
+[Relay Chain Instructions](https://github.com/summa-tx/relays/blob/master/golang/scripts/README.md).
 
 ### Dashboard
 
