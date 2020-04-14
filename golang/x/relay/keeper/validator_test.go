@@ -71,7 +71,7 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	s.Nil(requestErr)
 
 	// errors if getConfs fails
-	err := s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
+	_, err := s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
 	s.Equal(sdk.CodeType(105), err.Code())
 
 	s.Keeper.setBestKnownDigest(s.Context, validProof.BestKnown.Hash)
@@ -81,7 +81,7 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	activeErr := s.Keeper.setRequestState(s.Context, types.RequestID{}, false)
 	s.SDKNil(activeErr)
 
-	err = s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
+	_, err = s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
 	s.Equal(sdk.CodeType(606), err.Code())
 
 	// reactivate request
@@ -89,7 +89,7 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	s.SDKNil(activeErr)
 
 	for i := range tc {
-		err := s.Keeper.checkRequestsFilled(s.Context, tc[i].FilledRequests)
+		_, err := s.Keeper.checkRequestsFilled(s.Context, tc[i].FilledRequests)
 		if tc[i].Error != 0 {
 			s.Equal(sdk.CodeType(tc[i].Error), err.Code())
 		} else {
@@ -103,6 +103,6 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 
 	copiedRequest := tc[0].FilledRequests
 	copiedRequest.Filled[0].ID = types.RequestID{0, 0, 0, 0, 0, 0, 0, 1}
-	err = s.Keeper.checkRequestsFilled(s.Context, copiedRequest)
+	_, err = s.Keeper.checkRequestsFilled(s.Context, copiedRequest)
 	s.Equal(sdk.CodeType(611), err.Code())
 }

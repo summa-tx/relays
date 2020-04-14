@@ -10,7 +10,7 @@ import (
 
 // ProofHandler is an interface to which the keeper dispatches valid proofs
 type ProofHandler interface {
-	HandleValidProof(ctx sdk.Context, filled FilledRequests)
+	HandleValidProof(ctx sdk.Context, filled FilledRequests, requests []ProofRequest)
 }
 
 // Hash256Digest 32-byte double-sha2 digest
@@ -63,7 +63,8 @@ func Hash256DigestFromHex(hexStr string) (Hash256Digest, sdk.Error) {
 type NullHandler struct{}
 
 // HandleValidProof handles a valid proof (by doing nothing)
-func (n NullHandler) HandleValidProof(ctx sdk.Context, filled FilledRequests) {}
+func (n NullHandler) HandleValidProof(ctx sdk.Context, filled FilledRequests, requests []ProofRequest) {
+}
 
 // NewNullHandler instantiates a new null handler
 func NewNullHandler() NullHandler {

@@ -49,28 +49,29 @@ func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof) sdk.Error {
 	return nil
 }
 
-// checkRequestsFilled validates a filledRequest
-func (k Keeper) checkRequestsFilled(ctx sdk.Context, filledRequests types.FilledRequests) sdk.Error {
+func (k Keeper) checkRequestsFilled(ctx sdk.Context, filledRequests types.FilledRequests) ([]types.ProofRequest, sdk.Error) {
 	// Validate Proof once
 	err := k.validateProof(ctx, filledRequests.Proof)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	confs, confsErr := k.getConfs(ctx, filledRequests.Proof.ConfirmingHeader)
 	if confsErr != nil {
-		return confsErr
+		return nil, confsErr
 	}
+
+	var filled []types.ProofRequest
 
 	for i := range filledRequests.Filled {
 		// get request
 		request, getErr := k.getRequest(ctx, filledRequests.Filled[i].ID)
 		if getErr != nil {
-			return getErr
+			return nil, getErr
 		}
 		// check confirmations
 		if confs < uint32(request.NumConfs) {
-			return types.ErrNotEnoughConfs(types.DefaultCodespace)
+			return nil, types.ErrNotEnoughConfs(types.DefaultCodespace)
 		}
 
 		// check request
@@ -82,10 +83,12 @@ func (k Keeper) checkRequestsFilled(ctx sdk.Context, filledRequests types.Filled
 			filledRequests.Proof.Vout,
 			filledRequests.Filled[i].ID)
 		if err != nil {
-			return err
+			return nil, err
 		}
+
+		filled = append(filled, request)
 	}
 
 	k.emitProofProvided(ctx, filledRequests)
-	return nil
+	return filled, nil
 }
