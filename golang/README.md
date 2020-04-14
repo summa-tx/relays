@@ -83,3 +83,24 @@ descriptions in the CLI.
 | MarkNewHeaviest | Mark a new best-known chain tip |
 | NewRequest | Register a new SPV Proof request |
 | ProvideProof | Provide a proof that satisfies 1 or more requests |
+
+### Keeper
+High-level overview of the project structure within the `keeper` file.
+
+#### Keeper.go
+Instantiates a `keeper` (what handles interaction with the store and contains most of the core functionality of a module). It also handles the genesis state for the relay.
+
+#### Headers.go
+Handles the storage and validation of Bitcoin Headers and Header Chains
+
+#### Chain.go
+
+#### Links.go
+
+#### Handler.go
+
+#### Querier.go
+
+#### Requests.go
+
+#### Validator.go

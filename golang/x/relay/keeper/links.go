@@ -46,7 +46,7 @@ func (k Keeper) FindAncestor(ctx sdk.Context, digestLE types.Hash256Digest, offs
 	return current, nil
 }
 
-// IsAncestor checks whether
+// IsAncestor checks if there is a link between an ancestor and header
 func (k Keeper) IsAncestor(ctx sdk.Context, digestLE, ancestor types.Hash256Digest, limit uint32) bool {
 	current := digestLE
 

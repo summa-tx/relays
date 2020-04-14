@@ -109,6 +109,8 @@ func (k Keeper) getRequest(ctx sdk.Context, id types.RequestID) (types.ProofRequ
 	return request, nil
 }
 
+// incrementID increments the id used to store a request,
+// ID must be in bytes
 func (k Keeper) incrementID(ctx sdk.Context) sdk.Error {
 	store := k.getRequestStore(ctx)
 	// get id
@@ -142,6 +144,7 @@ func (k Keeper) getNextID(ctx sdk.Context) (types.RequestID, sdk.Error) {
 	return newID, nil
 }
 
+// checkRequests validates a request
 func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint32, vin []byte, vout []byte, requestID types.RequestID) sdk.Error {
 	if !btcspv.ValidateVin(vin) {
 		return types.ErrInvalidVin(types.DefaultCodespace)

@@ -16,6 +16,7 @@ func (k Keeper) emitProofProvided(
 	ctx.EventManager().EmitEvent(types.NewProofProvidedEvent(filled.Proof.TxID, filledIDs))
 }
 
+// getConfs returns the number of confirmations of any given header
 func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, sdk.Error) {
 	bestKnown, err := k.GetBestKnownDigest(ctx)
 	if err != nil {
@@ -28,6 +29,7 @@ func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, s
 	return bestKnownHeader.Height - header.Height, nil
 }
 
+// validateProof validates an SPV Proof and checks that it is stored correctly
 func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof) sdk.Error {
 	// If it is not valid, it will return an error
 	_, err := proof.Validate()
@@ -47,6 +49,7 @@ func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof) sdk.Error {
 	return nil
 }
 
+// checkRequestsFilled validates a filledRequest
 func (k Keeper) checkRequestsFilled(ctx sdk.Context, filledRequests types.FilledRequests) sdk.Error {
 	// Validate Proof once
 	err := k.validateProof(ctx, filledRequests.Proof)
