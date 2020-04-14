@@ -88,19 +88,25 @@ descriptions in the CLI.
 High-level overview of the project structure within the `keeper` file.
 
 #### Keeper.go
-Instantiates a `keeper` (what handles interaction with the store and contains most of the core functionality of a module). It also handles the genesis state for the relay.
+Instantiates a `keeper` (what handles interaction with the store and contains most of the core functionality of the module). It also handles the genesis state for the relay.
 
 #### Headers.go
-Handles the storage and validation of Bitcoin Headers and Header Chains
+Handles the storage and validation of Bitcoin Headers and Header Chains.
 
 #### Chain.go
+Checks and updates information about the chain.  Provides functionality to ensure we are using the heaviest chain.
 
 #### Links.go
-
-#### Handler.go
-
-#### Querier.go
+Sets and retrieves data about each link in the chain.  This is most commonly used to check information about ancestors.
 
 #### Requests.go
+Stores, retrieves, and validates requests.
 
 #### Validator.go
+Contains validation functions.  Currently, this can validate SPV Proofs and Requests.
+
+#### Handler.go
+Handles messages.
+
+#### Querier.go
+Handles queries
