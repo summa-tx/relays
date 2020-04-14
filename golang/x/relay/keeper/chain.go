@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,7 +22,7 @@ func (k Keeper) getDigestByStoreKey(ctx sdk.Context, key string) (types.Hash256D
 
 	digest, err := btcspv.NewHash256Digest(result)
 	if err != nil {
-		return types.Hash256Digest{}, types.ErrBadHash256Digest(types.DefaultCodespace)
+		return types.Hash256Digest{}, types.ErrBadHash256Digest(types.DefaultCodespace, key)
 	}
 	return digest, nil
 }
@@ -92,19 +93,25 @@ func (k Keeper) IsMostRecentCommonAncestor(ctx sdk.Context, ancestor, left, righ
 func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, newBest types.Hash256Digest, limit uint32) (types.Hash256Digest, sdk.Error) {
 	ancestorBlock, err := k.GetHeader(ctx, ancestor)
 	if err != nil {
-		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "ancestor", ancestor[:])
 	}
 	leftBlock, err := k.GetHeader(ctx, currentBest)
 	if err != nil {
-		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "currentBest", currentBest[:])
 	}
 	rightBlock, err := k.GetHeader(ctx, newBest)
 	if err != nil {
-		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "newBest", newBest[:])
 	}
 
-	if leftBlock.Height < ancestorBlock.Height || rightBlock.Height < ancestorBlock.Height {
-		return types.Hash256Digest{}, types.ErrBadHeight(types.DefaultCodespace)
+	if leftBlock.Height < ancestorBlock.Height {
+		errDetails := fmt.Sprintf("currentBest %x is below the ancestor height", currentBest)
+		return types.Hash256Digest{}, types.ErrBadHeight(types.DefaultCodespace, errDetails)
+	}
+
+	if rightBlock.Height < ancestorBlock.Height {
+		errDetails := fmt.Sprintf("newBest %x is below the ancestor height", newBest)
+		return types.Hash256Digest{}, types.ErrBadHeight(types.DefaultCodespace, errDetails)
 	}
 
 	nextPeriodStartHeight := ancestorBlock.Height + 2016 - (ancestorBlock.Height % 2016)
@@ -150,16 +157,16 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 	currentBestDigest := btcspv.Hash256(currentBest[:])
 
 	if !k.HasHeader(ctx, newBestDigest) {
-		return types.ErrUnknownBlock(types.DefaultCodespace)
+		return types.ErrUnknownBlock(types.DefaultCodespace, "newBest", newBest[:])
 	}
 
 	knownBestDigest, err := k.GetBestKnownDigest(ctx)
 	if err != nil || currentBestDigest != knownBestDigest {
-		return types.ErrNotBestKnown(types.DefaultCodespace)
+		return types.ErrNotBestKnown(types.DefaultCodespace, currentBest[:], knownBestDigest[:])
 	}
 
 	if !k.IsMostRecentCommonAncestor(ctx, ancestor, knownBestDigest, newBestDigest, limit) {
-		return types.ErrNotHeaviestAncestor(types.DefaultCodespace)
+		return types.ErrNotHeaviestAncestor(types.DefaultCodespace, ancestor)
 	}
 
 	better, err := k.HeaviestFromAncestor(ctx, ancestor, knownBestDigest, newBestDigest, limit)
@@ -168,7 +175,7 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 	}
 
 	if newBestDigest != better {
-		return types.ErrNotHeavier(types.DefaultCodespace)
+		return types.ErrNotHeavier(types.DefaultCodespace, newBestDigest[:], better[:])
 	}
 
 	// get newBestHeader

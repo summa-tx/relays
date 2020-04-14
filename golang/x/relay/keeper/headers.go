@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
@@ -28,7 +29,7 @@ func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) (types.
 	store := k.getHeaderStore(ctx)
 
 	if !store.Has(digestLE[:]) {
-		return types.BitcoinHeader{}, types.ErrUnknownBlock(types.DefaultCodespace)
+		return types.BitcoinHeader{}, types.ErrUnknownBlock(types.DefaultCodespace, "digest", digestLE[:])
 	}
 
 	buf := store.Get(digestLE[:])
@@ -147,13 +148,14 @@ func validateHeaderChain(anchor types.BitcoinHeader, headers []types.BitcoinHead
 
 		// ensure height changes as expected
 		if prev.Height != header.Height-1 {
-			return types.ErrBadHeight(types.DefaultCodespace)
+			errDetails := fmt.Sprintf("Height mismatch between blocks %x and %x", prev.Hash, header.Hash)
+			return types.ErrBadHeight(types.DefaultCodespace, errDetails)
 		}
 
 		// ensure expectedTarget doesn't change
 		// it's allowed to change if the relay is in testnet mode
 		if isMainnet && !btcspv.ExtractTarget(header.Raw).Equal(expectedTarget) {
-			return types.ErrUnexpectedRetarget(types.DefaultCodespace)
+			return types.ErrUnexpectedRetarget(types.DefaultCodespace, header.Raw)
 		}
 
 		// copy header raw into a bytearray

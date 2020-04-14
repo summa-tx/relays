@@ -44,7 +44,7 @@ func RequestIDFromString(s string) (RequestID, error) {
 	if s[:2] == "0x" {
 		idBytes, err = hex.DecodeString(s[2:])
 		if err != nil {
-			return RequestID{}, ErrBadHex(DefaultCodespace)
+			return RequestID{}, ErrBadHex(DefaultCodespace, s)
 		}
 	} else {
 		id, parseErr := strconv.ParseUint(s, 10, 64)
