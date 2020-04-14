@@ -225,7 +225,7 @@ contract Relay is IRelay {
         // Don't update if this is a deep past epoch
         uint256 _oldDiff = _oldPeriodStartHeader.extractDifficulty();
         if (prevEpochDiff != _oldDiff && _endHeight > _findHeight(bestKnownDigest).sub(2016)) {
-          prevEpochDiff = _oldDiff;
+            prevEpochDiff = _oldDiff;
         }
 
         // Pass all but the first through to be added
@@ -338,7 +338,7 @@ contract Relay is IRelay {
 
         uint256 _newDiff = _newBest.extractDifficulty();
         if (_newDiff != currentEpochDiff) {
-          currentEpochDiff = _newDiff;
+            currentEpochDiff = _newDiff;
         }
 
         emit Reorg(
@@ -481,13 +481,13 @@ contract Relay is IRelay {
     /// @dev        This is updated when a new heavist header has a new diff
     /// @return     The difficulty of the bestKnownDigest
     function getCurrentEpochDifficulty() external view returns (uint256) {
-      return currentEpochDiff;
+        return currentEpochDiff;
     }
     /// @notice     Getter for prevEpochDiff
     /// @dev        This is updated when a difficulty change is accepted
     /// @return     The difficulty of the previous epoch
     function getPrevEpochDifficulty() external view returns (uint256) {
-      return prevEpochDiff;
+        return prevEpochDiff;
     }
 
     /// @notice     Getter for relayGenesis

@@ -139,36 +139,36 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
     ) internal returns (uint256) {
         uint256 _requestID = nextID;
         nextID = nextID + 1;
+        bytes memory pays = _pays;
 
-        uint256 _spendsLen = _spends.length;
-        require(_spendsLen == 36 || _spendsLen == 0, "Not a valid UTXO");
+        require(_spends.length == 36 || _spends.length == 0, "Not a valid UTXO");
 
         /* NB: This will fail if the output is not p2pkh, p2sh, p2wpkh, or p2wsh*/
-        uint256 _paysLen = _pays.length;
+        uint256 _paysLen = pays.length;
 
         // if it's not length-prefixed, length-prefix it
-        if (_paysLen > 0 && uint8(_pays[0]) != _paysLen - 1) {
-            _pays = abi.encodePacked(uint8(_paysLen), _pays);
+        if (_paysLen > 0 && uint8(pays[0]) != _paysLen - 1) {
+            pays = abi.encodePacked(uint8(_paysLen), pays);
             _paysLen += 1; // update the length because we made it longer
         }
 
-        bytes memory _p = abi.encodePacked(bytes8(0), _pays);
+        bytes memory _p = abi.encodePacked(bytes8(0), pays);
         require(
             _paysLen == 0 ||  // no request OR
             _p.extractHash().length > 0 || // standard output OR
             _p.extractOpReturnData().length > 0, // OP_RETURN output
             "Not a standard output type");
 
-        require(_spendsLen > 0 || _paysLen > 0, "No request specified");
+        require(_spends.length > 0 || _paysLen > 0, "No request specified");
 
         ProofRequest storage _req = requests[_requestID];
         _req.owner = msg.sender;
 
-        if (_spendsLen > 0) {
+        if (_spends.length > 0) {
             _req.spends = keccak256(_spends);
         }
         if (_paysLen > 0) {
-            _req.pays = keccak256(_pays);
+            _req.pays = keccak256(pays);
         }
         if (_paysValue > 0) {
             _req.paysValue = _paysValue;
@@ -182,7 +182,7 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         _req.consumer = _consumer;
         _req.state = RequestStates.ACTIVE;
 
-        emit NewProofRequest(msg.sender, _requestID, _paysValue, _spends, _pays);
+        emit NewProofRequest(msg.sender, _requestID, _paysValue, _spends, pays);
 
         return _requestID;
     }
