@@ -83,7 +83,9 @@ func handleMsgProvideProof(ctx sdk.Context, keeper Keeper, msg types.MsgProvideP
 		return err.Result()
 	}
 
-	// TODO: Add "hooks"
+	// Dispatch the proof to the keeper's proof handler
+	keeper.ProofHandler.HandleValidProof(ctx, msg.Filled)
+
 	return sdk.Result{
 		Events: ctx.EventManager().Events(),
 	}
