@@ -7,8 +7,9 @@ matrix:
       before_script:
         - cd golang
         - curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.20.0
-        - make
+        - make install
       script:
+        - make lint
         - go test ./x/relay/keeper
         - go test ./x/relay/types
         - go test -mod=readonly  `go list ./cli_test/...`
@@ -19,6 +20,6 @@ matrix:
         - cd solidity
         - npm install -g truffle
         - npm install
-        - npm run lint
       script:
+        - npm run lint
         - npm run test
