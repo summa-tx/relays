@@ -25,7 +25,7 @@ contract DummyConsumer is ISPVConsumer {
     ) external {
         emit Consumed(_txid, _requestID, gasleft());
         if (broken) {
-            revert('BORKED');
+            revert("BORKED");
         }
     }
 
@@ -107,14 +107,14 @@ contract DummyOnDemandSPV is OnDemandSPV {
     }
 
     function _getConfs(bytes32 _header) internal view returns (uint8){
-      if (_header == bytes32(0)) {
-        return OnDemandSPV._getConfs(lastReorgCommonAncestor);
-      }
-      return 8;
+        if (_header == bytes32(0)) {
+            return OnDemandSPV._getConfs(lastReorgCommonAncestor);
+        }
+        return 8;
     }
 
     function getConfsTest() external view returns (uint8) {
-      return _getConfs(bytes32(0));
+        return _getConfs(bytes32(0));
     }
 
     function checkRequests(
