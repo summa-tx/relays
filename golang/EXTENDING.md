@@ -7,14 +7,36 @@ other functionality should likely be put into a separate module.
 
 ### Integrating with other modules
 
-An instance of `relay.Keeper` should be added to your app in `app.go`. It can
-be instantiated as follows:
+The relay keeper keeps a reference to an object that implements the following
+interface (found in `x/types/types.go`).
 
+```go
+type ProofHandler interface {
+	HandleValidProof(ctx sdk.Context, filled FilledRequests, requests []ProofRequest)
+}
 ```
+
+The `FilledRequests` struct contains an `SPVProof` and supporting information
+about the transaction that fulfills the request.
+It can be found in `x/types/validator.go`. `requests []ProofRequest` is a slice
+of `ProofRequest`s that have been filled.
+
+When the keeper validates a proof, it will call the `HandleValidProof` function
+with the valid `FilledRequests` struct and the `ProofRequests` that have been
+filled.
+
+First, instantiate a `handler` that fulfills the `ProofHandler` interface. Then
+add an instance of `relay.Keeper` to your app in `app.go`. It can be
+instantiated as follows:
+
+```go
+handler = types.NewNullHandler()  // or your preferred handler
+
 app.relayKeeper = relay.NewKeeper(
   keys[relay.StoreKey],
   app.cdc,
-  true, // Mainnet // TODO: pass this in somehow
+  true,
+  handler
 )
 ```
 

@@ -44,7 +44,7 @@ Instructions for setting up manual testing can be found in the README in
 - - [X] Integration Tests
 - - [ ] Document relay design & architecture
 - - [X] Document public interface
-- - [ ] Provide hooks to execute tasks + dispatch messages
+- - [X] Provide hooks to execute tasks + dispatch messages
 - - [ ] Add a basic web dashboard with Relay health
 
 
