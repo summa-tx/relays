@@ -84,6 +84,8 @@ descriptions in the CLI.
 | NewRequest | Register a new SPV Proof request |
 | ProvideProof | Provide a proof that satisfies 1 or more requests |
 
+## Project Overview
+
 ### Keeper
 High-level overview of the project structure within the `keeper` file.
 
@@ -109,4 +111,4 @@ Contains validation functions.  Currently, this can validate SPV Proofs and Requ
 Handles messages.
 
 #### Querier.go
-Handles queries
+Handles queries.
