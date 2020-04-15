@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
 // RequestID is an 8 byte id used to store requests
@@ -66,7 +67,7 @@ func RequestIDFromString(s string) (RequestID, error) {
 // UnmarshalJSON unmarshalls 8 byte requestID
 func (r *RequestID) UnmarshalJSON(b []byte) error {
 	// Have to trim quotation marks off byte array
-	buf, err := hex.DecodeString(strip0xPrefix(string(b[1 : len(b)-1])))
+	buf, err := hex.DecodeString(btcspv.Strip0xPrefix(string(b[1 : len(b)-1])))
 	if err != nil {
 		return err
 	}
