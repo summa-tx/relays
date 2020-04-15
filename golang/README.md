@@ -44,7 +44,7 @@ Instructions for setting up manual testing can be found in the README in
 - - [X] Integration Tests
 - - [ ] Document relay design & architecture
 - - [X] Document public interface
-- - [ ] Provide hooks to execute tasks + dispatch messages
+- - [X] Provide hooks to execute tasks + dispatch messages
 - - [ ] Add a basic web dashboard with Relay health
 
 
@@ -83,3 +83,32 @@ descriptions in the CLI.
 | MarkNewHeaviest | Mark a new best-known chain tip |
 | NewRequest | Register a new SPV Proof request |
 | ProvideProof | Provide a proof that satisfies 1 or more requests |
+
+## Project Overview
+
+### Keeper
+High-level overview of the project structure within the `keeper` file.
+
+#### Keeper.go
+Instantiates a `keeper` (what handles interaction with the store and contains most of the core functionality of the module). It also handles the genesis state for the relay.
+
+#### Headers.go
+Handles the storage and validation of Bitcoin Headers and Header Chains.
+
+#### Chain.go
+Checks and updates information about the chain.  Provides functionality to ensure we are using the heaviest chain.
+
+#### Links.go
+Sets and retrieves data about each link in the chain.  This is most commonly used to check information about ancestors.
+
+#### Requests.go
+Stores, retrieves, and validates requests.
+
+#### Validator.go
+Contains validation functions.  Currently, this can validate SPV Proofs and Requests.
+
+#### Handler.go
+Handles messages.
+
+#### Querier.go
+Handles queries.

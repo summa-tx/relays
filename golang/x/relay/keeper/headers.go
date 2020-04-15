@@ -37,6 +37,7 @@ func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) (types.
 	return header, nil
 }
 
+// getCurrentEpochDifficulty gets the current epoch's difficulty
 func (k Keeper) getCurrentEpochDifficulty(ctx sdk.Context) sdk.Uint {
 	store := k.getHeaderStore(ctx)
 	result := store.Get([]byte(types.CurrentEpochDiffStorage))
@@ -48,6 +49,7 @@ func (k Keeper) getCurrentEpochDifficulty(ctx sdk.Context) sdk.Uint {
 	return diff
 }
 
+// setCurrentEpochDifficulty sets the current epoch's difficulty
 func (k Keeper) setCurrentEpochDifficulty(ctx sdk.Context, diff sdk.Uint) sdk.Error {
 	store := k.getHeaderStore(ctx)
 
@@ -60,6 +62,7 @@ func (k Keeper) setCurrentEpochDifficulty(ctx sdk.Context, diff sdk.Uint) sdk.Er
 	return nil
 }
 
+// getPrevEpochDifficulty gets the previous epoch's difficulty
 func (k Keeper) getPrevEpochDifficulty(ctx sdk.Context) sdk.Uint {
 	store := k.getHeaderStore(ctx)
 	result := store.Get([]byte(types.PrevEpochDiffStorage))
@@ -71,6 +74,7 @@ func (k Keeper) getPrevEpochDifficulty(ctx sdk.Context) sdk.Uint {
 	return diff
 }
 
+// setPrevEpochDifficulty sets the previous epoch's difficulty
 func (k Keeper) setPrevEpochDifficulty(ctx sdk.Context, diff sdk.Uint) sdk.Error {
 	store := k.getHeaderStore(ctx)
 
@@ -83,6 +87,8 @@ func (k Keeper) setPrevEpochDifficulty(ctx sdk.Context, diff sdk.Uint) sdk.Error
 	return nil
 }
 
+// updatePrevEpochDifficulty checks if there is a change in difficulty and updates
+// the previous epoch's difficulty accordingly
 func (k Keeper) updatePrevEpochDifficulty(ctx sdk.Context, oldDiff sdk.Uint) sdk.Error {
 	prevEpochDiff := k.getPrevEpochDifficulty(ctx)
 	if prevEpochDiff != oldDiff {
@@ -111,6 +117,7 @@ func compareTargets(full, truncated sdk.Uint) bool {
 	return truncatedBI.Cmp(res) == 0
 }
 
+// ingestHeader stores a Bitcoin Header
 func (k Keeper) ingestHeader(ctx sdk.Context, header types.BitcoinHeader) {
 	store := k.getHeaderStore(ctx)
 
@@ -118,6 +125,7 @@ func (k Keeper) ingestHeader(ctx sdk.Context, header types.BitcoinHeader) {
 	store.Set(header.Hash[:], buf)
 }
 
+// validateHeaderChain validates a chain of Bitcoin Headers
 func validateHeaderChain(anchor types.BitcoinHeader, headers []types.BitcoinHeader, internal, isMainnet bool) sdk.Error {
 	prev := anchor // scratchpad, we change this later
 
@@ -163,6 +171,7 @@ func validateHeaderChain(anchor types.BitcoinHeader, headers []types.BitcoinHead
 	return nil
 }
 
+// ingestHeaders validates and stores a chain of Bitcoin Headers
 func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, internal bool) sdk.Error {
 	anchor, err := k.GetHeader(ctx, headers[0].PrevHash)
 	if err != nil {
@@ -184,6 +193,7 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 	return nil
 }
 
+// validateDifficultyChange validates a Header Chain with a difficulty change
 func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anchor types.BitcoinHeader) sdk.Error {
 	if anchor.Height%2016 != 2015 {
 		return types.ErrWrongEnd(types.DefaultCodespace)
@@ -211,6 +221,7 @@ func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anc
 	return nil
 }
 
+// ingestDifficultyChange validates and stores a Header Chain with a difficulty change
 func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.Hash256Digest, headers []types.BitcoinHeader) sdk.Error {
 	// Find the anchor in our store
 	prevEpochStart, err := k.GetHeader(ctx, prevEpochStartLE)

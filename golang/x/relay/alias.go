@@ -58,4 +58,10 @@ type (
 
 	// SPVProof is the base struct for an SPV proof
 	SPVProof = types.SPVProof
+
+	// ProofHandler is an interface to which the keepers dispatches valid proofs
+	ProofHandler = types.ProofHandler
+
+	// NullHandler does nothing
+	NullHandler = types.NullHandler
 )
