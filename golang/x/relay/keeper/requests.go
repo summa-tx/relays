@@ -168,11 +168,11 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint32, v
 		// hash the output script (out[8:])
 		outDigest := btcspv.Hash256(out[8:])
 		if outDigest != req.Pays {
-			return types.ErrRequestPays(types.DefaultCodespace)
+			return types.ErrRequestPays(types.DefaultCodespace, requestID)
 		}
 		paysValue := req.PaysValue
 		if paysValue != 0 && uint64(btcspv.ExtractValue(out)) < paysValue {
-			return types.ErrRequestValue(types.DefaultCodespace)
+			return types.ErrRequestValue(types.DefaultCodespace, requestID)
 		}
 	}
 
@@ -185,7 +185,7 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint32, v
 		outpoint := btcspv.ExtractOutpoint(in)
 		inDigest := btcspv.Hash256(outpoint)
 		if hasSpends && inDigest != req.Spends {
-			return types.ErrRequestSpends(types.DefaultCodespace)
+			return types.ErrRequestSpends(types.DefaultCodespace, requestID)
 		}
 	}
 	return nil

@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/summa-tx/relays/golang/x/relay/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,7 +23,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
-	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
 type NamedCase interface {
