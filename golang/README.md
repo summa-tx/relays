@@ -50,8 +50,8 @@ Instructions for setting up manual testing can be found in the README in
 
 ## API
 
-Cosmos modules expose queries (which read
-state) and messages (which modify state).
+Cosmos modules expose queries (which read state) and messages (which modify
+state).
 
 ### Queries
 
