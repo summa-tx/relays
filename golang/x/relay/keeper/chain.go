@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -105,13 +104,11 @@ func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, new
 	}
 
 	if leftBlock.Height < ancestorBlock.Height {
-		errDetails := fmt.Sprintf("currentBest %x is below the ancestor height", currentBest)
-		return types.Hash256Digest{}, types.ErrBadHeight(types.DefaultCodespace, errDetails)
+		return types.Hash256Digest{}, types.ErrBadHeight(types.DefaultCodespace, "currentBest", currentBest)
 	}
 
 	if rightBlock.Height < ancestorBlock.Height {
-		errDetails := fmt.Sprintf("newBest %x is below the ancestor height", newBest)
-		return types.Hash256Digest{}, types.ErrBadHeight(types.DefaultCodespace, errDetails)
+		return types.Hash256Digest{}, types.ErrBadHeight(types.DefaultCodespace, "newBest", newBest)
 	}
 
 	nextPeriodStartHeight := ancestorBlock.Height + 2016 - (ancestorBlock.Height % 2016)

@@ -17,15 +17,20 @@ const (
 	// BadHeaderLengthMessage is the corresponding message
 	BadHeaderLengthMessage = "Header array length must be divisble by 80 but header labeled %s with header %x has length %d"
 
+	// BadHeight occurs when a proposed descendant is below a proposed ancestor
+	BadHeight sdk.CodeType = 102
+	// BadHeightMessage is the corresponding message
+	BadHeightMessage = "Block labeled %s with digest %x is below the ancestor height"
+
+	// HeightMismatch occurs when blocks do not have have consecutive height increments
+	HeightMismatch sdk.CodeType = 103
+	// HeightMismatchMessage is the corresponding message
+	HeightMismatchMessage = "Height mismatch between blocks %x and %x"
+
 	// UnknownBlock is the error code for unknown blocks
-	UnknownBlock sdk.CodeType = 103
+	UnknownBlock sdk.CodeType = 104
 	// UnknownBlockMessage is the corresponding message
 	UnknownBlockMessage = "Unknown block labeled %s with digest %x"
-
-	// BadHeight occurs when a proposed descendant is below a proposed ancestor
-	BadHeight sdk.CodeType = 104
-	// BadHeightMessage is the corresponding message
-	BadHeightMessage = "Invalid height: %s"
 
 	// BadHash256Digest occurs when a wrong-length hash256 digest is found
 	BadHash256Digest sdk.CodeType = 105
@@ -177,15 +182,18 @@ func ErrBadHeaderLength(codespace sdk.CodespaceType, label string, digest RawHea
 	return sdk.NewError(codespace, BadHeaderLength, fmt.Sprint(BadHeaderLengthMessage, label, digest, length))
 }
 
+// ErrBadHeight throws an error
+func ErrBadHeight(codespace sdk.CodespaceType, label string, digest Hash256Digest) sdk.Error {
+	return sdk.NewError(codespace, BadHeight, fmt.Sprintf(BadHeightMessage, label, digest))
+}
+
+func ErrHeightMismatch(codespace sdk.CodespaceType, prevDigest, digest Hash256Digest) sdk.Error {
+	return sdk.NewError(codespace, HeightMismatch, fmt.Sprintf(HeightMismatchMessage, prevDigest, digest))
+}
+
 // ErrUnknownBlock throws an error
 func ErrUnknownBlock(codespace sdk.CodespaceType, label string, digest Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, UnknownBlock, fmt.Sprint(UnknownBlockMessage, label, digest))
-}
-
-// ErrBadHeight throws an error
-func ErrBadHeight(codespace sdk.CodespaceType, details string) sdk.Error {
-	message := fmt.Sprintf(BadHeightMessage, details)
-	return sdk.NewError(codespace, BadHeight, message)
 }
 
 // ErrUnexpectedRetarget throws an error

@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
@@ -148,8 +147,7 @@ func validateHeaderChain(anchor types.BitcoinHeader, headers []types.BitcoinHead
 
 		// ensure height changes as expected
 		if prev.Height != header.Height-1 {
-			errDetails := fmt.Sprintf("Height mismatch between blocks %x and %x", prev.Hash, header.Hash)
-			return types.ErrBadHeight(types.DefaultCodespace, errDetails)
+			return types.ErrHeightMismatch(types.DefaultCodespace, prev.Hash, header.Hash)
 		}
 
 		// ensure expectedTarget doesn't change
