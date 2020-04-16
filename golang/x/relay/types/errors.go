@@ -149,12 +149,12 @@ const (
 	// RequestPays means the output does not match the pays request
 	RequestPays sdk.CodeType = 607
 	// RequestPaysMessage is the corresponding message
-	RequestPaysMessage = "Output not match pays for requestID %d"
+	RequestPaysMessage = "Output does not match pays for requestID %d"
 
 	// RequestValue means the pays value and value of the output does not match
 	RequestValue sdk.CodeType = 608
 	// RequestValueMessage is the corresponding message
-	RequestValueMessage = "Output value not match pays value for requestID %d"
+	RequestValueMessage = "Output value does not match pays value for requestID %d"
 
 	// RequestSpends means the request spends does not match the input
 	RequestSpends sdk.CodeType = 609
