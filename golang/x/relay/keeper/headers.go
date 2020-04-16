@@ -29,7 +29,7 @@ func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) (types.
 	store := k.getHeaderStore(ctx)
 
 	if !store.Has(digestLE[:]) {
-		return types.BitcoinHeader{}, types.ErrUnknownBlock(types.DefaultCodespace, "digest", digestLE[:])
+		return types.BitcoinHeader{}, types.ErrUnknownBlock(types.DefaultCodespace, "digest", digestLE)
 	}
 
 	buf := store.Get(digestLE[:])

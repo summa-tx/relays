@@ -20,7 +20,7 @@ const (
 	// UnknownBlock is the error code for unknown blocks
 	UnknownBlock sdk.CodeType = 103
 	// UnknownBlockMessage is the corresponding message
-	UnknownBlockMessage = "Unknown block labeled %s with value %x"
+	UnknownBlockMessage = "Unknown block labeled %s with digest %x"
 
 	// BadHeight occurs when a proposed descendant is below a proposed ancestor
 	BadHeight sdk.CodeType = 104
@@ -178,7 +178,7 @@ func ErrBadHeaderLength(codespace sdk.CodespaceType, label string, digest RawHea
 }
 
 // ErrUnknownBlock throws an error
-func ErrUnknownBlock(codespace sdk.CodespaceType, label string, digest []byte) sdk.Error {
+func ErrUnknownBlock(codespace sdk.CodespaceType, label string, digest Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, UnknownBlock, fmt.Sprint(UnknownBlockMessage, label, digest))
 }
 

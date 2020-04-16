@@ -93,15 +93,15 @@ func (k Keeper) IsMostRecentCommonAncestor(ctx sdk.Context, ancestor, left, righ
 func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, newBest types.Hash256Digest, limit uint32) (types.Hash256Digest, sdk.Error) {
 	ancestorBlock, err := k.GetHeader(ctx, ancestor)
 	if err != nil {
-		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "ancestor", ancestor[:])
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "ancestor", ancestor)
 	}
 	leftBlock, err := k.GetHeader(ctx, currentBest)
 	if err != nil {
-		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "currentBest", currentBest[:])
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "currentBest", currentBest)
 	}
 	rightBlock, err := k.GetHeader(ctx, newBest)
 	if err != nil {
-		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "newBest", newBest[:])
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "newBest", newBest)
 	}
 
 	if leftBlock.Height < ancestorBlock.Height {
@@ -157,7 +157,7 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 	currentBestDigest := btcspv.Hash256(currentBest[:])
 
 	if !k.HasHeader(ctx, newBestDigest) {
-		return types.ErrUnknownBlock(types.DefaultCodespace, "newBest", newBest[:])
+		return types.ErrUnknownBlock(types.DefaultCodespace, "newBest", newBestDigest)
 	}
 
 	knownBestDigest, err := k.GetBestKnownDigest(ctx)
