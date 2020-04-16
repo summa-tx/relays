@@ -24,7 +24,7 @@ func (s *KeeperSuite) TestGetDigestByStoreKey() {
 	store.Set([]byte(key), wrongLenDigest)
 
 	_, err := s.Keeper.getDigestByStoreKey(s.Context, key)
-	s.Equal(sdk.CodeType(105), err.Code())
+	s.Equal(sdk.CodeType(types.BadHash256Digest), err.Code())
 }
 
 func (s *KeeperSuite) TestGetBestKnownDigest() {
@@ -121,7 +121,7 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 		pre[1].Raw,
 		10,
 	)
-	s.Equal(sdk.CodeType(103), err.Code())
+	s.Equal(sdk.CodeType(types.UnknownBlock), err.Code())
 
 	err = s.Keeper.IngestHeaderChain(s.Context, pre)
 	s.SDKNil(err)
@@ -146,7 +146,7 @@ func (s *KeeperSuite) TestMarkNewHeaviest() {
 		pre[1].Raw,
 		10,
 	)
-	s.Equal(sdk.CodeType(404), err.Code())
+	s.Equal(sdk.CodeType(types.NotHeaviestAncestor), err.Code())
 
 	for i := range tc {
 		s.Keeper.setBestKnownDigest(s.Context, tc[i].BestKnownDigest)

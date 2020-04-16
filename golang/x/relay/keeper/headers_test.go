@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/summa-tx/relays/golang/x/relay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -9,7 +9,7 @@ func (s *KeeperSuite) TestGetHeader() {
 	// errors if header is not found
 	header := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers[0]
 	_, err := s.Keeper.GetHeader(s.Context, header.Hash)
-	s.Equal(types.CodeType(103), err.Code())
+	s.Equal(sdk.CodeType(types.UnknownBlock), err.Code())
 }
 
 func (s *KeeperSuite) TestEmitExtension() {
@@ -42,7 +42,7 @@ func (s *KeeperSuite) TestIngestHeaders() {
 
 	// errors if anchor is not found
 	err := s.Keeper.ingestHeaders(s.Context, cases[0].Headers, cases[0].Internal)
-	s.Equal(types.CodeType(103), err.Code())
+	s.Equal(sdk.CodeType(types.UnknownBlock), err.Code())
 
 	for _, tc := range cases {
 		s.InitTestContext(tc.IsMainnet, false)
@@ -111,12 +111,12 @@ func (s *KeeperSuite) TestIngestDifficultyChange() {
 
 	// errors if PrevEpochStart is not found
 	err := s.Keeper.IngestDifficultyChange(s.Context, cases[0].PrevEpochStart.Hash, cases[0].Headers)
-	s.Equal(types.CodeType(103), err.Code())
+	s.Equal(sdk.CodeType(types.UnknownBlock), err.Code())
 
 	// errors if anchor is not found
 	s.Keeper.ingestHeader(s.Context, cases[0].PrevEpochStart)
 	err = s.Keeper.IngestDifficultyChange(s.Context, cases[0].PrevEpochStart.Hash, cases[0].Headers)
-	s.Equal(types.CodeType(103), err.Code())
+	s.Equal(sdk.CodeType(types.UnknownBlock), err.Code())
 
 	for _, tc := range cases {
 		s.Keeper.ingestHeader(s.Context, tc.PrevEpochStart)

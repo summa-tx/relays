@@ -32,7 +32,7 @@
       }, {
         "digest": "0x8bfff9ae28af2aa90adfdb92b218829727886488dcc914000000000000000000",
         "offset": 3,
-        "error": 104,
+        "error": 107,
         "output": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
       }]
     }
@@ -438,7 +438,7 @@
         },
         "internal": false,
         "isMainnet": true,
-        "output": 104
+        "output": 103
       },
       {
         "comment": "header doesn't pass validation, header[0].merkle_root_le is wrong",
@@ -853,14 +853,14 @@
         "currentBest": "0x8bfff9ae28af2aa90adfdb92b218829727886488dcc914000000000000000000",
         "newBest": "0xd2406bb15e4f917104d2b2d9320454b947fb08a723301d000000000000000000",
         "limit": 20,
-        "error": 104,
+        "error": 102,
         "output": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
       }, {
         "ancestor": "0xfee20039fe494f7408c090e03970ec9b132366066f380d000000000000000000",
         "currentBest": "0xd2406bb15e4f917104d2b2d9320454b947fb08a723301d000000000000000000",
         "newBest": "0x8bfff9ae28af2aa90adfdb92b218829727886488dcc914000000000000000000",
         "limit": 20,
-        "error": 104,
+        "error": 102,
         "output": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
       }, {
         "ancestor": "0xfee20039fe494f7408c090e03970ec9b132366066f380d000000000000000000",
