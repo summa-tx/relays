@@ -39,8 +39,7 @@ func (k Keeper) FindAncestor(ctx sdk.Context, digestLE types.Hash256Digest, offs
 	for i := uint32(0); i < offset; i++ {
 		current = k.getLink(ctx, current)
 		if !k.hasLink(ctx, current) {
-			// TODO I think this might require a different error BadHexMessage
-			return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "getLink", current)
+			return types.Hash256Digest{}, types.ErrBadOffset(types.DefaultCodespace, current)
 		}
 	}
 

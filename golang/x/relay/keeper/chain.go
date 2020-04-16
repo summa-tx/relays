@@ -159,7 +159,7 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 
 	knownBestDigest, err := k.GetBestKnownDigest(ctx)
 	if err != nil || currentBestDigest != knownBestDigest {
-		return types.ErrNotBestKnown(types.DefaultCodespace, currentBest[:], knownBestDigest[:])
+		return types.ErrNotBestKnown(types.DefaultCodespace, currentBestDigest, knownBestDigest)
 	}
 
 	if !k.IsMostRecentCommonAncestor(ctx, ancestor, knownBestDigest, newBestDigest, limit) {
@@ -172,7 +172,7 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 	}
 
 	if newBestDigest != better {
-		return types.ErrNotHeavier(types.DefaultCodespace, newBestDigest[:], better[:])
+		return types.ErrNotHeavier(types.DefaultCodespace, newBestDigest, better)
 	}
 
 	// get newBestHeader

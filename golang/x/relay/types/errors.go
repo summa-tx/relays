@@ -56,6 +56,11 @@ const (
 	// AlreadyInitMessage is the corresponding message
 	AlreadyInitMessage = "Relay has already set genesis state"
 
+	// BadOffset occurs when chain has traversed to block with no link
+	BadOffset sdk.CodeType = 110
+	// BadOffsetMessage is the corresponding message
+	BadOffsetMessage = "Reached bottom of relay chain: block with digest %x has no link"
+
 	// 200-block -- AddHeaders
 
 	// UnexpectedRetarget indicates a retarget was seen during AddHeaders loop
@@ -222,7 +227,7 @@ func ErrBadRetarget(codespace sdk.CodespaceType) sdk.Error {
 }
 
 // ErrNotBestKnown throws an error
-func ErrNotBestKnown(codespace sdk.CodespaceType, invalidBest, expectedBest []byte) sdk.Error {
+func ErrNotBestKnown(codespace sdk.CodespaceType, invalidBest, expectedBest Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, NotBestKnown, fmt.Sprintf(NotBestKnownMessage, invalidBest, expectedBest))
 }
 
@@ -232,7 +237,7 @@ func ErrNotHeaviestAncestor(codespace sdk.CodespaceType, ancestor Hash256Digest)
 }
 
 // ErrNotHeavier throws an error
-func ErrNotHeavier(codespace sdk.CodespaceType, newBest, prevBest []byte) sdk.Error {
+func ErrNotHeavier(codespace sdk.CodespaceType, newBest, prevBest Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, NotHeavier, fmt.Sprintf(NotHeavierMessage, newBest, prevBest))
 }
 
@@ -254,6 +259,11 @@ func ErrBadHexLen(codespace sdk.CodespaceType, expected, actual int) sdk.Error {
 // ErrAlreadyInit throws an error
 func ErrAlreadyInit(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, AlreadyInit, AlreadyInitMessage)
+}
+
+// ErrBadOffset throws an error
+func ErrBadOffset(codespace sdk.CodespaceType, digest Hash256Digest) sdk.Error {
+	return sdk.NewError(codespace, BadHexLen, fmt.Sprintf(BadOffsetMessage, digest))
 }
 
 // ErrMarshalJSON throws an error
