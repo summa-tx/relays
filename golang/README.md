@@ -16,9 +16,6 @@ $ make
 $ make install
 ```
 
-## Using the cli
-
-
 ## Running tests
 
 Run the unit tests as follows:
@@ -53,8 +50,8 @@ Instructions for setting up manual testing can be found in the README in
 
 ## API
 
-Cosmos modules expose messages, which modify state, and queries, which read
-state.
+Cosmos modules expose queries (which read
+state) and messages (which modify state).
 
 ### Queries
 
