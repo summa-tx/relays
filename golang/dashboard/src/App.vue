@@ -58,7 +58,6 @@ export default {
     // Get external info and set it in the store, start polling
     setInterval(this.getExternalInfo, 120000)
     setInterval(this.getRelayInfo, 60000)
-    setInterval(this.updateNow, 65000)
   },
 
   methods: {
@@ -66,10 +65,6 @@ export default {
       console.log('Getting relay info')
       this.$store.dispatch('relay/getBKD')
       this.$store.dispatch('relay/getLCA')
-    },
-
-    updateNow () {
-      this.$store.dispatch('info/updateNow')
     },
 
     getExternalInfo () {
