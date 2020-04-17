@@ -6,7 +6,7 @@
       bottom
       class="ctc__copy"
     >
-      <template v-slot:activator="{ on }"><!-- eslint-disable-line -->
+      <template>
         <v-btn icon color="teal">
           <v-icon @click="handleCopy" id="ctc__icon">
             content_copy

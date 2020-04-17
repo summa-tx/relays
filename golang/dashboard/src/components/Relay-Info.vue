@@ -19,17 +19,14 @@
         <v-layout class="relay__info__line" column>
           <h3 class="relay__info__title">Current Block:</h3>
           <v-flex class="relay__info__info" row>
-            <b>Height:</b> <p>{{ height }}</p>
+            <p><b>Height:</b> {{ height }}</p>
             <Click-To-Copy :copy-value="height"/>
           </v-flex>
           <v-flex class="relay__info__info" row>
-            <b>Hash:</b> <p>{{ currentBlock.hash }}</p>
             <Click-To-Copy :copy-value="currentBlock.hash"/>
           </v-flex>
           <v-flex class="relay__info__info" row>
-            <b>Verified:</b> <p>
-            <p v-if="currentBlock.verifiedAt">{{ currentBlock.verifiedAt }}</p>
-            <p v-else>Unverified</p>
+            <p><b>Verified:</b> {{ currentBlock.verifiedAt || 'Unverified' }}</p>
           </v-flex>
         </v-layout>
 
@@ -83,12 +80,12 @@
       </v-layout>
     </v-card>
 
-    <!-- <v-card>
+    <v-card>
       <v-btn @click="getBKD">Get BKD</v-btn>
       <v-btn @click="getLCA">Get LCA</v-btn>
       <v-btn @click="getHeight">Get Height</v-btn>
       <v-btn @click="getCurrentHeight">Get Current Height</v-btn>
-    </v-card> -->
+    </v-card>
   </v-container>
 </template>
 
@@ -120,19 +117,19 @@ export default {
     },
 
     getBKD () {
-      this.$socket.emit('get_bkd')
+      this.$store.dispatch('relay/getBKD')
     },
 
     getLCA () {
-      this.$socket.emit('get_lca')
+      this.$store.dispatch('relay/getLCA')
     },
 
     getCurrentHeight () {
-      this.$socket.emit('verify_height', this.currentBlock.hash)
+      this.$store.dispatch('relay/verifyHeight', this.currentBlock.hash)
     },
 
     getHeight () {
-      this.$socket.emit('verify_height', '0000000000000346624ca7ac1dbbc16c5ffd3fa388ce9bdb4627264d117014dc')
+      this.$store.dispatch('relay/verifyHeight', '0000000000000346624ca7ac1dbbc16c5ffd3fa388ce9bdb4627264d117014dc')
     }
   },
 

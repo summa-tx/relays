@@ -15,28 +15,31 @@ const relayURL = 'http://localhost:1317/relay'
 const actions = {
   getBKD ({ commit, dispatch }) {
     axios.get(`${relayURL}/getbestdigest`).then((res) => {
-      commit(types.GET_BKD, res)
+      // Data structure:
+      // {
+      //   "height": "0",
+      //   "result": {
+      //     "result": "0x4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000"
+      //   }
+      // }
+      commit(types.GET_BKD, res.result.result)
       dispatch('info/setLastComms', { source: 'relay', date: new Date() })
     })
   },
-
-  // relay_socket_return_bkd ({ dispatch }, data) {
-    //   console.log('return bkd')
-    //   dispatch('info/setRelayInfo', { key: 'bkd', data })
-    //   dispatch('info/setLastComms', { source: 'relay', date: new Date() })
-    // },
 
   getLCA ({ dispatch }) {
     axios.get(`${relayURL}/getlastreorglca`).then((res) => {
-      dispatch('info/setRelayInfo', { key: 'lca', data: res })
+      // Data structure:
+      // {
+      //   "height": "0",
+      //   "result": {
+      //     "result": "0x4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000"
+      //   }
+      // }
+      dispatch('info/setRelayInfo', { key: 'lca', data: res.result.result })
       dispatch('info/setLastComms', { source: 'relay', date: new Date() })
     })
   },
-  // relay_socket_return_lca ({ dispatch }, data) {
-  //   console.log('return lca')
-  //   dispatch('info/setRelayInfo', { key: 'lca', data: data })
-  //   dispatch('info/setLastComms', { source: 'relay', date: new Date() })
-  // },
 
   // relay_socket_new_extension({ state }, data) {
   //   console.log('new extension event', state.extension, data)
