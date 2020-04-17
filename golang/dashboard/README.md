@@ -38,7 +38,7 @@ $ echo "export PATH=\$PATH:\$GOBIN" >> ~/.bash_profile
 $ source ~/.bash_profile
 ```
 
-3. Make sure you are in the `relays/golang` directory and install the app into your $GOBIN
+3. Make sure you are in the `relays/golang` directory (one level up from here) and install the app into your `$GOBIN`
 
 ```bash
 $ make install
@@ -50,7 +50,7 @@ $ make install
 $ make init
 ```
 
-5. Run the REST routes `rest-server`. This will make the relay application routes available on `http://localhost:1317`. In another terminal window:
+1. In another terminal window, run the REST routes `rest-server`. This will make the relay application routes available on `http://localhost:1317`.
 
 ```bash
 $ relaycli rest-server --chain-id relay
