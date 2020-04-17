@@ -57,7 +57,8 @@
     <v-card class="relay__updates">
       <v-layout>
         <p class="relay__updates__title">Relay Health Check:</p>
-        <p v-if="lastCommsRelay < 1">Less than 1 minute ago</p>
+        <p v-if="!lastCommsRelay">Health check not completed</p>
+        <p v-else-if="lastCommsRelay <= 1">Less than 1 minute ago</p>
         <p v-else>{{ lastCommsRelay }} minutes ago</p>
       </v-layout>
       <v-layout>
@@ -66,17 +67,19 @@
       </v-layout>
       <v-layout>
         <p class="relay__updates__title">Source Health Check:</p>
-        <p v-if="lastCommsExternal < 1">Less than 1 minute ago</p>
+        <p v-if="!lastCommsExternal">Source health check not completed</p>
+        <p v-else-if="lastCommsExternal <= 1">Less than 1 minute ago</p>
         <p v-else>{{ lastCommsExternal }} minutes ago</p>
       </v-layout>
       <v-layout>
         <p class="relay__updates__title">Source Block Changed:</p>
-        <p v-if="verifiedAt < 1">Less than 1 minute ago</p>
+        <p v-if="!verifiedAt">Unknown</p>
+        <p v-else-if="verifiedAt < 1">Less than 1 minute ago</p>
         <p v-else>{{ verifiedAt }} minutes ago</p>
       </v-layout>
       <v-layout>
         <p class="relay__updates__title">Source Height:</p>
-        <p>{{ height }}</p>
+        <p>{{ height || 'Unknown' }}</p>
       </v-layout>
     </v-card>
 
@@ -109,6 +112,13 @@ export default {
 
   mounted () {
     this.onResize()
+    console.log('Last relay communication (Relay Health Check): ', this.lastCommsRelay)
+    console.log('Last external communication (Source Health Check): ', this.lastCommsExternal)
+    console.log('Source block changed: ', this.verifiedAt)
+    console.log('Source height: ', this.height)
+    setTimeout(() => {
+      console.log('Source Health Check: ', this.lastCommsExternal)
+    }, 3000)
   },
 
   methods: {

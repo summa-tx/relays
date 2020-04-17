@@ -36,7 +36,7 @@ const actions = {
       //     "result": "0x4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000"
       //   }
       // }
-      dispatch('info/setRelayInfo', { key: 'lca', data: res.result.result })
+      dispatch('info/setRelayInfo', { key: 'lca', data: res })
       dispatch('info/setLastComms', { source: 'relay', date: new Date() })
     })
   },
