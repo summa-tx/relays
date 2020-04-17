@@ -27,7 +27,6 @@
     </v-app-bar>
 
     <v-content>
-      <Websocket-Test/>
       <Relay-Info/>
     </v-content>
   </v-app>
@@ -35,7 +34,6 @@
 
 <script>
 import RelayInfo from './components/Relay-Info'
-import WebsocketTest from './components/WebsocketTest'
 
 export default {
   name: 'OperatedRelayDashboard',
@@ -50,12 +48,11 @@ export default {
   },
 
   components: {
-    RelayInfo,
-    WebsocketTest
+    RelayInfo
   },
 
   mounted () {
-    // Get relay info - bkd, lrca
+    // Get relay info - best know digest(BKD), last common ancestor(LCA)
     this.getRelayInfo()
     this.getExternalInfo()
     // Get external info and set it in the store, start polling
@@ -67,8 +64,8 @@ export default {
   methods: {
     getRelayInfo () {
       console.log('Getting relay info')
-      this.$socket.emit('get_bkd')
-      this.$socket.emit('get_lca')
+      this.$store.dispatch('relay/getBKD')
+      this.$store.dispatch('relay/getLCA')
     },
 
     updateNow () {
