@@ -1,9 +1,9 @@
 import axios from 'axios'
-import * as types from '@/store/mutation-types'
-const relayURL = 'http://localhost:1317/relay'
+// import * as types from '@/store/mutation-types'
+const relayURL = '/relay'
 
 // const state = {
-  
+
 // }
 
 // const mutations: {
@@ -13,8 +13,9 @@ const relayURL = 'http://localhost:1317/relay'
 // TODO: Convert to REST routes instead of socket calls. Update actions where used. Format of info dispatch actions should stay the same. See info.js for how data should be formatted. Will need to format BE and LE hex strings.
 
 const actions = {
-  getBKD ({ commit, dispatch }) {
+  getBKD ({ dispatch }) {
     axios.get(`${relayURL}/getbestdigest`).then((res) => {
+      console.log('getBKD', res)
       // Data structure:
       // {
       //   "height": "0",
@@ -22,8 +23,24 @@ const actions = {
       //     "result": "0x4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000"
       //   }
       // }
-      commit(types.GET_BKD, res.result.result)
-      dispatch('info/setLastComms', { source: 'relay', date: new Date() })
+      // commit(types.GET_BKD, res.data.result.result)
+      dispatch(
+        'info/setRelayInfo',
+        {
+          key: 'bkd',
+          // TODO: switch endian
+          data: res.data.result.result
+        },
+        { root: true }
+      )
+      dispatch(
+        'info/setLastComms',
+        { source: 'relay', date: new Date() },
+        { root: true }
+      )
+    })
+    .catch((e) => {
+      console.log('relay/getBKD: ', e)
     })
   },
 
@@ -36,8 +53,20 @@ const actions = {
       //     "result": "0x4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000"
       //   }
       // }
-      dispatch('info/setRelayInfo', { key: 'lca', data: res })
-      dispatch('info/setLastComms', { source: 'relay', date: new Date() })
+      dispatch(
+        'info/setRelayInfo',
+        {
+          key: 'lca',
+          // TODO: switch endian
+          data: res.data.result.result
+        },
+        { root: true }
+      )
+      dispatch(
+        'info/setLastComms',
+        { source: 'relay', date: new Date() },
+        { root: true }
+      )
     })
   },
 
@@ -47,8 +76,16 @@ const actions = {
 
   verifyHeight ({ dispatch }, data) {
     if (data) {
-      dispatch('info/setCurrentBlock', { verifiedAt: new Date() })
-      dispatch('info/setLastComms', { source: 'relay', date: new Date() })
+      dispatch(
+        'info/setCurrentBlock',
+        { verifiedAt: new Date() },
+        { root: true }
+      )
+      dispatch(
+        'info/setLastComms',
+        { source: 'relay', date: new Date() },
+        { root: true }
+      )
     }
   }
 
