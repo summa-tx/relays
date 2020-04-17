@@ -12,40 +12,35 @@ const (
 
 	// 100-block -- shared errors
 
-	// UnknownError is an unknown error
-	UnknownError sdk.CodeType = 100
-	// UnknownErrorMessage is the corresponding message
-	UnknownErrorMessage = "Unknown Error"
-
 	// BadHeaderLength means Header array length not divisible by 80
 	BadHeaderLength sdk.CodeType = 101
 	// BadHeaderLengthMessage is the corresponding message
-	BadHeaderLengthMessage = "Header array length must be divisible by 80"
-
-	// InsufficientWork means a block did not have sufficient work
-	InsufficientWork sdk.CodeType = 102
-	// InsufficientWorkMessage is the corresponding message
-	InsufficientWorkMessage = "Header work is insufficient"
-
-	// UnknownBlock is the error code for unknown blocks
-	UnknownBlock sdk.CodeType = 103
-	// UnknownBlockMessage is the corresponding message
-	UnknownBlockMessage = "Unknown block"
+	BadHeaderLengthMessage = "Header array length must be divisble by 80 but header labeled %s with header %x has length %d"
 
 	// BadHeight occurs when a proposed descendant is below a proposed ancestor
-	BadHeight sdk.CodeType = 104
+	BadHeight sdk.CodeType = 102
 	// BadHeightMessage is the corresponding message
-	BadHeightMessage = "A descendant height is below the ancestor height"
+	BadHeightMessage = "Block labeled %s with digest %x is below the ancestor height"
+
+	// HeightMismatch occurs when blocks do not have have consecutive height increments
+	HeightMismatch sdk.CodeType = 103
+	// HeightMismatchMessage is the corresponding message
+	HeightMismatchMessage = "Height mismatch between blocks %x and %x"
+
+	// UnknownBlock is the error code for unknown blocks
+	UnknownBlock sdk.CodeType = 104
+	// UnknownBlockMessage is the corresponding message
+	UnknownBlockMessage = "Unknown block labeled %s with digest %x"
 
 	// BadHash256Digest occurs when a wrong-length hash256 digest is found
 	BadHash256Digest sdk.CodeType = 105
 	// BadHash256DigestMessage is the corresponding message
-	BadHash256DigestMessage = "Digest had wrong length"
+	BadHash256DigestMessage = "Digest %s had wrong length"
 
 	// BadHex occurs when a hex argument couldn't be deserialized
 	BadHex sdk.CodeType = 106
 	// BadHexMessage is the corresponding message
-	BadHexMessage = "Bad hex string in query or msg"
+	BadHexMessage = "Bad hex string in query or msg: %s"
 
 	// BadHexLen occurs when a hex argument is the wrong length
 	BadHexLen sdk.CodeType = 107
@@ -61,17 +56,17 @@ const (
 	// AlreadyInitMessage is the corresponding message
 	AlreadyInitMessage = "Relay has already set genesis state"
 
+	// BadOffset occurs when chain has traversed to block with no link
+	BadOffset sdk.CodeType = 110
+	// BadOffsetMessage is the corresponding message
+	BadOffsetMessage = "Reached bottom of relay chain: block with digest %x has no link"
+
 	// 200-block -- AddHeaders
 
 	// UnexpectedRetarget indicates a retarget was seen during AddHeaders loop
 	UnexpectedRetarget sdk.CodeType = 201
 	// UnexpectedRetargetMessage is the corresponding message
-	UnexpectedRetargetMessage = "Target changed unexpectedly"
-
-	// BadLink indicates a broken link was found in the header array during IngestHeaders loop
-	BadLink sdk.CodeType = 202
-	// BadLinkMessage is the corresponding message
-	BadLinkMessage = "Headers do not form a consistent chain"
+	UnexpectedRetargetMessage = "Target changed unexpectedly at block %x"
 
 	// 300-block AddHeadersWithRetarget
 
@@ -100,31 +95,19 @@ const (
 	// NotBestKnown means a block should have been the best known, but wasn't
 	NotBestKnown sdk.CodeType = 403
 	// NotBestKnownMessage is the corresponding message
-	NotBestKnownMessage = "Provided digest is not current best known"
+	NotBestKnownMessage = "Provided digest %x is not current best known, expecting block with hash %x"
 
 	// NotHeaviestAncestor means a later common ancestor was found
 	NotHeaviestAncestor sdk.CodeType = 404
 	// NotHeaviestAncestorMessage is the corresponding message
-	NotHeaviestAncestorMessage = "Ancestor must be heaviest common ancestor"
+	NotHeaviestAncestorMessage = "Ancestor %x is not heaviest common ancestor"
 
 	// NotHeavier means the proposed new best is not heavier than the current best
 	NotHeavier sdk.CodeType = 405
 	// NotHeavierMessage is the corresponding message
-	NotHeavierMessage = "New best hash does not have more work than previous"
+	NotHeavierMessage = "New best received %x does not have more work than previous best %x"
 
 	// 500-block Queries
-
-	// TODO: Delete the next 2 error codes
-
-	// NotEnoughArguments means there are not enough arguments specified in the path of a query
-	NotEnoughArguments sdk.CodeType = 501
-	// NotEnoughArgumentsMessage is the corresponding message
-	NotEnoughArgumentsMessage = "Not enough arguments"
-
-	// TooManyArguments means there are too many arguments specified in the path of a query
-	TooManyArguments sdk.CodeType = 502
-	// TooManyArgumentsMessage is the corresponding message
-	TooManyArgumentsMessage = "Too many arguments"
 
 	// MarshalJSON means there was an error marshalling a query result to json
 	MarshalJSON sdk.CodeType = 503
@@ -166,27 +149,27 @@ const (
 	// RequestPays means the output does not match the pays request
 	RequestPays sdk.CodeType = 607
 	// RequestPaysMessage is the corresponding message
-	RequestPaysMessage = "Does not match pays request"
+	RequestPaysMessage = "Output does not match pays for requestID %d"
 
 	// RequestValue means the pays value and value of the output does not match
 	RequestValue sdk.CodeType = 608
 	// RequestValueMessage is the corresponding message
-	RequestValueMessage = "Does not match value request"
+	RequestValueMessage = "Output value does not match pays value for requestID %d"
 
 	// RequestSpends means the request spends does not match the input
 	RequestSpends sdk.CodeType = 609
 	// RequestSpendsMessage is the corresponding message
-	RequestSpendsMessage = "Does not match spends request"
+	RequestSpendsMessage = "Input does not match spends for requestID %d"
 
 	// NotAncestor means the LCA is not an ancestor of the SPV Proof header
 	NotAncestor sdk.CodeType = 610
 	// NotAncestorMessage is the corresponding message
-	NotAncestorMessage = "LCA not ancestor of proof header"
+	NotAncestorMessage = "LCA %x not ancestor of proof header"
 
 	// NotEnoughConfs means the proof does not have enough confirmations
 	NotEnoughConfs sdk.CodeType = 611
 	// NotEnoughConfsMessage is the corresponding message
-	NotEnoughConfsMessage = "Not enough confirmations"
+	NotEnoughConfsMessage = "Not enough confirmations for requestID %d"
 
 	// ActionLength means the pays value is greater than 50 bytes
 	ActionLength sdk.CodeType = 612
@@ -199,39 +182,28 @@ const (
 	ExternalError sdk.CodeType = 701
 )
 
-// ErrUnknownError throws an error
-func ErrUnknownError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, UnknownError, UnknownErrorMessage)
-}
-
 // ErrBadHeaderLength throws an error
-func ErrBadHeaderLength(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, BadHeaderLength, BadHeaderLengthMessage)
-}
-
-// ErrInsufficientWork throws an error
-func ErrInsufficientWork(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, InsufficientWork, InsufficientWorkMessage)
-}
-
-// ErrUnknownBlock throws an error
-func ErrUnknownBlock(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, UnknownBlock, UnknownBlockMessage)
+func ErrBadHeaderLength(codespace sdk.CodespaceType, label string, digest RawHeader, length int) sdk.Error {
+	return sdk.NewError(codespace, BadHeaderLength, fmt.Sprint(BadHeaderLengthMessage, label, digest, length))
 }
 
 // ErrBadHeight throws an error
-func ErrBadHeight(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, BadHeight, BadHeightMessage)
+func ErrBadHeight(codespace sdk.CodespaceType, label string, digest Hash256Digest) sdk.Error {
+	return sdk.NewError(codespace, BadHeight, fmt.Sprintf(BadHeightMessage, label, digest))
+}
+
+func ErrHeightMismatch(codespace sdk.CodespaceType, prevDigest, digest Hash256Digest) sdk.Error {
+	return sdk.NewError(codespace, HeightMismatch, fmt.Sprintf(HeightMismatchMessage, prevDigest, digest))
+}
+
+// ErrUnknownBlock throws an error
+func ErrUnknownBlock(codespace sdk.CodespaceType, label string, digest Hash256Digest) sdk.Error {
+	return sdk.NewError(codespace, UnknownBlock, fmt.Sprint(UnknownBlockMessage, label, digest))
 }
 
 // ErrUnexpectedRetarget throws an error
-func ErrUnexpectedRetarget(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, UnexpectedRetarget, UnexpectedRetargetMessage)
-}
-
-// ErrBadLink throws an error
-func ErrBadLink(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, BadLink, BadLinkMessage)
+func ErrUnexpectedRetarget(codespace sdk.CodespaceType, rawHeader RawHeader) sdk.Error {
+	return sdk.NewError(codespace, UnexpectedRetarget, fmt.Sprint(UnexpectedRetargetMessage, rawHeader))
 }
 
 // ErrWrongEnd throws an error
@@ -255,28 +227,28 @@ func ErrBadRetarget(codespace sdk.CodespaceType) sdk.Error {
 }
 
 // ErrNotBestKnown throws an error
-func ErrNotBestKnown(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, NotBestKnown, NotBestKnownMessage)
+func ErrNotBestKnown(codespace sdk.CodespaceType, invalidBest, expectedBest Hash256Digest) sdk.Error {
+	return sdk.NewError(codespace, NotBestKnown, fmt.Sprintf(NotBestKnownMessage, invalidBest, expectedBest))
 }
 
 // ErrNotHeaviestAncestor throws an error
-func ErrNotHeaviestAncestor(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, NotHeaviestAncestor, NotHeaviestAncestorMessage)
+func ErrNotHeaviestAncestor(codespace sdk.CodespaceType, ancestor Hash256Digest) sdk.Error {
+	return sdk.NewError(codespace, NotHeaviestAncestor, fmt.Sprintf(NotHeaviestAncestorMessage, ancestor))
 }
 
 // ErrNotHeavier throws an error
-func ErrNotHeavier(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, NotHeavier, NotHeavierMessage)
+func ErrNotHeavier(codespace sdk.CodespaceType, newBest, prevBest Hash256Digest) sdk.Error {
+	return sdk.NewError(codespace, NotHeavier, fmt.Sprintf(NotHeavierMessage, newBest, prevBest))
 }
 
 // ErrBadHash256Digest throws an error
-func ErrBadHash256Digest(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, BadHash256Digest, BadHash256DigestMessage)
+func ErrBadHash256Digest(codespace sdk.CodespaceType, invalidDigest string) sdk.Error {
+	return sdk.NewError(codespace, BadHash256Digest, fmt.Sprintf(BadHash256DigestMessage, invalidDigest))
 }
 
 // ErrBadHex throws an error
-func ErrBadHex(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, BadHex, BadHexMessage)
+func ErrBadHex(codespace sdk.CodespaceType, invalidHex string) sdk.Error {
+	return sdk.NewError(codespace, BadHex, fmt.Sprintf(BadHexMessage, invalidHex))
 }
 
 // ErrBadHexLen throws an error
@@ -289,14 +261,9 @@ func ErrAlreadyInit(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, AlreadyInit, AlreadyInitMessage)
 }
 
-// ErrTooManyArguments throws an error
-func ErrTooManyArguments(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, TooManyArguments, TooManyArgumentsMessage)
-}
-
-// ErrNotEnoughArguments throws an error
-func ErrNotEnoughArguments(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, NotEnoughArguments, NotEnoughArgumentsMessage)
+// ErrBadOffset throws an error
+func ErrBadOffset(codespace sdk.CodespaceType, digest Hash256Digest) sdk.Error {
+	return sdk.NewError(codespace, BadHexLen, fmt.Sprintf(BadOffsetMessage, digest))
 }
 
 // ErrMarshalJSON throws an error
@@ -345,28 +312,28 @@ func ErrClosedRequest(codespace sdk.CodespaceType) sdk.Error {
 }
 
 // ErrRequestPays throws an error
-func ErrRequestPays(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, RequestPays, RequestPaysMessage)
+func ErrRequestPays(codespace sdk.CodespaceType, requestID RequestID) sdk.Error {
+	return sdk.NewError(codespace, RequestPays, fmt.Sprintf(RequestPaysMessage, requestID))
 }
 
 // ErrRequestValue throws an error
-func ErrRequestValue(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, RequestValue, RequestValueMessage)
+func ErrRequestValue(codespace sdk.CodespaceType, requestID RequestID) sdk.Error {
+	return sdk.NewError(codespace, RequestValue, fmt.Sprintf(RequestValueMessage, requestID))
 }
 
 // ErrRequestSpends throws an error
-func ErrRequestSpends(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, RequestSpends, RequestSpendsMessage)
+func ErrRequestSpends(codespace sdk.CodespaceType, requestID RequestID) sdk.Error {
+	return sdk.NewError(codespace, RequestSpends, fmt.Sprintf(RequestSpendsMessage, requestID))
 }
 
 // ErrNotAncestor throws an error
-func ErrNotAncestor(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, NotAncestor, NotAncestorMessage)
+func ErrNotAncestor(codespace sdk.CodespaceType, lca Hash256Digest) sdk.Error {
+	return sdk.NewError(codespace, NotAncestor, fmt.Sprintf(NotAncestorMessage, lca))
 }
 
 // ErrNotEnoughConfs throws an error
-func ErrNotEnoughConfs(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, NotEnoughConfs, NotEnoughConfsMessage)
+func ErrNotEnoughConfs(codespace sdk.CodespaceType, requestID RequestID) sdk.Error {
+	return sdk.NewError(codespace, NotEnoughConfs, fmt.Sprintf(NotEnoughConfsMessage, requestID))
 }
 
 // ErrExternal converts any external error into an sdk error

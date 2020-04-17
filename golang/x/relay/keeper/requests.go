@@ -109,6 +109,8 @@ func (k Keeper) getRequest(ctx sdk.Context, id types.RequestID) (types.ProofRequ
 	return request, nil
 }
 
+// incrementID increments the id used to store a request,
+// ID must be in bytes
 func (k Keeper) incrementID(ctx sdk.Context) sdk.Error {
 	store := k.getRequestStore(ctx)
 	// get id
@@ -142,6 +144,7 @@ func (k Keeper) getNextID(ctx sdk.Context) (types.RequestID, sdk.Error) {
 	return newID, nil
 }
 
+// checkRequests validates a request
 func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint32, vin []byte, vout []byte, requestID types.RequestID) sdk.Error {
 	if !btcspv.ValidateVin(vin) {
 		return types.ErrInvalidVin(types.DefaultCodespace)
@@ -165,11 +168,11 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint32, v
 		// hash the output script (out[8:])
 		outDigest := btcspv.Hash256(out[8:])
 		if outDigest != req.Pays {
-			return types.ErrRequestPays(types.DefaultCodespace)
+			return types.ErrRequestPays(types.DefaultCodespace, requestID)
 		}
 		paysValue := req.PaysValue
 		if paysValue != 0 && uint64(btcspv.ExtractValue(out)) < paysValue {
-			return types.ErrRequestValue(types.DefaultCodespace)
+			return types.ErrRequestValue(types.DefaultCodespace, requestID)
 		}
 	}
 
@@ -182,7 +185,7 @@ func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint32, v
 		outpoint := btcspv.ExtractOutpoint(in)
 		inDigest := btcspv.Hash256(outpoint)
 		if hasSpends && inDigest != req.Spends {
-			return types.ErrRequestSpends(types.DefaultCodespace)
+			return types.ErrRequestSpends(types.DefaultCodespace, requestID)
 		}
 	}
 	return nil

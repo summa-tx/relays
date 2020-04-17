@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/summa-tx/relays/golang/x/relay/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,7 +23,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
-	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
 type NamedCase interface {
@@ -234,7 +234,7 @@ func (s *KeeperSuite) InitTestContext(mainnet, isCheckTx bool) {
 	cdc := codec.New()
 
 	ctx := sdk.NewContext(ms, abci.Header{ChainID: "relayTestChain"}, isCheckTx, tmlog.NewNopLogger())
-	keeper := NewKeeper(relayKey, cdc, mainnet)
+	keeper := NewKeeper(relayKey, cdc, mainnet, types.NewNullHandler())
 
 	s.Context = ctx
 	s.Keeper = keeper
@@ -299,15 +299,15 @@ func (s *KeeperSuite) TestSetGenesisState() {
 
 	gen, err := s.Keeper.GetRelayGenesis(s.Context)
 	s.SDKNil(err)
-	s.Equal(genesis.HashLE, gen)
+	s.Equal(genesis.Hash, gen)
 
 	lca, err := s.Keeper.GetLastReorgLCA(s.Context)
 	s.SDKNil(err)
-	s.Equal(genesis.HashLE, lca)
+	s.Equal(genesis.Hash, lca)
 
 	best, err := s.Keeper.GetBestKnownDigest(s.Context)
 	s.SDKNil(err)
-	s.Equal(genesis.HashLE, best)
+	s.Equal(genesis.Hash, best)
 
 	diff := s.Keeper.getCurrentEpochDifficulty(s.Context)
 	s.Equal(btcspv.ExtractDifficulty(genesis.Raw), diff)

@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/summa-tx/relays/golang/x/relay/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *KeeperSuite) TestGetConfs() {
@@ -11,14 +11,14 @@ func (s *KeeperSuite) TestGetConfs() {
 
 	// errors if Best Known Digest is not found
 	confs, err := s.Keeper.getConfs(s.Context, header)
-	s.Equal(sdk.CodeType(105), err.Code())
+	s.Equal(sdk.CodeType(types.BadHash256Digest), err.Code())
 	s.Equal(uint32(0), confs)
 
 	// errors if Best Known Digest header is not found
-	s.Keeper.setBestKnownDigest(s.Context, bestKnown.HashLE)
+	s.Keeper.setBestKnownDigest(s.Context, bestKnown.Hash)
 
 	confs, err = s.Keeper.getConfs(s.Context, header)
-	s.Equal(sdk.CodeType(103), err.Code())
+	s.Equal(sdk.CodeType(types.UnknownBlock), err.Code())
 	s.Equal(uint32(0), confs)
 
 	// success
@@ -35,13 +35,13 @@ func (s *KeeperSuite) TestValidateProof() {
 
 	// errors if LCA is not found
 	err := s.Keeper.validateProof(s.Context, proof)
-	s.Equal(sdk.CodeType(105), err.Code())
+	s.Equal(sdk.CodeType(types.BadHash256Digest), err.Code())
 
 	// errors if link is not found
 	s.Keeper.setLastReorgLCA(s.Context, proofCases[0].LCA)
 
 	err = s.Keeper.validateProof(s.Context, proof)
-	s.Equal(sdk.CodeType(610), err.Code())
+	s.Equal(sdk.CodeType(types.NotAncestor), err.Code())
 
 	for i := range proofCases {
 		// Store lots of stuff
@@ -71,25 +71,25 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 	s.Nil(requestErr)
 
 	// errors if getConfs fails
-	err := s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
-	s.Equal(sdk.CodeType(105), err.Code())
+	_, err := s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
+	s.Equal(sdk.CodeType(types.BadHash256Digest), err.Code())
 
-	s.Keeper.setBestKnownDigest(s.Context, validProof.BestKnown.HashLE)
+	s.Keeper.setBestKnownDigest(s.Context, validProof.BestKnown.Hash)
 
 	// errors if checkRequest errors
 	// deactivate request
 	activeErr := s.Keeper.setRequestState(s.Context, types.RequestID{}, false)
 	s.SDKNil(activeErr)
 
-	err = s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
-	s.Equal(sdk.CodeType(606), err.Code())
+	_, err = s.Keeper.checkRequestsFilled(s.Context, tc[0].FilledRequests)
+	s.Equal(sdk.CodeType(types.ClosedRequest), err.Code())
 
 	// reactivate request
 	activeErr = s.Keeper.setRequestState(s.Context, types.RequestID{}, true)
 	s.SDKNil(activeErr)
 
 	for i := range tc {
-		err := s.Keeper.checkRequestsFilled(s.Context, tc[i].FilledRequests)
+		_, err := s.Keeper.checkRequestsFilled(s.Context, tc[i].FilledRequests)
 		if tc[i].Error != 0 {
 			s.Equal(sdk.CodeType(tc[i].Error), err.Code())
 		} else {
@@ -103,6 +103,6 @@ func (s *KeeperSuite) TestCheckRequestsFilled() {
 
 	copiedRequest := tc[0].FilledRequests
 	copiedRequest.Filled[0].ID = types.RequestID{0, 0, 0, 0, 0, 0, 0, 1}
-	err = s.Keeper.checkRequestsFilled(s.Context, copiedRequest)
-	s.Equal(sdk.CodeType(611), err.Code())
+	_, err = s.Keeper.checkRequestsFilled(s.Context, copiedRequest)
+	s.Equal(sdk.CodeType(types.NotEnoughConfs), err.Code())
 }
