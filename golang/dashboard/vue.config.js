@@ -7,5 +7,8 @@ module.exports = {
       shouldServeApp: true,
       serverDir: './server'
     }
+  },
+  devServer: {
+    proxy: 'http://localhost:1317'
   }
 }
