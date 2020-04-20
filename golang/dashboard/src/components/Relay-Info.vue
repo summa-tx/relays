@@ -23,6 +23,7 @@
             <Click-To-Copy :copy-value="height"/>
           </v-flex>
           <v-flex class="relay__info__info" row>
+            <p><b>Hash:</b> {{ currentBlock.hash }}</p>
             <Click-To-Copy :copy-value="currentBlock.hash"/>
           </v-flex>
           <v-flex class="relay__info__info" row>
