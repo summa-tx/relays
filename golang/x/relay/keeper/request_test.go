@@ -3,9 +3,9 @@ package keeper
 import (
 	"bytes"
 
-	"github.com/summa-tx/relays/golang/x/relay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
+	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
 func (s *KeeperSuite) TestEmitProofRequest() {

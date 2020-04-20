@@ -3,8 +3,8 @@ package keeper
 import (
 	"bytes"
 
-	"github.com/summa-tx/relays/golang/x/relay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
 func getAccAddress() sdk.AccAddress {

@@ -390,7 +390,7 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 // GetCmdCheckRequests returns the CLI command struct for checkRequests
 func GetCmdCheckRequests(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:  "checkrequests <json proof> <json list of requests>",
+		Use:     "checkrequests <json proof> <json list of requests>",
 		Example: "checkrequests 1_check_proof.json 3_filled_requests.json --inputfile",
 		Long: `Check whether proof successfully validates a set of requests.
 Use flag --inputfile to submit a json filename as input from scripts/seed_data directory`,
@@ -463,7 +463,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 // GetCmdCheckProof returns the CLI command struct for checkProof
 func GetCmdCheckProof(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:  "checkproof <json proof>",
+		Use:     "checkproof <json proof>",
 		Example: "checkproof 1_check_proof.json --inputfile",
 		Long: `check proof has valid parameters.
 Use flag --inputfile to submit a json filename as input from scripts/seed_data directory.`,

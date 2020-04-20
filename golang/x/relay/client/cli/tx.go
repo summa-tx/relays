@@ -43,12 +43,12 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 // GetCmdIngestHeaderChain creates a CLI command to ingest a header chain
 func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "ingestheaders <json list of headers>",
+		Use:     "ingestheaders <json list of headers>",
 		Example: "ingestheaders  2_ingest_headers.json --inputfile --from me",
-		Short: "Ingest a set of headers",
+		Short:   "Ingest a set of headers",
 		Long: `Ingest a set of headers. The headers must be in order, and the header immediately before the first must already be known to the relay.
 Use flag --inputfile to submit a json filename as input from scripts/seed_data directory`,
-		Args:    cobra.ExactArgs(1),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
@@ -196,7 +196,7 @@ func GetCmdProvideProof(cdc *codec.Codec) *cobra.Command {
 		Short:   "validates proof of given requests",
 		Long: `Validates proof of given requests. Useful for validating proofs before spending gas on submission transaction.
 Use flag --inputfile to submit a json filename as input from scripts/seed_data directory`,
-		Args:    cobra.ExactArgs(2),
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
