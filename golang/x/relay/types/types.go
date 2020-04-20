@@ -50,7 +50,7 @@ func Hash256DigestFromHex(hexStr string) (Hash256Digest, sdk.Error) {
 
 	bytes, decodeErr := hex.DecodeString(data)
 	if decodeErr != nil {
-		return Hash256Digest{}, ErrBadHex(DefaultCodespace)
+		return Hash256Digest{}, ErrBadHex(DefaultCodespace, hexStr)
 	}
 	digest, newDigestErr := btcspv.NewHash256Digest(bytes)
 	if newDigestErr != nil {

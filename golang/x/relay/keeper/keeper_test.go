@@ -15,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/summa-tx/relays/golang/x/relay/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
@@ -22,7 +23,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
-	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
 type NamedCase interface {

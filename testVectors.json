@@ -22,7 +22,7 @@
       "testCases": [{
         "digest": "0x96f25d34d30a1bf4e280d6bb38b228e8993c8b28222d2b000000000000000000",
         "offset": 2,
-        "error": 103,
+        "error": 104,
         "output": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
       }, {
         "digest": "0x96f25d34d30a1bf4e280d6bb38b228e8993c8b28222d2b000000000000000000",
@@ -32,7 +32,7 @@
       }, {
         "digest": "0x8bfff9ae28af2aa90adfdb92b218829727886488dcc914000000000000000000",
         "offset": 3,
-        "error": 103,
+        "error": 107,
         "output": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
       }]
     }
@@ -438,7 +438,7 @@
         },
         "internal": false,
         "isMainnet": true,
-        "output": 104
+        "output": 103
       },
       {
         "comment": "header doesn't pass validation, header[0].merkle_root_le is wrong",
@@ -832,35 +832,35 @@
         "currentBest": "0xfee20039fe494f7408c090e03970ec9b132366066f380d000000000000000000",
         "newBest": "0xd2406bb15e4f917104d2b2d9320454b947fb08a723301d000000000000000000",
         "limit": 20,
-        "error": 103,
+        "error": 104,
         "output": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
       }, {
         "ancestor": "0xfee20039fe494f7408c090e03970ec9b132366066f380d000000000000000000",
         "currentBest": "0xa4c292016c1585e6f81986f7e216c79d28b15b1d513a10000000000000000000",
         "newBest": "0xd2406bb15e4f917104d2b2d9320454b947fb08a723301d000000000000000000",
         "limit": 20,
-        "error": 103,
+        "error": 104,
         "output": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
       }, {
         "ancestor": "0xfee20039fe494f7408c090e03970ec9b132366066f380d000000000000000000",
         "currentBest": "0xd2406bb15e4f917104d2b2d9320454b947fb08a723301d000000000000000000",
         "newBest": "0xa4c292016c1585e6f81986f7e216c79d28b15b1d513a10000000000000000000",
         "limit": 20,
-        "error": 103,
+        "error": 104,
         "output": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
       }, {
         "ancestor": "0xfee20039fe494f7408c090e03970ec9b132366066f380d000000000000000000",
         "currentBest": "0x8bfff9ae28af2aa90adfdb92b218829727886488dcc914000000000000000000",
         "newBest": "0xd2406bb15e4f917104d2b2d9320454b947fb08a723301d000000000000000000",
         "limit": 20,
-        "error": 104,
+        "error": 102,
         "output": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
       }, {
         "ancestor": "0xfee20039fe494f7408c090e03970ec9b132366066f380d000000000000000000",
         "currentBest": "0xd2406bb15e4f917104d2b2d9320454b947fb08a723301d000000000000000000",
         "newBest": "0x8bfff9ae28af2aa90adfdb92b218829727886488dcc914000000000000000000",
         "limit": 20,
-        "error": 104,
+        "error": 102,
         "output": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
       }, {
         "ancestor": "0xfee20039fe494f7408c090e03970ec9b132366066f380d000000000000000000",
@@ -906,7 +906,7 @@
       "currentBest": "0x00000020d0eb8cc9a5668ddabb83e6f657d940fd56902ceb039f200000000000000000005e407cf51ee81930145648d1e72c1caeafa6f6bfc4a7ec3988bcb7cf69a1594af3fe1d58d2550418e90ec632",
       "newBest": "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999",
       "limit": 10,
-      "error": 103,
+      "error": 104,
       "output": ""
     }, {
       "bestKnownDigest": "0x58bc010196dd410ab4437e8b1601376e273fa45abb5b3c030000000000000000",

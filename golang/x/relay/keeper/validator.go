@@ -43,7 +43,7 @@ func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof) sdk.Error {
 	}
 	isAncestor := k.IsAncestor(ctx, proof.ConfirmingHeader.Hash, lca, 240)
 	if !isAncestor {
-		return types.ErrNotAncestor(types.DefaultCodespace)
+		return types.ErrNotAncestor(types.DefaultCodespace, proof.ConfirmingHeader.Hash)
 	}
 
 	return nil
@@ -71,7 +71,7 @@ func (k Keeper) checkRequestsFilled(ctx sdk.Context, filledRequests types.Filled
 		}
 		// check confirmations
 		if confs < uint32(request.NumConfs) {
-			return nil, types.ErrNotEnoughConfs(types.DefaultCodespace)
+			return nil, types.ErrNotEnoughConfs(types.DefaultCodespace, filledRequests.Filled[i].ID)
 		}
 
 		// check request

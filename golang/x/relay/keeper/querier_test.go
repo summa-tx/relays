@@ -153,7 +153,7 @@ func (s *KeeperSuite) TestQueryGetRelayGenesis() {
 
 	// Test that GetRelayGenesis errors if RelayGenesis is not found
 	_, err := querier(s.Context, path, req)
-	s.Equal(sdk.CodeType(105), err.Code())
+	s.Equal(sdk.CodeType(types.BadHash256Digest), err.Code())
 
 	// Set Genesis state
 	err = s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
@@ -185,7 +185,7 @@ func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
 
 	// Test that it errors if it doesn't find LastReorgLCA
 	_, err := querier(s.Context, path, req)
-	s.Equal(sdk.CodeType(105), err.Code())
+	s.Equal(sdk.CodeType(types.BadHash256Digest), err.Code())
 
 	setStateErr := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
 	s.SDKNil(setStateErr)
@@ -220,7 +220,7 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 
 	// Test that it errors if ancestor is not found
 	_, findAncestorErr := querier(s.Context, path, req)
-	s.Equal(sdk.CodeType(103), findAncestorErr.Code())
+	s.Equal(sdk.CodeType(types.UnknownBlock), findAncestorErr.Code())
 
 	// initialize data
 	s.Keeper.ingestHeader(s.Context, anchor)
@@ -305,7 +305,7 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 	}
 
 	_, err = querier(s.Context, path, req)
-	s.Equal(sdk.CodeType(103), err.Code())
+	s.Equal(sdk.CodeType(types.UnknownBlock), err.Code())
 
 	// Test that default limit is used if limit is set to zero
 	params = types.QueryParamsHeaviestFromAncestor{
@@ -445,7 +445,7 @@ func (s *KeeperSuite) TestQueryGetRequest() {
 
 	// Errors if request is not found
 	_, err = querier(s.Context, path, req)
-	s.Equal(sdk.CodeType(601), err.Code())
+	s.Equal(sdk.CodeType(types.UnknownRequest), err.Code())
 
 	// Set Request
 	err = s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0, types.Local, nil)

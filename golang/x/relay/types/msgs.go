@@ -131,8 +131,12 @@ func (msg MsgMarkNewHeaviest) Type() string { return "mark_new_heaviest" }
 
 // ValidateBasic runs stateless validation
 func (msg MsgMarkNewHeaviest) ValidateBasic() sdk.Error {
-	if len(msg.CurrentBest) != 80 || len(msg.NewBest) != 80 {
-		return ErrBadHeaderLength(DefaultCodespace)
+	if len(msg.CurrentBest) != 80 {
+		return ErrBadHeaderLength(DefaultCodespace, "currentBest", msg.CurrentBest, len(msg.CurrentBest))
+	}
+
+	if len(msg.NewBest) != 80 {
+		return ErrBadHeaderLength(DefaultCodespace, "newBest", msg.NewBest, len(msg.NewBest))
 	}
 
 	return nil

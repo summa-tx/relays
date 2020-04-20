@@ -33,13 +33,13 @@ func (k Keeper) getLink(ctx sdk.Context, digestLE types.Hash256Digest) types.Has
 func (k Keeper) FindAncestor(ctx sdk.Context, digestLE types.Hash256Digest, offset uint32) (types.Hash256Digest, sdk.Error) {
 	current := digestLE
 	if !k.hasLink(ctx, current) {
-		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "digest", digestLE)
 	}
 
 	for i := uint32(0); i < offset; i++ {
 		current = k.getLink(ctx, current)
 		if !k.hasLink(ctx, current) {
-			return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+			return types.Hash256Digest{}, types.ErrBadOffset(types.DefaultCodespace, current)
 		}
 	}
 
