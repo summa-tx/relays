@@ -17,14 +17,26 @@
 
       <div class="relay__info">
         <v-layout class="relay__info__line" column>
-          <h3 class="relay__info__title">Current Block:</h3>
+          <v-layout>
+            <h3 class="relay__info__title">Current Block:</h3>
+            <v-tooltip top>
+              <template v-slot:activator="{ on }">
+                <v-icon v-on="on" size="20px">help</v-icon>
+              </template>
+              <span>Something here</span>
+            </v-tooltip>
+          </v-layout>
+
           <v-flex class="relay__info__info" row>
             <p><b>Height:</b> {{ height }}</p>
             <Click-To-Copy :copy-value="height"/>
           </v-flex>
+
           <v-flex class="relay__info__info" row>
+            <p><b>Hash:</b> {{ currentBlock.hash }}</p>
             <Click-To-Copy :copy-value="currentBlock.hash"/>
           </v-flex>
+
           <v-flex class="relay__info__info" row>
             <p><b>Verified:</b> {{ currentBlock.verifiedAt || 'Unverified' }}</p>
           </v-flex>
@@ -33,7 +45,16 @@
         <v-divider/>
 
         <v-layout class="relay__info__line" column>
-          <h3 class="relay__info__title">Best Known Digest:</h3>
+          <v-layout>
+            <h3 class="relay__info__title">Best Known Digest:</h3>
+            <v-tooltip top>
+              <template v-slot:activator="{ on }">
+                <v-icon v-on="on" size="20px">help</v-icon>
+              </template>
+              <span>Something here</span>
+            </v-tooltip>
+          </v-layout>
+
           <v-flex class="relay__info__info" row>
             <p v-if="windowWidth < 800">{{ relay.bkd | crop }}</p>
             <p v-else>{{ relay.bkd }}</p>
@@ -44,7 +65,16 @@
         <v-divider/>
 
         <v-layout class="relay__info__line" column>
-          <h3 class="relay__info__title">Common Ancestor of Last Reorg:</h3>
+          <v-layout>
+            <h3 class="relay__info__title">Common Ancestor of Last Reorg:</h3>
+
+            <v-tooltip top>
+              <template v-slot:activator="{ on }">
+                <v-icon v-on="on" size="20px">help</v-icon>
+              </template>
+              <span>Something here</span>
+            </v-tooltip>
+          </v-layout>
           <v-flex class="relay__info__info" row>
             <p v-if="windowWidth < 800">{{ relay.lca | crop }}</p>
             <p v-else>{{ relay.lca }}</p>
@@ -190,8 +220,7 @@ export default {
 }
 
 .relay__info__title {
-  width: 350px;
-  min-width: 350px;
+  margin-right: 7px;
   font-weight: 900;
 }
 
