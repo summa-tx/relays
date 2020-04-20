@@ -23,6 +23,8 @@
 
         <v-spacer/>
 
+        <v-btn @click="updateAll">UPDATE</v-btn>
+
       </v-layout>
     </v-app-bar>
 
@@ -69,6 +71,11 @@ export default {
 
     getExternalInfo () {
       this.$store.dispatch('info/getExternalInfo')
+    },
+
+    updateAll () {
+      this.getRelayInfo()
+      this.getExternalInfo()
     }
   }
 }

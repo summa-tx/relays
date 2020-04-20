@@ -100,8 +100,6 @@ const actions = {
   getExternalInfo ({ dispatch, state }) {
     console.log('Getting external info')
     axios.get(blockchainURL).then((res) => {
-      dispatch('setLastComms', { source: 'external', date: new Date() })
-
       console.log('EXTERNAL INFO:', res.data)
       const { height, hash } = res.data
       const currentHeight = state.currentBlock.height
@@ -120,13 +118,14 @@ Digest:,
       if (height > currentHeight) {
         // Update current block
         dispatch('updateCurrentBlock', { height, hash, updatedAt: new Date() })
-        // Than verify height against relay
-        // TODO: Need to fix this `verifiedAt` update
-        dispatch('relay/verifyHeight', hash.toString(), { root: true })
       }
+      // Than verify height against relay
+      dispatch('relay/verifyHeight', hash.toString(), { root: true })
     }).catch((err) => {
       console.log('blockcypher error', err)
     })
+
+    dispatch('setLastComms', { source: 'external', date: new Date() })
   }
 }
 

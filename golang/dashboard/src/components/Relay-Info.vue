@@ -26,7 +26,8 @@
             <Click-To-Copy :copy-value="currentBlock.hash"/>
           </v-flex>
           <v-flex class="relay__info__info" row>
-            <p><b>Verified:</b> {{ currentBlock.verifiedAt || 'Unverified' }}</p>
+            <p v-if="verifiedAt === null"><b>Verified:</b> Unverified</p>
+            <p v-else><b>Verified:</b> {{ verifiedAt }} minute<span v-if="verifiedAt > 1">s</span> ago</p>
           </v-flex>
         </v-layout>
 
@@ -57,7 +58,7 @@
     <v-card class="relay__updates">
       <v-layout>
         <p class="relay__updates__title">Relay Health Check:</p>
-        <p v-if="lastCommsRelay === null">Health check not completed</p>
+        <p v-if="lastCommsRelay === null">Not completed</p>
         <p v-else-if="lastCommsRelay < 1">Less than 1 minute ago</p>
         <p v-else>{{ lastCommsRelay }} minute<span v-if="lastCommsRelay > 1">s</span> ago</p>
       </v-layout>
@@ -67,7 +68,7 @@
       </v-layout>
       <v-layout>
         <p class="relay__updates__title">Source Health Check:</p>
-        <p v-if="lastCommsExternal === null">Source health check not completed</p>
+        <p v-if="lastCommsExternal === null">Not completed</p>
         <p v-else-if="lastCommsExternal < 1">Less than 1 minute ago</p>
         <p v-else>{{ lastCommsExternal }} minute<span v-if="lastCommsExternal > 1">s</span> ago</p>
       </v-layout>
@@ -114,21 +115,24 @@ export default {
     this.onResize()
 
     // Calculate minutes for health check
-    this.verifiedAt = getMinsAgo(this.currentBlock.verifiedAt)
-    this.lastCommsExternal = getMinsAgo(this.lastComms.external)
-    this.lastCommsRelay = getMinsAgo(this.lastComms.relay)
+    this.healthCheckMins()
 
     // Updates every minute
     setInterval(() => {
-      this.verifiedAt = getMinsAgo(this.currentBlock.verifiedAt)
-      this.lastCommsExternal = getMinsAgo(this.lastComms.external)
-      this.lastCommsRelay = getMinsAgo(this.lastComms.relay)
+      this.healthCheckMins()
     }, 60000)
   },
 
   methods: {
     onResize () {
       this.windowWidth = window.innerWidth
+    },
+
+    healthCheckMins () {
+      this.verifiedAt = this.currentBlock.verifiedAt ? getMinsAgo(this.currentBlock.verifiedAt) : null
+      this.lastCommsExternal = this.lastComms.external ? getMinsAgo(this.lastComms.external) : null
+      this.lastCommsRelay = this.lastComms.relay ? getMinsAgo(this.lastComms.relay) : null
+      console.log(this.verifiedAt)
     }
 
     // getBKD () {
@@ -146,12 +150,22 @@ export default {
 
   computed: {
     ...mapState({
-      lastComms: state => state.info.lastComms,
+      lastComms: state => state.info.lastComms.relay,
       currentBlock: state => state.info.currentBlock,
       height: state => state.info.currentBlock.height,
       relay: state => state.info.relay,
       source: state => state.info.source
     })
+  },
+
+  watch: {
+    lastComms: {
+      handler: function () {
+        console.log('Updated info')
+        this.healthCheckMins()
+      },
+      deep: true
+    }
   },
 
   filters: {
