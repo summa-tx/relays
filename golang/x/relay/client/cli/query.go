@@ -31,6 +31,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdIsMostRecentCommonAncestor(queryRoute, cdc),
 		GetCmdHeaviestFromAncestor(queryRoute, cdc),
 		GetCmdCheckProof(queryRoute, cdc),
+		GetCmdCheckRequests(queryRoute, cdc),
 	)...)
 	return relayQueryCommand
 }
@@ -40,7 +41,7 @@ func GetCmdIsAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		// what are the arguments. <> for required, [] for optional
 		Use:     "isancestor <digest> <ancestor> [limit]",
-		Example: "isancestor 12..ab 34..cd 200", // how do you use it?
+		Example: "isancestor 0641238051855d1759da9b6603b156684a68a146d36a09000000000000000000 9be6406d5311123b6212b14b1a070276157364a5d5f004000000000000000000 200", // how do you use it?
 		// a help message. shows on `help isancestor`
 		Long: "Check if the second argument is an ancestor of the the argument. Optionally set a limit on block traversal",
 		// how many arguments does it take?
@@ -172,7 +173,7 @@ func GetCmdGetBestDigest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "findancestor <digest> <offset>",
-		Example: "findancestor 12..ab 2",
+		Example: "findancestor f8d0a038bfe4027e5de3b6bf07262122636fd2916d7503000000000000000000 2", // how do you use it?
 		Long:    "Finds the digest <offset> blocks before <digest>. Errors if digest or the ancestor is unknown",
 		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -221,7 +222,7 @@ func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 func GetCmdIsMostRecentCommonAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "ismostrecentcommonancestor <ancestor> <left> <right> [limit]",
-		Example: "ismostrecentcommonancestor 12..ab 34..cd 56..ef 200", // how do you use it?
+		Example: "ismostrecentcommonancestor 9be6406d5311123b6212b14b1a070276157364a5d5f004000000000000000000 0641238051855d1759da9b6603b156684a68a146d36a09000000000000000000 7f9923db1d3ad6a08054b4a80a5cd7478b57a9650eaf09000000000000000000 3", // how do you use it?
 		Long:    "Checks if <ancestor> is the LCA of <left> and <right> digests",
 		Args:    cobra.RangeArgs(3, 4),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -286,7 +287,7 @@ func GetCmdIsMostRecentCommonAncestor(queryRoute string, cdc *codec.Codec) *cobr
 func GetCmdHeaviestFromAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:     "heaviestfromancestor <ancestor> <currentbest> <newbest> [limit]",
-		Example: "heaviestFromancestor 12..ab 34..cd 56..ef 200", // how do you use it?
+		Example: "heaviestfromancestor 4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000 4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000 0641238051855d1759da9b6603b156684a68a146d36a09000000000000000000 200", // how do you use it?
 		Long:    "Determines the heavier descendant of a common ancestor",
 		Args:    cobra.RangeArgs(3, 4),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -390,7 +391,9 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 func GetCmdCheckRequests(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:  "checkrequests <json proof> <json list of requests>",
-		Long: "check whether proof successfully validates a set of requests",
+		Example: "checkrequests 1_check_proof.json 3_filled_requests.json --inputfile",
+		Long: `Check whether proof successfully validates a set of requests.
+Use flag --inputfile to submit a json filename as input from scripts/seed_data directory`,
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -461,7 +464,9 @@ func GetCmdCheckRequests(queryRoute string, cdc *codec.Codec) *cobra.Command {
 func GetCmdCheckProof(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:  "checkproof <json proof>",
-		Long: "check proof has valid parameters",
+		Example: "checkproof 1_check_proof.json --inputfile",
+		Long: `check proof has valid parameters.
+Use flag --inputfile to submit a json filename as input from scripts/seed_data directory.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)

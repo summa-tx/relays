@@ -291,6 +291,57 @@ func (suite *UtilsSuite) TestRelayCLIQueryCheckProof() {
 	suite.Equal(expected, actual)
 }
 
+func (suite *UtilsSuite) TestRelayCLIQueryCheckRequests() {
+	suite.T().Parallel()
+	genesisHeaders := suite.TestData.GenesisHeaders
+
+	// Initialize chain
+	f := InitFixtures(suite.T())
+	proc := f.RelayDStart()
+	defer func() {
+		err := proc.Stop(false)
+		suite.NoError(err)
+	}()
+
+	// Define parameter values
+	fooAddr := f.KeyAddress(keyFoo)
+	prevEpochStart := hex.EncodeToString(genesisHeaders[0].Hash[:])
+
+	// Ingest Headers w/ Diff Change
+	success, stdout, stderr := f.TxIngestDiffChange(fooAddr, prevEpochStart, "0_new_difficulty.json", "--inputfile -y")
+	suite.True(success, stderr)
+	suite.Contains(stdout, `"success":true`)
+
+	// Ingest New Headers
+	success, stdout, stderr = f.TxIngestHeaders(fooAddr, "2_ingest_headers.json", "--inputfile -y")
+	suite.True(success, stderr)
+	suite.Contains(stdout, `"success":true`)
+
+	// require checkrequests fails given invalid proof requests
+	checkrequests := f.QueryCheckRequests("1_check_proof.json", "3_filled_requests.json", "--inputfile")
+	actual := checkrequests.Valid
+	expected := false
+	suite.Equal(expected, actual)
+
+	// submit proof request
+	spends := "0x"
+	pays := "0x17a91423737cd98bb6b2da5a11bcd82e5de36591d69f9f87"
+	value := "0"
+	numConfs := "1"
+	success, stdout, stderr = f.TxNewRequest(fooAddr, spends, pays, value, numConfs, "-y")
+	suite.True(success, stderr)
+	suite.Contains(stdout, `"success":true`)
+
+	// checkrequests returns valid true when existing requests are proven with provided proof
+	checkrequests = f.QueryCheckRequests("1_check_proof.json", "3_filled_requests.json", "--inputfile")
+	actual = checkrequests.Valid
+	expected = true
+	suite.Equal(expected, actual)
+
+	//Cleanup
+	f.Cleanup()
+}
+
 func (suite *UtilsSuite) TestRelayCLITXIngestHeaders() {
 	suite.T().Parallel()
 
