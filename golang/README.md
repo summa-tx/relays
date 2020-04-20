@@ -63,7 +63,7 @@ descriptions in the CLI.
 | IsAncestor | Deteremine if a block is an ancestor of another | `isancestor <digest> <ancestor> [limit]` |
 | GetRelayGenesis | Get the trusted root of the relay | `getrelaygenesis` |
 | GetLastReorgLCA | Get the LCA of the latest reorg | `getlastreorglca` |
-| GetLastBestDigest | Get the best digest known to the relay | `getbestdigest` |
+| GetBestDigest | Get the best digest known to the relay | `getbestdigest` |
 | FindAncestor | Find the nth ancestor of a block| `findancestor <digest> <offset>` |
 | IsMostRecentCommonAncestor | Determine if a block is the LCA of two headers| `ismostrecentcommonancestor <ancestor> <left> <right> [limit]` |
 | HeaviestFromAncestor | Check which of two descendents is heaviest from the LCA | `heaviestfromancestor <ancestor> <currentbest> <newbest> [limit]` |
