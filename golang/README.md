@@ -16,6 +16,17 @@ $ make
 $ make install
 ```
 
+## Running the REST server
+
+Build the daemon and cli, then run in one terminal:
+```sh
+make init
+```
+And in another:
+```sh
+relaycli rest-server --chain-id relay
+```
+
 ## Running tests
 
 Run the unit tests as follows:
@@ -94,8 +105,8 @@ Query routes
 | /findancestor/{digest}/{offset} | FindAncestor | Find the nth ancestor of a block | GET |
 | /ismostrecentcommonancestor/{ancestor}/{left}/{right}/ | IsMostRecentCommonAncestor | Determine if a block is the LCA of two headers | GET |
 | /ismostrecentcommonancestor/{ancestor}/{left}/{right}/{limit} | IsMostRecentCommonAncestor | Determine if a block is the LCA of two headers | GET |
-| /heaviestfromancestor/{ancestor}/{currentBest}/{newBest}/ |  |  | GET |
-| /heaviestfromancestor/{ancestor}/{currentBest}/{newBest}/{limit} |  |  | GET |
+| /heaviestfromancestor/{ancestor}/{currentBest}/{newBest}/ | HeaviestFromAncestor | Check which of two descendents is heaviest from the LCA | GET |
+| /heaviestfromancestor/{ancestor}/{currentBest}/{newBest}/{limit} | HeaviestFromAncestor | Check which of two descendents is heaviest from the LCA | GET |
 | /getrequest/{id} | GetRequest | Get details of an SPV Proof Request | GET |
 | /checkrequests | CheckRequests | Perform CheckProof and check the SPV Proof against a set of Requests | POST |
 | /checkproof | CheckProof | Check the syntactic validity of an SPV Proof | POST |
