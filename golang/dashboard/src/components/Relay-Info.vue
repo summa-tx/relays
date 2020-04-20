@@ -33,7 +33,11 @@
           </v-flex>
 
           <v-flex class="relay__info__info" row>
-            <p><b>Hash:</b> {{ currentBlock.hash }}</p>
+            <p>
+              <b>Hash:</b>
+              <span v-if="windowWidth < 800"> {{ currentBlock.hash | crop }}</span>
+              <span v-else>{{ currentBlock.hash }}</span>
+            </p>
             <Click-To-Copy :copy-value="currentBlock.hash"/>
           </v-flex>
 
