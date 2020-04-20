@@ -350,6 +350,18 @@ func (f *Fixtures) QueryCheckProof(proof string, flags ...string) rtypes.QueryRe
 	return checkproof
 }
 
+// QueryCheckRequests returns the Boolean
+func (f *Fixtures) QueryCheckRequests(proof, requests string, flags ...string) rtypes.QueryResCheckRequests {
+	cmd := fmt.Sprintf("%s query relay checkrequests %s %s %s", f.RelaycliBinary, proof, requests, f.Flags())
+	res, errStr := tests.ExecuteT(f.T, addFlags(cmd, flags), "")
+	require.Empty(f.T, errStr)
+	cdc := app.MakeCodec()
+	var checkrequests rtypes.QueryResCheckRequests
+	err := cdc.UnmarshalJSON([]byte(res), &checkrequests)
+	require.NoError(f.T, err)
+	return checkrequests
+}
+
 /////////////////////////////////////////////////////////////////////
 // CLI Transactions /////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
