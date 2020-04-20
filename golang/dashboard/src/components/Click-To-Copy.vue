@@ -42,6 +42,11 @@ export default {
         }, function () {
           this.copyText = 'Error: Not Copied'
         })
+      } else if (document.execCommand && document.body.createTextRange) {
+        const range = document.body.createTextRange()
+        range.moveToElementText(this.copyText)
+        range.select()
+        document.execCommand('copy')
       } else {
         this.copyText = 'Error: Not Copied'
       }
