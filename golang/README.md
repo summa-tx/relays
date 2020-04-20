@@ -66,7 +66,8 @@ state).  These are available via CLI or REST.
 
 ### CLI
 
-Queries
+#### Queries
+To run a query command, begin with `relaycli query relay` followed by the usage code in the table below (e.g. `relaycli query relay getrelaygenesis`).
 
 | Query | Description | Usage |
 | ----- | ----------- | ------|
@@ -81,7 +82,8 @@ Queries
 | CheckProof | Check the syntactic validity of an SPV Proof | `checkproof <json proof>` |
 | CheckRequests | Perform CheckProof and check the SPV Proof against a set of Requests | `checkrequests <json proof> <json list of requests>` |
 
-Messages
+#### Messages
+To run a tx message command, begin with `relaycli tx relay` followed by the usage code in the table below (e.g. `relaycli tx relay ingestheaders <json list of headers>`).
 
 | Message | Description | Usage |
 | ------- | ----------- | ----- |
@@ -93,7 +95,7 @@ Messages
 
 ### REST Routes
 
-Query routes
+#### Query routes
 
 | Endpoint | Function | Description | Type |
 | -------- | -------- | ----------- | ---- |
@@ -111,7 +113,7 @@ Query routes
 | /checkrequests | CheckRequests | Perform CheckProof and check the SPV Proof against a set of Requests | POST |
 | /checkproof | CheckProof | Check the syntactic validity of an SPV Proof | POST |
 
-Message routes
+#### Message routes
 
 | Endpoint | Function | Description | Type |
 | -------- | -------- | ----------- | ---- |
