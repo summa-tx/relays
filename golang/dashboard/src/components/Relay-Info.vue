@@ -27,6 +27,7 @@
           </v-flex>
           <v-flex class="relay__info__info" row>
             <p v-if="verifiedAt === null"><b>Verified:</b> Unverified</p>
+            <p v-else-if="verifiedAt < 1">Less than 1 minute ago</p>
             <p v-else><b>Verified:</b> {{ verifiedAt }} minute<span v-if="verifiedAt > 1">s</span> ago</p>
           </v-flex>
         </v-layout>
@@ -132,7 +133,6 @@ export default {
       this.verifiedAt = this.currentBlock.verifiedAt ? getMinsAgo(this.currentBlock.verifiedAt) : null
       this.lastCommsExternal = this.lastComms.external ? getMinsAgo(this.lastComms.external) : null
       this.lastCommsRelay = this.lastComms.relay ? getMinsAgo(this.lastComms.relay) : null
-      console.log(this.verifiedAt)
     }
 
     // getBKD () {
@@ -150,7 +150,7 @@ export default {
 
   computed: {
     ...mapState({
-      lastComms: state => state.info.lastComms.relay,
+      lastComms: state => state.info.lastComms,
       currentBlock: state => state.info.currentBlock,
       height: state => state.info.currentBlock.height,
       relay: state => state.info.relay,
