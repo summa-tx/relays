@@ -85,6 +85,7 @@ Messages
 Query routes
 
 | Endpoint | Function | Description | Type |
+| -------- | -------- | ----------- | ---- |
 | /isancestor/{digest}/{ancestor}/ | IsAncestor | Deteremine if a block is an ancestor of another | GET |
 | /isancestor/{digest}/{ancestor}/{limit} | IsAncestor | Deteremine if a block is an ancestor of another | GET |
 | /getrelaygenesis | GetRelayGenesis | Get the trusted root of the relay | GET |
