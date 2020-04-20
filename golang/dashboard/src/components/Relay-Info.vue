@@ -111,7 +111,7 @@ export default {
     lastCommsRelay: null
   }),
 
-  created () {
+  mounted () {
     this.onResize()
 
     // Calculate minutes for health check
