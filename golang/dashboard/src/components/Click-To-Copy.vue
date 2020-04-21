@@ -1,14 +1,14 @@
 <template>
-  <div class="ctc">
+  <div class="ctc" @mouseleave="resetCopyText">
     <v-tooltip
-      v-model="copied"
       nudge-top="8"
       bottom
       class="ctc__copy"
+      content-class="tooltip-text"
     >
-      <template>
-        <v-btn icon color="teal">
-          <v-icon @click="handleCopy" id="ctc__icon">
+      <template v-slot:activator="{ on }">
+        <v-btn v-on="on" icon color="teal">
+          <v-icon @click="handleCopy" size="16px">
             content_copy
           </v-icon>
         </v-btn>
@@ -27,37 +27,35 @@ export default {
       required: true,
       type: [String, Number, undefined],
       default: ''
-    },
-    copyText: {
-      type: String,
-      default: 'Copied'
     }
   },
 
   data: () => ({
-    copied: false
+    copyText: 'Copy'
   }),
 
   methods: {
     handleCopy () {
-      const self = this
-
       if (navigator.clipboard) {
-        navigator.clipboard.writeText(this.copyValue).then(function () {
-          self.copyText = 'Copied'
-          self.copied = true
+        navigator.clipboard.writeText(this.copyValue).then(() => {
+          this.copyText = 'Copied'
         }, function () {
-          self.copyText = 'Error: Not Copied'
-          self.copied = false
+          this.copyText = 'Error: Not Copied'
         })
+      } else if (document.execCommand && document.body.createTextRange) {
+        const range = document.body.createTextRange()
+        range.moveToElementText(this.copyText)
+        range.select()
+        document.execCommand('copy')
       } else {
-        self.copyText = 'Error: Not Copied'
-        self.copied = false
+        this.copyText = 'Error: Not Copied'
       }
+    },
 
+    resetCopyText () {
       setTimeout(() => {
-        self.copied = false
-      }, 2000)
+        this.copyText = 'Copy'
+      }, 500)
     }
   }
 }
@@ -70,8 +68,9 @@ export default {
   margin-left: 10px;
 }
 
-/* TODO: BAD. only doing this for now to get it working. fix later. */
-#ctc__icon {
-  font-size: 16px;
+.tooltip-text {
+  font-size: 12px;
+  /* height: 16px; */
+  padding: 2px 10px;
 }
 </style>
