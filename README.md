@@ -4,8 +4,8 @@ This is a Bitcoin Relay. It uses 1 + 1/n slots per header relayed (n is
 currently 4), and 2 slots to externalize useful information (best chain tip and
 best shared ancestor of latest reorg).
 
-At present, only a Solidity implementation is available, but we intend to add
-more implementations soon :)
+Implementations are available in Solidity (for EVM chains) and Golang using the
+cosmos-sdk framework.
 
 ### How does it work?
 
@@ -43,5 +43,8 @@ reducing calldata gas costs.
 
 ### Project Notes
 
-The Python relay mainter in `./maintainer/` is not thoroughly tested, and does not
-yet support the cosmos-sdk relay.
+Complete relays are available in Solidity, for EVM-based chains (like Ethereum)
+and Golang using the cosmos-sdk framework.
+
+The Python relay mainter in `./maintainer/` is not thoroughly tested, and does
+not yet support the cosmos-sdk relay.

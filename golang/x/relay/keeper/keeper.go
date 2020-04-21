@@ -11,17 +11,19 @@ import (
 
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	storeKey  sdk.StoreKey // Unexposed key to access store from sdk.Context
-	cdc       *codec.Codec // The wire codec for binary encoding/decoding.
-	IsMainNet bool
+	storeKey     sdk.StoreKey // Unexposed key to access store from sdk.Context
+	cdc          *codec.Codec // The wire codec for binary encoding/decoding.
+	IsMainNet    bool
+	ProofHandler types.ProofHandler
 }
 
 // NewKeeper instantiates a new keeper
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, mainnet bool) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, mainnet bool, handler types.ProofHandler) Keeper {
 	return Keeper{
-		storeKey:  storeKey,
-		cdc:       cdc,
-		IsMainNet: mainnet,
+		storeKey:     storeKey,
+		cdc:          cdc,
+		IsMainNet:    mainnet,
+		ProofHandler: handler,
 	}
 }
 
@@ -53,9 +55,9 @@ func (k Keeper) SetGenesisState(ctx sdk.Context, genesis, epochStart btcspv.Bitc
 	k.ingestHeader(ctx, genesis)
 	k.ingestHeader(ctx, epochStart)
 
-	k.setRelayGenesis(ctx, genesis.HashLE)
-	k.setBestKnownDigest(ctx, genesis.HashLE)
-	k.setLastReorgLCA(ctx, genesis.HashLE)
+	k.setRelayGenesis(ctx, genesis.Hash)
+	k.setBestKnownDigest(ctx, genesis.Hash)
+	k.setLastReorgLCA(ctx, genesis.Hash)
 
 	// this will only fail if the genesis state is corrupt
 	_ = k.setCurrentEpochDifficulty(ctx, btcspv.ExtractDifficulty(genesis.Raw))

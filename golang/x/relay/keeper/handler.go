@@ -78,12 +78,14 @@ func handleMsgNewRequest(ctx sdk.Context, keeper Keeper, msg types.MsgNewRequest
 }
 
 func handleMsgProvideProof(ctx sdk.Context, keeper Keeper, msg types.MsgProvideProof) sdk.Result {
-	err := keeper.checkRequestsFilled(ctx, msg.Filled)
+	filled, err := keeper.checkRequestsFilled(ctx, msg.Filled)
 	if err != nil {
 		return err.Result()
 	}
 
-	// TODO: Add "hooks"
+	// Dispatch the proof to the keeper's proof handler
+	keeper.ProofHandler.HandleValidProof(ctx, msg.Filled, filled)
+
 	return sdk.Result{
 		Events: ctx.EventManager().Events(),
 	}

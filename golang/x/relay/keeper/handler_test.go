@@ -45,7 +45,7 @@ func (s *KeeperSuite) TestHandleMsgIngestHeaderChain() {
 	newMsg := types.NewMsgIngestHeaderChain(getAccAddress(), testCases[0].Headers)
 
 	res := handler(s.Context, newMsg)
-	s.Equal(sdk.CodeType(103), res.Code)
+	s.Equal(sdk.CodeType(types.UnknownBlock), res.Code)
 
 	s.Keeper.ingestHeader(s.Context, testCases[0].Anchor)
 	res = handler(s.Context, newMsg)
@@ -56,10 +56,10 @@ func (s *KeeperSuite) TestHandleMsgIngestDifficultyChange() {
 	testCases := s.Fixtures.HeaderTestCases.ValidateDiffChange
 	handler := NewHandler(s.Keeper)
 
-	newMsg := types.NewMsgIngestDifficultyChange(getAccAddress(), testCases[0].PrevEpochStart.HashLE, testCases[0].Headers)
+	newMsg := types.NewMsgIngestDifficultyChange(getAccAddress(), testCases[0].PrevEpochStart.Hash, testCases[0].Headers)
 
 	res := handler(s.Context, newMsg)
-	s.Equal(sdk.CodeType(103), res.Code)
+	s.Equal(sdk.CodeType(types.UnknownBlock), res.Code)
 
 	s.Keeper.ingestHeader(s.Context, testCases[0].PrevEpochStart)
 	s.Keeper.ingestHeader(s.Context, testCases[0].Anchor)
@@ -73,7 +73,7 @@ func (s *KeeperSuite) TestHandleMsgMarkNewHeaviest() {
 
 	s.Keeper.ingestHeader(s.Context, testCases[0].PrevEpochStart)
 	s.Keeper.ingestHeader(s.Context, testCases[0].Anchor)
-	newMsg := types.NewMsgIngestDifficultyChange(getAccAddress(), testCases[0].PrevEpochStart.HashLE, testCases[0].Headers)
+	newMsg := types.NewMsgIngestDifficultyChange(getAccAddress(), testCases[0].PrevEpochStart.Hash, testCases[0].Headers)
 	res := handler(s.Context, newMsg)
 	s.Equal("extension", res.Events[0].Type)
 }
@@ -93,18 +93,18 @@ func (s *KeeperSuite) TestHandleMarkNewHeaviest() {
 
 	err = s.Keeper.IngestHeaderChain(s.Context, pre)
 	s.SDKNil(err)
-	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, post)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.Hash, post)
 	s.SDKNil(err)
-	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.Hash, postWithOrphan)
 	s.SDKNil(err)
 
 	// returns correct error
-	newMsg := types.NewMsgMarkNewHeaviest(getAccAddress(), tv.OldPeriodStart.HashLE, tv.OldPeriodStart.Raw, tv.OldPeriodStart.Raw, 10)
+	newMsg := types.NewMsgMarkNewHeaviest(getAccAddress(), tv.OldPeriodStart.Hash, tv.OldPeriodStart.Raw, tv.OldPeriodStart.Raw, 10)
 	res := handler(s.Context, newMsg)
-	s.Equal(sdk.CodeType(403), res.Code)
+	s.Equal(sdk.CodeType(types.NotBestKnown), res.Code)
 
 	// Successfully marks new heaviest
-	newMsg = types.NewMsgMarkNewHeaviest(getAccAddress(), tv.Genesis.HashLE, tv.Genesis.Raw, pre[0].Raw, 10)
+	newMsg = types.NewMsgMarkNewHeaviest(getAccAddress(), tv.Genesis.Hash, tv.Genesis.Raw, pre[0].Raw, 10)
 	res = handler(s.Context, newMsg)
 	s.Equal("extension", res.Events[0].Type)
 }
@@ -122,7 +122,7 @@ func (s *KeeperSuite) TestHandleNewRequest() {
 	// Msg validation failed
 	newRequest = types.NewMsgNewRequest(getAccAddress(), []byte{0}, []byte{0}, 0, 0, types.Local, nil)
 	res = handler(s.Context, newRequest)
-	s.Equal(sdk.CodeType(602), res.Code)
+	s.Equal(sdk.CodeType(types.SpendsLength), res.Code)
 
 	// setRequest error
 	store := s.Keeper.getRequestStore(s.Context)
@@ -130,5 +130,5 @@ func (s *KeeperSuite) TestHandleNewRequest() {
 
 	newRequest = types.NewMsgNewRequest(getAccAddress(), bytes.Repeat([]byte{0}, 36), []byte{0}, 0, 0, types.Local, nil)
 	res = handler(s.Context, newRequest)
-	s.Equal(sdk.CodeType(107), res.Code)
+	s.Equal(sdk.CodeType(types.BadHexLen), res.Code)
 }

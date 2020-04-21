@@ -18,35 +18,35 @@ func (k Keeper) hasLink(ctx sdk.Context, digestLE types.Hash256Digest) bool {
 
 func (k Keeper) setLink(ctx sdk.Context, header types.BitcoinHeader) {
 	store := k.getLinkStore(ctx)
-	store.Set(header.HashLE[:], header.PrevHashLE[:])
+	store.Set(header.Hash[:], header.PrevHash[:])
 }
 
 func (k Keeper) getLink(ctx sdk.Context, digestLE types.Hash256Digest) types.Hash256Digest {
 	store := k.getLinkStore(ctx)
 	buf := store.Get(digestLE[:])
 	// Can only fail if data store is corrupt
-	parentHashLE, _ := btcspv.NewHash256Digest(buf)
-	return parentHashLE
+	parentHash, _ := btcspv.NewHash256Digest(buf)
+	return parentHash
 }
 
 // FindAncestor finds the nth ancestor of some digest
 func (k Keeper) FindAncestor(ctx sdk.Context, digestLE types.Hash256Digest, offset uint32) (types.Hash256Digest, sdk.Error) {
 	current := digestLE
 	if !k.hasLink(ctx, current) {
-		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "digest", digestLE)
 	}
 
 	for i := uint32(0); i < offset; i++ {
 		current = k.getLink(ctx, current)
 		if !k.hasLink(ctx, current) {
-			return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+			return types.Hash256Digest{}, types.ErrBadOffset(types.DefaultCodespace, current)
 		}
 	}
 
 	return current, nil
 }
 
-// IsAncestor checks whether
+// IsAncestor checks if there is a link between an ancestor and header
 func (k Keeper) IsAncestor(ctx sdk.Context, digestLE, ancestor types.Hash256Digest, limit uint32) bool {
 	current := digestLE
 
