@@ -8,6 +8,11 @@ import (
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
+// ProofHandler is an interface to which the keeper dispatches valid proofs
+type ProofHandler interface {
+	HandleValidProof(ctx sdk.Context, filled FilledRequests, requests []ProofRequest)
+}
+
 // Hash256Digest 32-byte double-sha2 digest
 type Hash256Digest = btcspv.Hash256Digest
 
@@ -45,11 +50,23 @@ func Hash256DigestFromHex(hexStr string) (Hash256Digest, sdk.Error) {
 
 	bytes, decodeErr := hex.DecodeString(data)
 	if decodeErr != nil {
-		return Hash256Digest{}, ErrBadHex(DefaultCodespace)
+		return Hash256Digest{}, ErrBadHex(DefaultCodespace, hexStr)
 	}
 	digest, newDigestErr := btcspv.NewHash256Digest(bytes)
 	if newDigestErr != nil {
 		return Hash256Digest{}, FromBTCSPVError(DefaultCodespace, newDigestErr)
 	}
 	return digest, nil
+}
+
+// NullHandler does nothing
+type NullHandler struct{}
+
+// HandleValidProof handles a valid proof (by doing nothing)
+func (n NullHandler) HandleValidProof(ctx sdk.Context, filled FilledRequests, requests []ProofRequest) {
+}
+
+// NewNullHandler instantiates a new null handler
+func NewNullHandler() NullHandler {
+	return NullHandler{}
 }

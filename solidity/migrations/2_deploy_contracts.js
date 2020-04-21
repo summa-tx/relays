@@ -10,7 +10,7 @@ function sleep(milliseconds) {
 }
 
 module.exports = async (deployer, network) => {
-  if (['test', 'development', 'coverage'].includes(network)) {
+  if (['test', 'development', 'soliditycoverage'].includes(network)) {
     // never run deployments on development. We deploy in tests
     return;
   }

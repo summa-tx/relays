@@ -1,15 +1,15 @@
 package keeper
 
 import (
-	"github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
 func (s *KeeperSuite) TestGetHeader() {
 	// errors if header is not found
 	header := s.Fixtures.HeaderTestCases.ValidateChain[0].Headers[0]
-	_, err := s.Keeper.GetHeader(s.Context, header.HashLE)
-	s.Equal(types.CodeType(103), err.Code())
+	_, err := s.Keeper.GetHeader(s.Context, header.Hash)
+	s.Equal(sdk.CodeType(types.UnknownBlock), err.Code())
 }
 
 func (s *KeeperSuite) TestEmitExtension() {
@@ -42,7 +42,7 @@ func (s *KeeperSuite) TestIngestHeaders() {
 
 	// errors if anchor is not found
 	err := s.Keeper.ingestHeaders(s.Context, cases[0].Headers, cases[0].Internal)
-	s.Equal(types.CodeType(103), err.Code())
+	s.Equal(sdk.CodeType(types.UnknownBlock), err.Code())
 
 	for _, tc := range cases {
 		s.InitTestContext(tc.IsMainnet, false)
@@ -83,9 +83,9 @@ func (s *KeeperSuite) TestIngestHeader() {
 
 	for _, tc := range cases {
 		s.Keeper.ingestHeader(s.Context, tc.Headers[0])
-		hasHeader := s.Keeper.HasHeader(s.Context, tc.Headers[0].HashLE)
+		hasHeader := s.Keeper.HasHeader(s.Context, tc.Headers[0].Hash)
 		s.Equal(true, hasHeader)
-		header, err := s.Keeper.GetHeader(s.Context, tc.Headers[0].HashLE)
+		header, err := s.Keeper.GetHeader(s.Context, tc.Headers[0].Hash)
 		s.SDKNil(err)
 		s.Equal(tc.Headers[0], header)
 	}
@@ -110,18 +110,18 @@ func (s *KeeperSuite) TestIngestDifficultyChange() {
 	cases := s.Fixtures.HeaderTestCases.ValidateDiffChange
 
 	// errors if PrevEpochStart is not found
-	err := s.Keeper.IngestDifficultyChange(s.Context, cases[0].PrevEpochStart.HashLE, cases[0].Headers)
-	s.Equal(types.CodeType(103), err.Code())
+	err := s.Keeper.IngestDifficultyChange(s.Context, cases[0].PrevEpochStart.Hash, cases[0].Headers)
+	s.Equal(sdk.CodeType(types.UnknownBlock), err.Code())
 
 	// errors if anchor is not found
 	s.Keeper.ingestHeader(s.Context, cases[0].PrevEpochStart)
-	err = s.Keeper.IngestDifficultyChange(s.Context, cases[0].PrevEpochStart.HashLE, cases[0].Headers)
-	s.Equal(types.CodeType(103), err.Code())
+	err = s.Keeper.IngestDifficultyChange(s.Context, cases[0].PrevEpochStart.Hash, cases[0].Headers)
+	s.Equal(sdk.CodeType(types.UnknownBlock), err.Code())
 
 	for _, tc := range cases {
 		s.Keeper.ingestHeader(s.Context, tc.PrevEpochStart)
 		s.Keeper.ingestHeader(s.Context, tc.Anchor)
-		err := s.Keeper.IngestDifficultyChange(s.Context, tc.PrevEpochStart.HashLE, tc.Headers)
+		err := s.Keeper.IngestDifficultyChange(s.Context, tc.PrevEpochStart.Hash, tc.Headers)
 		if tc.Output == 0 {
 			logIfTestCaseError(tc, err)
 			s.SDKNil(err)

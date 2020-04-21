@@ -1,4 +1,36 @@
-## TODOs:
+## cosmos-sdk Bitcoin Relay
+
+This is a full-featured Bitcoin relay module for cosmos-sdk chains. It indexes
+Bitcoin headers, provides information about the latest-known state of the
+Bitcoin chain, and validates SPV Proofs against its view of the chain. It is a
+critical component for many Cosmos applications to interact with Bitcoin.
+
+For more information about the relay's architecture see the `README.md` in the
+repo's root directory.
+
+## Building the daemon and cli
+
+```sh
+$ make
+# To additionally install them in your `$GOPATH/bin` directory:
+$ make install
+```
+
+## Running tests
+
+Run the unit tests as follows:
+
+```sh
+$ go test ./x/...
+```
+
+See the README in `./cli_test` for instructions on running the integration
+tests.
+
+Instructions for setting up manual testing can be found in the README in
+`./scripts`.
+
+## Project Status
 
 - [X] Milestone 1
 - [X] Milestone 2
@@ -8,96 +40,75 @@
 - - [X] Validate SPV Proofs
 - - [X] `ProvideProof` message
 - [ ] Milestone 3
-- - [ ] Provide tooling for manual testing (scripts, docs, json test files)
-- - [ ] Integration Tests
+- - [X] Provide tooling for manual testing (scripts, docs, json test files)
+- - [X] Integration Tests
 - - [ ] Document relay design & architecture
-- - [ ] Document public interface
-- - [ ] Provide hooks to execute tasks + dispatch messages
+- - [X] Document public interface
+- - [X] Provide hooks to execute tasks + dispatch messages
 - - [ ] Add a basic web dashboard with Relay health
 
-## Messages added to CLI
 
-| Message | Status | Description |
-| ------- | ------ | ----------- |
-| IngestHeaderChain | Completed | Add a chain of headers to the relay |
-| IngestDifficultyChange | Completed | Add a chain of headers to the relay with a difficulty change|
-| MarkNewHeaviest | Completed | Mark a new best-known chain tip |
-| NewRequest | Completed | Register a new SPV Proof request|
-| ProvideProof | Completed | Provide a proof that satisfies 1 or more requests |
+## API
 
-## Queries added to CLI
+Cosmos modules expose messages, which modify state, and queries, which read
+state.
 
-| Query | Status | Description |
-| ----- | ------ | ----------- |
-| IsAncestor | Completed | Deteremine if a block is an ancestor of another |
-| GetRelayGenesis | Completed | Get the trusted root of the relay |
-| GetLastReorgLCA | Completed | Get the LCA of the latest reorg |
-| FindAncestor | Completed | Find the nth ancestor of a block|
-| IsMostRecentCommonAncestor | Completed | Determine if a block is the LCA of two headers|
-| HeaviestFromAncestor | Completed | Check which of two descendents is heaviest from the LCA |
-| GetRequest | Completed | Get details of an SPV Proof Request|
-| CheckProof | Completed | Check the syntactic validity of an SPV Proof |
-| CheckRequests | Completed | Perform CheckProof and check the SPV Proof against a set of Requests |
+### Queries
 
-## How to add a view function (queries)
-1. Add necessary getter(s) in `x/relay/keeper/keeper.go`
-1. Add response type to `x/relay/types/querier.go`
-    1. Add new string tag for the new query
-    1. Response type is a struct with the return values
-    1. Implement `String()` for the response type
-1. Add function to querier `x/relay/keeper/querier.go`
-    1. Add new `query___` function
-    1. Add new case block to `switch` in `NewQuerier()`
-1. Add to CLI  
-    1. add to `x/relay/client/cli/query.go`
-      1. `func GetCmd______`
-      1. returns a `cobra.Command` object
-      1. define `Use` `Example` `Short` `Long` `Args` and `RunE`
-      1. `RunE` parses args, returns errors, and calls `cliCtx.QueryWithData`
-      1. parses the output and returns it with `cliCtx.PrintOutput`
-1. Add to REST
-    1. add to `x/relay/client/rest/query.go`
-    1. new function `_____Handler`
-      1. parse args and build structs
-      1. cliCtx.QueryWithData
-      1. return errors with `rest.WriteErrorResponse`
-      1. return query result with `rest.PostProcessResponse`
-    1. add GET route to `x/relay/client/rest/rest.go`
-      1. new `s.HandleFunc` with the route and arguments
-      1. `.Methods("GET")`
-      1. duplicate for optional args (see `isancestor` for example)
+Queries are available via CLI or REST. For more information, see the
+descriptions in the CLI.
 
+| Query | Description |
+| ----- | ----------- |
+| IsAncestor | Deteremine if a block is an ancestor of another |
+| GetRelayGenesis | Get the trusted root of the relay |
+| GetLastReorgLCA | Get the LCA of the latest reorg |
+| GetLastReorgLCA | Get the best digest known to the relay |
+| FindAncestor | Find the nth ancestor of a block|
+| IsMostRecentCommonAncestor | Determine if a block is the LCA of two headers|
+| HeaviestFromAncestor | Check which of two descendents is heaviest from the LCA |
+| GetRequest | Get details of an SPV Proof Request|
+| CheckProof | Check the syntactic validity of an SPV Proof |
+| CheckRequests | Perform CheckProof and check the SPV Proof against a set of Requests |
 
-## How to add a non-view function (messages)
-1. Add necessary getters/setters in `x/relay/keeper/keeper.go`
-1. Add msg type in `x/relay/types/msgs.go`
-    1. Message type is a struct with the arguments
-    1. Implement `New___()`
-    1. Implement `GetSigners()` <--- Ask me about this later
-    1. Implement `Type()`
-    1. Implement `ValidateBasic()`
-    1. Implement `GetSignBytes()`
-    1. Implement `Route()`
-1. Add to handler
-    1. Add new `handle____` function
-    1. Add new case block to `switch` in `NewHandler()`
-1. Add aliases in `x/relay/alias.go`
-    1. Add alias in `var` block
-    1. Add alias in `type` block
-1. Add to CLI  
-    1. add to `x/relay/client/cli/tx.go`
-      1. `func GetCmd______`
-      1. returns a `cobra.Command` object
-      1. define `Use` `Example` `Short` `Long` `Args` and `RunE`
-      1. `RunE` parses args, returns errors, and calls `utils.GenerateOrBroadcastMsgs`
-1. Add to REST
-    1. add to `x/relay/client/rest/tx.go`
-      1. new http request struct `______Req`
-        1. `BaseReq` + the struct from `x/relay/types/msgs.go`
-      1. new function `_____Handler`
-        1. parse args and build structs
-        1. return errors with `rest.WriteErrorResponse`
-        1. make the tx with `utils.WriteGenerateStdTxResponse`
-    1. add POST route to `x/relay/client/rest/rest.go`
-      1. new `s.HandleFunc` with the route and arguments
-      1. `.Methods("POST")`
+### Messages
+
+Messages are available via CLI or REST. For more information, see the
+descriptions in the CLI.
+
+| Message | Description |
+| ------- | ----------- |
+| IngestHeaderChain | Add a chain of headers to the relay |
+| IngestDifficultyChange | Add a chain of headers to the relay with a difficulty change|
+| MarkNewHeaviest | Mark a new best-known chain tip |
+| NewRequest | Register a new SPV Proof request |
+| ProvideProof | Provide a proof that satisfies 1 or more requests |
+
+## Project Overview
+
+### Keeper
+High-level overview of the project structure within the `keeper` file.
+
+#### Keeper.go
+Instantiates a `keeper` (what handles interaction with the store and contains most of the core functionality of the module). It also handles the genesis state for the relay.
+
+#### Headers.go
+Handles the storage and validation of Bitcoin Headers and Header Chains.
+
+#### Chain.go
+Checks and updates information about the chain.  Provides functionality to ensure we are using the heaviest chain.
+
+#### Links.go
+Sets and retrieves data about each link in the chain.  This is most commonly used to check information about ancestors.
+
+#### Requests.go
+Stores, retrieves, and validates requests.
+
+#### Validator.go
+Contains validation functions.  Currently, this can validate SPV Proofs and Requests.
+
+#### Handler.go
+Handles messages.
+
+#### Querier.go
+Handles queries.

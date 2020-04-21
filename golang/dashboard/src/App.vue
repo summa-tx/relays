@@ -23,6 +23,8 @@
 
         <v-spacer/>
 
+        <v-btn @click="updateAll">UPDATE</v-btn>
+
       </v-layout>
     </v-app-bar>
 
@@ -58,7 +60,6 @@ export default {
     // Get external info and set it in the store, start polling
     setInterval(this.getExternalInfo, 120000)
     setInterval(this.getRelayInfo, 60000)
-    setInterval(this.updateNow, 65000)
   },
 
   methods: {
@@ -68,12 +69,13 @@ export default {
       this.$store.dispatch('relay/getLCA')
     },
 
-    updateNow () {
-      this.$store.dispatch('info/updateNow')
-    },
-
     getExternalInfo () {
       this.$store.dispatch('info/getExternalInfo')
+    },
+
+    updateAll () {
+      this.getRelayInfo()
+      this.getExternalInfo()
     }
   }
 }

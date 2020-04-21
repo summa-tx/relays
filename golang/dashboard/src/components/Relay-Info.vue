@@ -42,7 +42,9 @@
           </v-flex>
 
           <v-flex class="relay__info__info" row>
-            <p><b>Verified:</b> {{ currentBlock.verifiedAt || 'Unverified' }}</p>
+            <p v-if="verifiedAt === null"><b>Verified:</b> Unverified</p>
+            <p v-else-if="verifiedAt < 1">Less than 1 minute ago</p>
+            <p v-else><b>Verified:</b> {{ verifiedAt }} minute<span v-if="verifiedAt > 1">s</span> ago</p>
           </v-flex>
         </v-layout>
 
@@ -91,9 +93,9 @@
     <v-card class="relay__updates">
       <v-layout>
         <p class="relay__updates__title">Relay Health Check:</p>
-        <p v-if="!lastCommsRelay">Health check not completed</p>
-        <p v-else-if="lastCommsRelay <= 1">Less than 1 minute ago</p>
-        <p v-else>{{ lastCommsRelay }} minutes ago</p>
+        <p v-if="lastCommsRelay === null">Not completed</p>
+        <p v-else-if="lastCommsRelay < 1">Less than 1 minute ago</p>
+        <p v-else>{{ lastCommsRelay }} minute<span v-if="lastCommsRelay > 1">s</span> ago</p>
       </v-layout>
       <v-layout>
         <p class="relay__updates__title">Source:</p>
@@ -101,15 +103,15 @@
       </v-layout>
       <v-layout>
         <p class="relay__updates__title">Source Health Check:</p>
-        <p v-if="!lastCommsExternal">Source health check not completed</p>
-        <p v-else-if="lastCommsExternal <= 1">Less than 1 minute ago</p>
-        <p v-else>{{ lastCommsExternal }} minutes ago</p>
+        <p v-if="lastCommsExternal === null">Not completed</p>
+        <p v-else-if="lastCommsExternal < 1">Less than 1 minute ago</p>
+        <p v-else>{{ lastCommsExternal }} minute<span v-if="lastCommsExternal > 1">s</span> ago</p>
       </v-layout>
       <v-layout>
         <p class="relay__updates__title">Source Block Changed:</p>
-        <p v-if="!verifiedAt">Unknown</p>
+        <p v-if="verifiedAt === null">Unknown</p>
         <p v-else-if="verifiedAt < 1">Less than 1 minute ago</p>
-        <p v-else>{{ verifiedAt }} minutes ago</p>
+        <p v-else>{{ verifiedAt }} minute<span v-if="verifiedAt > 1">s</span> ago</p>
       </v-layout>
       <v-layout>
         <p class="relay__updates__title">Source Height:</p>
@@ -117,19 +119,17 @@
       </v-layout>
     </v-card>
 
-    <v-card>
+    <!-- <v-card>
       <v-btn @click="getBKD">Get BKD</v-btn>
       <v-btn @click="getLCA">Get LCA</v-btn>
-      <v-btn @click="getHeight">Get Height</v-btn>
       <v-btn @click="getCurrentHeight">Get Current Height</v-btn>
-    </v-card>
+    </v-card> -->
   </v-container>
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import { getMinsAgo } from '@/utils/utils'
-import { debugButtons } from '@/config'
 
 export default {
   name: 'relay',
@@ -141,18 +141,21 @@ export default {
 
   data: () => ({
     windowWidth: Number,
-    debugButtons
+    verifiedAt: null,
+    lastCommsExternal: null,
+    lastCommsRelay: null
   }),
 
   mounted () {
     this.onResize()
-    console.log('Last relay communication (Relay Health Check): ', this.lastCommsRelay)
-    console.log('Last external communication (Source Health Check): ', this.lastCommsExternal)
-    console.log('Source block changed: ', this.verifiedAt)
-    console.log('Source height: ', this.height)
-    setTimeout(() => {
-      console.log('Source Health Check: ', this.lastCommsExternal)
-    }, 3000)
+
+    // Calculate minutes for health check
+    this.healthCheckMins()
+
+    // Updates every minute
+    setInterval(() => {
+      this.healthCheckMins()
+    }, 60000)
   },
 
   methods: {
@@ -160,21 +163,23 @@ export default {
       this.windowWidth = window.innerWidth
     },
 
-    getBKD () {
-      this.$store.dispatch('relay/getBKD')
-    },
-
-    getLCA () {
-      this.$store.dispatch('relay/getLCA')
-    },
-
-    getCurrentHeight () {
-      this.$store.dispatch('relay/verifyHeight', this.currentBlock.hash)
-    },
-
-    getHeight () {
-      this.$store.dispatch('relay/verifyHeight', '0000000000000346624ca7ac1dbbc16c5ffd3fa388ce9bdb4627264d117014dc')
+    healthCheckMins () {
+      this.verifiedAt = this.currentBlock.verifiedAt ? getMinsAgo(this.currentBlock.verifiedAt) : null
+      this.lastCommsExternal = this.lastComms.external ? getMinsAgo(this.lastComms.external) : null
+      this.lastCommsRelay = this.lastComms.relay ? getMinsAgo(this.lastComms.relay) : null
     }
+
+    // getBKD () {
+    //   this.$store.dispatch('relay/getBKD')
+    // },
+
+    // getLCA () {
+    //   this.$store.dispatch('relay/getLCA')
+    // },
+
+    // getCurrentHeight () {
+    //   this.$store.dispatch('relay/verifyHeight', this.currentBlock.hash)
+    // }
   },
 
   computed: {
@@ -184,18 +189,16 @@ export default {
       height: state => state.info.currentBlock.height,
       relay: state => state.info.relay,
       source: state => state.info.source
-    }),
+    })
+  },
 
-    verifiedAt () {
-      return getMinsAgo(this.currentBlock.verifiedAt)
-    },
-
-    lastCommsExternal () {
-      return getMinsAgo(this.lastComms.external)
-    },
-
-    lastCommsRelay () {
-      return getMinsAgo(this.lastComms.relay)
+  watch: {
+    lastComms: {
+      handler: function () {
+        console.log('Updated info')
+        this.healthCheckMins()
+      },
+      deep: true
     }
   },
 
