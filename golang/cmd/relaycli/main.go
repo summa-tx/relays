@@ -32,7 +32,7 @@ func main() {
 	config.Seal()
 
 	rootCmd := &cobra.Command{
-		Use:   "rcli",
+		Use:   "relaycli",
 		Short: "relay Client",
 	}
 

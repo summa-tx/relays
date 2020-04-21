@@ -21,7 +21,7 @@ func (k Keeper) getDigestByStoreKey(ctx sdk.Context, key string) (types.Hash256D
 
 	digest, err := btcspv.NewHash256Digest(result)
 	if err != nil {
-		return types.Hash256Digest{}, types.ErrBadHash256Digest(types.DefaultCodespace)
+		return types.Hash256Digest{}, types.ErrBadHash256Digest(types.DefaultCodespace, key)
 	}
 	return digest, nil
 }
@@ -92,19 +92,23 @@ func (k Keeper) IsMostRecentCommonAncestor(ctx sdk.Context, ancestor, left, righ
 func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, newBest types.Hash256Digest, limit uint32) (types.Hash256Digest, sdk.Error) {
 	ancestorBlock, err := k.GetHeader(ctx, ancestor)
 	if err != nil {
-		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "ancestor", ancestor)
 	}
 	leftBlock, err := k.GetHeader(ctx, currentBest)
 	if err != nil {
-		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "currentBest", currentBest)
 	}
 	rightBlock, err := k.GetHeader(ctx, newBest)
 	if err != nil {
-		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace)
+		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "newBest", newBest)
 	}
 
-	if leftBlock.Height < ancestorBlock.Height || rightBlock.Height < ancestorBlock.Height {
-		return types.Hash256Digest{}, types.ErrBadHeight(types.DefaultCodespace)
+	if leftBlock.Height < ancestorBlock.Height {
+		return types.Hash256Digest{}, types.ErrBadHeight(types.DefaultCodespace, "currentBest", currentBest)
+	}
+
+	if rightBlock.Height < ancestorBlock.Height {
+		return types.Hash256Digest{}, types.ErrBadHeight(types.DefaultCodespace, "newBest", newBest)
 	}
 
 	nextPeriodStartHeight := ancestorBlock.Height + 2016 - (ancestorBlock.Height % 2016)
@@ -119,16 +123,16 @@ func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, new
 		4. They're in different new windows. Choose the heavier one
 	*/
 	if !leftInPeriod && rightInPeriod {
-		return leftBlock.HashLE, nil
+		return leftBlock.Hash, nil
 	}
 	if leftInPeriod && !rightInPeriod {
-		return rightBlock.HashLE, nil
+		return rightBlock.Hash, nil
 	}
 	if leftInPeriod && rightInPeriod {
 		if leftBlock.Height >= rightBlock.Height {
-			return leftBlock.HashLE, nil
+			return leftBlock.Hash, nil
 		}
-		return rightBlock.HashLE, nil
+		return rightBlock.Hash, nil
 	}
 
 	// if !leftInPeriod && !rightInPeriod
@@ -139,9 +143,9 @@ func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, new
 	rightAccDiff := rightDiff.Mul(sdk.NewUint(uint64(rightBlock.Height % 2016)))
 
 	if leftAccDiff.GTE(rightAccDiff) {
-		return leftBlock.HashLE, nil
+		return leftBlock.Hash, nil
 	}
-	return rightBlock.HashLE, nil
+	return rightBlock.Hash, nil
 }
 
 // MarkNewHeaviest updates the best known digest and LCA
@@ -150,16 +154,16 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 	currentBestDigest := btcspv.Hash256(currentBest[:])
 
 	if !k.HasHeader(ctx, newBestDigest) {
-		return types.ErrUnknownBlock(types.DefaultCodespace)
+		return types.ErrUnknownBlock(types.DefaultCodespace, "newBest", newBestDigest)
 	}
 
 	knownBestDigest, err := k.GetBestKnownDigest(ctx)
 	if err != nil || currentBestDigest != knownBestDigest {
-		return types.ErrNotBestKnown(types.DefaultCodespace)
+		return types.ErrNotBestKnown(types.DefaultCodespace, currentBestDigest, knownBestDigest)
 	}
 
 	if !k.IsMostRecentCommonAncestor(ctx, ancestor, knownBestDigest, newBestDigest, limit) {
-		return types.ErrNotHeaviestAncestor(types.DefaultCodespace)
+		return types.ErrNotHeaviestAncestor(types.DefaultCodespace, ancestor)
 	}
 
 	better, err := k.HeaviestFromAncestor(ctx, ancestor, knownBestDigest, newBestDigest, limit)
@@ -168,7 +172,7 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 	}
 
 	if newBestDigest != better {
-		return types.ErrNotHeavier(types.DefaultCodespace)
+		return types.ErrNotHeavier(types.DefaultCodespace, newBestDigest, better)
 	}
 
 	// get newBestHeader

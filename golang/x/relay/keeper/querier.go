@@ -272,7 +272,7 @@ func queryCheckRequests(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
-	resErr := keeper.checkRequestsFilled(ctx, params.Filled)
+	_, resErr := keeper.checkRequestsFilled(ctx, params.Filled)
 	if resErr != nil {
 		valid = false
 		errMsg = resErr.Error()

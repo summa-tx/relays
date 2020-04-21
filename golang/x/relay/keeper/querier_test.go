@@ -85,8 +85,8 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 	s.SDKNil(err)
 
 	params := types.QueryParamsIsAncestor{
-		DigestLE:            headers[4].HashLE,
-		ProspectiveAncestor: headers[1].HashLE,
+		DigestLE:            headers[4].Hash,
+		ProspectiveAncestor: headers[1].Hash,
 		Limit:               15,
 	}
 	marshalledParams, marshalErr := json.Marshal(params)
@@ -110,8 +110,8 @@ func (s *KeeperSuite) TestQueryIsAncestor() {
 
 	// If Limit is 0, it will use default limit
 	params = types.QueryParamsIsAncestor{
-		DigestLE:            headers[4].HashLE,
-		ProspectiveAncestor: headers[1].HashLE,
+		DigestLE:            headers[4].Hash,
+		ProspectiveAncestor: headers[1].Hash,
 		Limit:               0,
 	}
 	marshalledParams, marshalErr = json.Marshal(params)
@@ -153,7 +153,7 @@ func (s *KeeperSuite) TestQueryGetRelayGenesis() {
 
 	// Test that GetRelayGenesis errors if RelayGenesis is not found
 	_, err := querier(s.Context, path, req)
-	s.Equal(sdk.CodeType(105), err.Code())
+	s.Equal(sdk.CodeType(types.BadHash256Digest), err.Code())
 
 	// Set Genesis state
 	err = s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
@@ -168,7 +168,7 @@ func (s *KeeperSuite) TestQueryGetRelayGenesis() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(genesis.HashLE, result.Res)
+	s.Equal(genesis.Hash, result.Res)
 }
 
 func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
@@ -185,7 +185,7 @@ func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
 
 	// Test that it errors if it doesn't find LastReorgLCA
 	_, err := querier(s.Context, path, req)
-	s.Equal(sdk.CodeType(105), err.Code())
+	s.Equal(sdk.CodeType(types.BadHash256Digest), err.Code())
 
 	setStateErr := s.Keeper.SetGenesisState(s.Context, genesis, epochStart)
 	s.SDKNil(setStateErr)
@@ -197,7 +197,7 @@ func (s *KeeperSuite) TestQueryGetLastReorgLCA() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(genesis.HashLE, result.Res)
+	s.Equal(genesis.Hash, result.Res)
 }
 
 func (s *KeeperSuite) TestQueryFindAncestor() {
@@ -206,7 +206,7 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 	querier := NewQuerier(s.Keeper)
 
 	params := types.QueryParamsFindAncestor{
-		DigestLE: headers[4].HashLE,
+		DigestLE: headers[4].Hash,
 		Offset:   2,
 	}
 	marshalledParams, marshalErr := json.Marshal(params)
@@ -220,7 +220,7 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 
 	// Test that it errors if ancestor is not found
 	_, findAncestorErr := querier(s.Context, path, req)
-	s.Equal(sdk.CodeType(103), findAncestorErr.Code())
+	s.Equal(sdk.CodeType(types.UnknownBlock), findAncestorErr.Code())
 
 	// initialize data
 	s.Keeper.ingestHeader(s.Context, anchor)
@@ -236,7 +236,7 @@ func (s *KeeperSuite) TestQueryFindAncestor() {
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	// s.SDKNil(unmarshallErr)
 	s.Nil(unmarshallErr)
-	s.Equal(headers[2].HashLE, result.Res)
+	s.Equal(headers[2].Hash, result.Res)
 
 	// Test unmarshall error
 	req = abci.RequestQuery{
@@ -265,9 +265,9 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 	s.SDKNil(err)
 
 	params := types.QueryParamsHeaviestFromAncestor{
-		Ancestor:    headers[3].HashLE,
-		CurrentBest: headers[5].HashLE,
-		NewBest:     headers[4].HashLE,
+		Ancestor:    headers[3].Hash,
+		CurrentBest: headers[5].Hash,
+		NewBest:     headers[4].Hash,
 		Limit:       20,
 	}
 	marshalledParams, marshalErr := json.Marshal(params)
@@ -287,13 +287,13 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(headers[5].HashLE, result.Res)
+	s.Equal(headers[5].Hash, result.Res)
 
 	// Test that it errors if HeaviestFromAncestorErrors
 	params = types.QueryParamsHeaviestFromAncestor{
-		Ancestor:    tv.Headers[10].HashLE,
-		CurrentBest: headers[3].HashLE,
-		NewBest:     headers[4].HashLE,
+		Ancestor:    tv.Headers[10].Hash,
+		CurrentBest: headers[3].Hash,
+		NewBest:     headers[4].Hash,
 		Limit:       20,
 	}
 	marshalledParams, marshalErr = json.Marshal(params)
@@ -305,13 +305,13 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 	}
 
 	_, err = querier(s.Context, path, req)
-	s.Equal(sdk.CodeType(103), err.Code())
+	s.Equal(sdk.CodeType(types.UnknownBlock), err.Code())
 
 	// Test that default limit is used if limit is set to zero
 	params = types.QueryParamsHeaviestFromAncestor{
-		Ancestor:    headers[3].HashLE,
-		CurrentBest: headers[5].HashLE,
-		NewBest:     headers[4].HashLE,
+		Ancestor:    headers[3].Hash,
+		CurrentBest: headers[5].Hash,
+		NewBest:     headers[4].Hash,
 		Limit:       0,
 	}
 	marshalledParams, marshalErr = json.Marshal(params)
@@ -327,7 +327,7 @@ func (s *KeeperSuite) TestQueryHeaviestFromAncestor() {
 
 	unmarshallErr = types.ModuleCdc.UnmarshalJSON(res, &result)
 	s.Nil(unmarshallErr)
-	s.Equal(headers[5].HashLE, result.Res)
+	s.Equal(headers[5].Hash, result.Res)
 
 	// Test unmarshall error
 	req = abci.RequestQuery{
@@ -354,15 +354,15 @@ func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
 
 	err = s.Keeper.IngestHeaderChain(s.Context, pre)
 	s.SDKNil(err)
-	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, post)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.Hash, post)
 	s.SDKNil(err)
-	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.HashLE, postWithOrphan)
+	err = s.Keeper.IngestDifficultyChange(s.Context, tv.OldPeriodStart.Hash, postWithOrphan)
 	s.SDKNil(err)
 
 	params := types.QueryParamsIsMostRecentCommonAncestor{
-		Ancestor: post[2].HashLE,
-		Left:     post[3].HashLE,
-		Right:    post[2].HashLE,
+		Ancestor: post[2].Hash,
+		Left:     post[3].Hash,
+		Right:    post[2].Hash,
 		Limit:    5,
 	}
 	marshalledParams, marshalErr := json.Marshal(params)
@@ -386,9 +386,9 @@ func (s *KeeperSuite) TestQueryIsMostRecentCommonAncestor() {
 
 	// Test that it looks up the default limit if limit is set to zero
 	params = types.QueryParamsIsMostRecentCommonAncestor{
-		Ancestor: post[2].HashLE,
-		Left:     post[3].HashLE,
-		Right:    post[2].HashLE,
+		Ancestor: post[2].Hash,
+		Left:     post[3].Hash,
+		Right:    post[2].Hash,
 		Limit:    0,
 	}
 	marshalledParams, marshalErr = json.Marshal(params)
@@ -445,7 +445,7 @@ func (s *KeeperSuite) TestQueryGetRequest() {
 
 	// Errors if request is not found
 	_, err = querier(s.Context, path, req)
-	s.Equal(sdk.CodeType(601), err.Code())
+	s.Equal(sdk.CodeType(types.UnknownRequest), err.Code())
 
 	// Set Request
 	err = s.Keeper.setRequest(s.Context, []byte{0}, []byte{0}, 0, 0, types.Local, nil)
