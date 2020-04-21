@@ -15,7 +15,7 @@ const relayURL = '/relay'
 const actions = {
   getBKD ({ dispatch }) {
     axios.get(`${relayURL}/getbestdigest`).then((res) => {
-      console.log('getBKD', res)
+      console.log('get BKD', res)
       // Data structure:
       // {
       //   "height": "0",
@@ -46,6 +46,7 @@ const actions = {
 
   getLCA ({ dispatch }) {
     axios.get(`${relayURL}/getlastreorglca`).then((res) => {
+      console.log('get LCA', res)
       // Data structure:
       // {
       //   "height": "0",
@@ -74,7 +75,9 @@ const actions = {
   //   console.log('new extension event', state.extension, data)
   // },
 
+  // NB: Verify height does not actually verify height. This is for updating only. See `info/getExternalInfo`
   verifyHeight ({ dispatch }, data) {
+    console.log('verify height', data)
     if (data) {
       dispatch(
         'info/setCurrentBlock',

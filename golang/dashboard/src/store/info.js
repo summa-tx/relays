@@ -1,6 +1,6 @@
 import axios from 'axios'
 import * as types from '@/store/mutation-types'
-import { timeInSecs, lStorage } from '@/utils/utils'
+import { lStorage } from '@/utils/utils'
 const isMain = process.env.MAINNET
 const blockchainURL = isMain
   ? 'https://api.blockcypher.com/v1/btc/main'
@@ -31,9 +31,7 @@ const state = {
   relay: lStorage.get('relay') || {
     bkd: '',     // String - best known digest
     lca: ''      // String - last (reorg) common ancestor
-  },
-
-  now: timeInSecs() // used to calculate minutes ago
+  }
 }
 
 const mutations = {
@@ -63,11 +61,6 @@ const mutations = {
   [types.SET_RELAY_INFO] (state, { key, data }) {
     state.relay[key] = data
     lStorage.set('relay', state.relay)
-  },
-
-  // Should reset every second
-  [types.UPDATE_NOW] (state, now) {
-    state.now = now
   }
 }
 
@@ -107,8 +100,6 @@ const actions = {
   getExternalInfo ({ dispatch, state }) {
     console.log('Getting external info')
     axios.get(blockchainURL).then((res) => {
-      dispatch('setLastComms', { source: 'external', date: new Date() })
-
       console.log('EXTERNAL INFO:', res.data)
       const { height, hash } = res.data
       const currentHeight = state.currentBlock.height
@@ -125,19 +116,16 @@ Digest:,
 
       // If res.data.height > state.currentBlock.height, then verify and update
       if (height > currentHeight) {
-        // Verify height against relay
-
-        this._vm.$socket.emit('verify_height', hash.toString())
         // Update current block
         dispatch('updateCurrentBlock', { height, hash, updatedAt: new Date() })
       }
+      // Than verify height against relay
+      dispatch('relay/verifyHeight', hash.toString(), { root: true })
     }).catch((err) => {
       console.log('blockcypher error', err)
     })
-  },
 
-  updateNow ({ commit }) {
-    commit(types.UPDATE_NOW)
+    dispatch('setLastComms', { source: 'external', date: new Date() })
   }
 }
 
