@@ -67,7 +67,7 @@ state).  These are available via CLI or REST.
 ### CLI
 
 #### Queries
-To run a query command, begin with `relaycli query relay` followed by the usage code in the table below (e.g. `relaycli query relay getrelaygenesis`).
+To run a query command, begin with `relaycli query relay` followed by the usage code in the table below (e.g. `relaycli query relay getrelaygenesis`). Note that our convention is to use bitcoin hashes (or `digest`s) in their LE format (e.g. 0xabcd...0000, not 0x0000...cdab).
 
 | Query | Description | Usage |
 | ----- | ----------- | ------|
@@ -83,7 +83,7 @@ To run a query command, begin with `relaycli query relay` followed by the usage 
 | CheckRequests | Perform CheckProof and check the SPV Proof against a set of Requests | `checkrequests <json proof> <json list of requests>` |
 
 #### Messages
-To run a tx message command, begin with `relaycli tx relay` followed by the usage code in the table below (e.g. `relaycli tx relay ingestheaders <json list of headers>`).
+To run a tx message command, begin with `relaycli tx relay` followed by the usage code in the table below (e.g. `relaycli tx relay ingestheaders <json list of headers>`). Note that our convention is to use bitcoin hashes (or `digest`s) in their LE format (e.g. 0xabcd...0000, not 0x0000...cdab).
 
 | Message | Description | Usage |
 | ------- | ----------- | ----- |
