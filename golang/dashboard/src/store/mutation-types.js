@@ -7,4 +7,4 @@ export const ADD_PREVIOUS_BLOCK = 'info/ADD_PREVIOUS_BLOCK'
 export const UPDATE_NOW = 'info/UPDATE_NOW'
 
 // relay
-export const GET_BKD = 'relay/GET_BKD'
+export const SET_CONNECTED = 'relay/SET_CONNECTED'
