@@ -4,16 +4,25 @@
     class="relay"
   >
     <v-card class="relay__card">
-      <v-toolbar color="teal" dark>
-        <v-toolbar-title>Relay Info</v-toolbar-title>
-        <v-spacer/>
-        <Net-Type></Net-Type>
-
-        <!-- <v-spacer></v-spacer>
-        <v-btn icon>
-          <v-icon>mdi-dots-vertical</v-icon>
-        </v-btn> -->
-      </v-toolbar>
+      <v-card
+        class="relay__card__banner"
+        tile
+        color="teal"
+        dark
+      >
+        <v-layout column>
+          <v-layout
+            class="relay__card__banner__title"
+            row
+            justify-space-between
+            align-content-center
+          >
+            <h2>Relay Info</h2>
+            <Net-Type/>
+          </v-layout>
+          <Relay-Health-Check />
+        </v-layout>
+      </v-card>
 
       <div class="relay__info">
         <v-layout class="relay__info__line" column>
@@ -29,7 +38,7 @@
 
           <v-flex class="relay__info__info" row>
             <p>Height: {{ currentBlock.height }}</p>
-            <Click-To-Copy :copy-value="height"/>
+            <Click-To-Copy :copy-value="currentBlock.height"/>
           </v-flex>
 
           <v-flex class="relay__info__info" row>
@@ -90,8 +99,6 @@
         </v-layout>
       </div>
     </v-card>
-
-    <Relay-Health-Check />
   </v-container>
 </template>
 
@@ -142,11 +149,17 @@ export default {
 <style scoped>
 .relay {
   max-width: 1264px;
-  padding: 0 60px;
+  padding: 60px;
 }
 
-.relay__card {
-  margin-top: 50px;
+.relay__card__banner {
+  padding: 20px;
+}
+
+.relay__card__banner__title {
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid white;
 }
 
 .relay__info {
@@ -169,7 +182,7 @@ export default {
 
 @media (max-width: 800px) {
   .relay {
-    padding: 0 20px;
+    padding: 40px 20px;
   }
 }
 </style>

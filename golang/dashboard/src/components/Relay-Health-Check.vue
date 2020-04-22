@@ -1,5 +1,5 @@
 <template>
-  <v-card class="relay-updates">
+  <div class="relay-updates">
     <v-layout>
       <p class="relay-updates__title">Relay Health Check:</p>
       <p v-if="lastCommsRelay === null">Not completed</p>
@@ -26,7 +26,7 @@
       <p class="relay-updates__title">Source Height:</p>
       <p>{{ currentBlock.height || 'Unknown' }}</p>
     </v-layout>
-  </v-card>
+  </div>
 </template>
 
 <script>
@@ -35,11 +35,6 @@ import { getMinsAgo } from '@/utils/utils'
 
 export default {
   name: 'RelayHealthCheck',
-
-  components: {
-    ClickToCopy: () => import(/* webpackChunkName: 'Click-To-Copy' */ './Click-To-Copy'),
-    NetType: () => import(/* webpackChunkName: 'Net-Type' */ './Net-Type')
-  },
 
   data: () => ({
     verifiedAt: null,
@@ -87,9 +82,8 @@ export default {
 
 <style>
 .relay-updates {
-  margin-top: 50px;
-  padding: 20px;
-  max-width: 500px;
+  margin-top: 20px;
+  /* max-width: 500px; */
 }
 
 .relay-updates__title {
