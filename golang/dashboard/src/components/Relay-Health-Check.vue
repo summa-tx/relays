@@ -36,17 +36,14 @@ import { getMinsAgo } from '@/utils/utils'
 export default {
   name: 'RelayHealthCheck',
 
-  data: () => ({
-    verifiedAt: null,
-    lastCommsExternal: null,
-    lastCommsRelay: null
-  }),
-
   computed: {
     ...mapState({
       lastComms: state => state.info.lastComms,
       currentBlock: state => state.info.currentBlock,
-      source: state => state.info.source
+      source: state => state.info.source,
+      verifiedAt: state => state.info.minsAgo.currentBlockVerified,
+      lastCommsExternal: state => state.info.minsAgo.sourceHealthCheck,
+      lastCommsRelay: state => state.info.minsAgo.relayHealthCheck
     })
   },
 
@@ -72,9 +69,15 @@ export default {
 
   methods: {
     healthCheckMins () {
-      this.verifiedAt = this.currentBlock.verifiedAt ? getMinsAgo(this.currentBlock.verifiedAt) : null
-      this.lastCommsExternal = this.lastComms.external ? getMinsAgo(this.lastComms.external) : null
-      this.lastCommsRelay = this.lastComms.relay ? getMinsAgo(this.lastComms.relay) : null
+      const currentBlockVerified = this.currentBlock.verifiedAt ? getMinsAgo(this.currentBlock.verifiedAt) : null
+      const relayHealthCheck = this.lastComms.relay ? getMinsAgo(this.lastComms.relay) : null
+      const sourceHealthCheck = this.lastComms.external ? getMinsAgo(this.lastComms.external) : null
+
+      this.$store.dispatch('info/setMinsAgo', {
+        currentBlockVerified,
+        relayHealthCheck,
+        sourceHealthCheck
+      })
     }
   }
 }

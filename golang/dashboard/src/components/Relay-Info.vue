@@ -50,12 +50,11 @@
             <Click-To-Copy :copy-value="currentBlock.hash"/>
           </v-flex>
 
-          <!-- <v-flex class="relay__info__info" row>
-            TODO: Fix verifiedAt
+          <v-flex class="relay__info__info" row>
             <p v-if="verifiedAt === null">Unverified</p>
             <p v-else-if="verifiedAt < 1">Verified: Less than 1 minute ago</p>
             <p v-else>Verified: {{ verifiedAt }} minute<span v-if="verifiedAt > 1">s</span> ago</p>
-          </v-flex> -->
+          </v-flex>
         </v-layout>
 
         <v-divider/>
@@ -116,13 +115,13 @@ export default {
 
   data: () => ({
     windowWidth: Number,
-    verifiedAt: null
   }),
 
   computed: {
     ...mapState({
       currentBlock: state => state.info.currentBlock,
-      relay: state => state.info.relay
+      relay: state => state.info.relay,
+      verifiedAt: state => state.info.minsAgo.currentBlockVerified
     })
   },
 
