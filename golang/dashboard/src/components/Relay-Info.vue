@@ -19,7 +19,7 @@
         <v-layout class="relay__info__line" column>
           <v-layout>
             <h3 class="relay__info__title">Current Block:</h3>
-            <v-tooltip top>
+            <v-tooltip top nudge-bottom="5">
               <template v-slot:activator="{ on }">
                 <v-icon v-on="on" size="20px">help</v-icon>
               </template>
@@ -28,23 +28,23 @@
           </v-layout>
 
           <v-flex class="relay__info__info" row>
-            <p><b>Height:</b> {{ height }}</p>
+            <p>Height: {{ height }}</p>
             <Click-To-Copy :copy-value="height"/>
           </v-flex>
 
           <v-flex class="relay__info__info" row>
             <p>
-              <b>Hash:</b>
-              <span v-if="windowWidth < 800"> {{ currentBlock.hash | crop }}</span>
+              <span>Hash: </span>
+              <span v-if="windowWidth < 800">{{ currentBlock.hash | crop }}</span>
               <span v-else>{{ currentBlock.hash }}</span>
             </p>
             <Click-To-Copy :copy-value="currentBlock.hash"/>
           </v-flex>
 
           <v-flex class="relay__info__info" row>
-            <p v-if="verifiedAt === null"><b>Verified:</b> Unverified</p>
-            <p v-else-if="verifiedAt < 1">Less than 1 minute ago</p>
-            <p v-else><b>Verified:</b> {{ verifiedAt }} minute<span v-if="verifiedAt > 1">s</span> ago</p>
+            <p v-if="verifiedAt === null">Unverified</p>
+            <p v-else-if="verifiedAt < 1">Verified: Less than 1 minute ago</p>
+            <p v-else>Verified: {{ verifiedAt }} minute<span v-if="verifiedAt > 1">s</span> ago</p>
           </v-flex>
         </v-layout>
 
@@ -53,7 +53,7 @@
         <v-layout class="relay__info__line" column>
           <v-layout>
             <h3 class="relay__info__title">Best Known Digest:</h3>
-            <v-tooltip top>
+            <v-tooltip top nudge-bottom="5">
               <template v-slot:activator="{ on }">
                 <v-icon v-on="on" size="20px">help</v-icon>
               </template>
@@ -74,7 +74,7 @@
           <v-layout>
             <h3 class="relay__info__title">Common Ancestor of Last Reorg:</h3>
 
-            <v-tooltip top>
+            <v-tooltip top nudge-bottom="5">
               <template v-slot:activator="{ on }">
                 <v-icon v-on="on" size="20px">help</v-icon>
               </template>
