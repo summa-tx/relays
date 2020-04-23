@@ -23,11 +23,12 @@
 
         <v-spacer/>
 
+        <v-btn @click="updateAll">UPDATE</v-btn>
+
       </v-layout>
     </v-app-bar>
 
     <v-content>
-      <Websocket-Test/>
       <Relay-Info/>
     </v-content>
   </v-app>
@@ -35,7 +36,6 @@
 
 <script>
 import RelayInfo from './components/Relay-Info'
-import WebsocketTest from './components/WebsocketTest'
 
 export default {
   name: 'OperatedRelayDashboard',
@@ -50,33 +50,32 @@ export default {
   },
 
   components: {
-    RelayInfo,
-    WebsocketTest
+    RelayInfo
   },
 
   mounted () {
-    // Get relay info - bkd, lrca
+    // Get relay info - best know digest(BKD), last common ancestor(LCA)
     this.getRelayInfo()
     this.getExternalInfo()
     // Get external info and set it in the store, start polling
     setInterval(this.getExternalInfo, 120000)
     setInterval(this.getRelayInfo, 60000)
-    setInterval(this.updateNow, 65000)
   },
 
   methods: {
     getRelayInfo () {
       console.log('Getting relay info')
-      this.$socket.emit('get_bkd')
-      this.$socket.emit('get_lca')
-    },
-
-    updateNow () {
-      this.$store.dispatch('info/updateNow')
+      this.$store.dispatch('relay/getBKD')
+      this.$store.dispatch('relay/getLCA')
     },
 
     getExternalInfo () {
       this.$store.dispatch('info/getExternalInfo')
+    },
+
+    updateAll () {
+      this.getRelayInfo()
+      this.getExternalInfo()
     }
   }
 }
