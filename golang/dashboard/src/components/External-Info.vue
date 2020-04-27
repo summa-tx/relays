@@ -1,24 +1,25 @@
 <template>
-  <v-card class="relay-updates">
+  <v-card class="external-info">
     <h3>External Info</h3>
+    <v-divider class="external-info__divider" />
     <v-layout>
-      <p class="relay-updates__title">Source:</p>
+      <p class="external-info__item">Source:</p>
       <p>{{ source }}</p>
     </v-layout>
     <v-layout>
-      <p class="relay-updates__title">Source Health Check:</p>
+      <p class="external-info__item">Health Check:</p>
       <p v-if="lastCommsExternal === null">Not completed</p>
       <p v-else-if="lastCommsExternal < 1">Less than 1 minute ago</p>
       <p v-else>{{ lastCommsExternal }} minute<span v-if="lastCommsExternal > 1">s</span> ago</p>
     </v-layout>
     <v-layout>
-      <p class="relay-updates__title">Source Block Changed:</p>
+      <p class="external-info__item">Block Changed:</p>
       <p v-if="verifiedAt === null">Unknown</p>
       <p v-else-if="verifiedAt < 1">Less than 1 minute ago</p>
       <p v-else>{{ verifiedAt }} minute<span v-if="verifiedAt > 1">s</span> ago</p>
     </v-layout>
     <v-layout>
-      <p class="relay-updates__title">Source Height:</p>
+      <p class="external-info__item">Height:</p>
       <p>{{ currentBlock.height || 'Unknown' }}</p>
     </v-layout>
   </v-card>
@@ -78,19 +79,23 @@ export default {
 </script>
 
 <style>
-.relay-updates {
+.external-info {
   margin-top: 40px;
   padding: 20px;
   max-width: 500px;
 }
 
-.relay-updates__title {
+.external-info__divider {
+  margin: 10px 0 20px 0;
+}
+
+.external-info__item {
   width: 200px;
   font-weight: 900;
 }
 
 @media (max-width: 800px) {
-  .relay-updates {
+  .external-info {
     max-width: none;
   }
 }
