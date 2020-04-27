@@ -31,9 +31,7 @@
     <Relay-Connection />
 
     <v-content>
-      <v-container
-        class="relay"
-      >
+      <v-container>
         <Relay-Info />
         <ExternalInfo />
       </v-container>
@@ -66,7 +64,7 @@ export default {
     this.getExternalInfo()
     // Get external info and set it in the store, start polling
     setInterval(this.getExternalInfo, 120000)
-    setInterval(this.getRelayInfo, 120000)
+    setInterval(this.getRelayInfo, 60000)
   },
 
   methods: {
