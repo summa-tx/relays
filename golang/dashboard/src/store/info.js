@@ -31,6 +31,12 @@ const state = {
   relay: lStorage.get('relay') || {
     bkd: '',     // String - best known digest
     lca: ''      // String - last (reorg) common ancestor
+  },
+
+  minsAgo: {
+    currentBlockVerified: null,
+    relayHealthCheck: null,
+    sourceHealthCheck: null
   }
 }
 
@@ -61,6 +67,10 @@ const mutations = {
   [types.SET_RELAY_INFO] (state, { key, data }) {
     state.relay[key] = data
     lStorage.set('relay', state.relay)
+  },
+
+  [types.SET_MINS_AGO] (state, payload) {
+    state.minsAgo = payload
   }
 }
 
@@ -92,9 +102,16 @@ const actions = {
     dispatch('setCurrentBlock', data)
   },
 
-  // payload: { name: '', value: '' }
+  // payload: { key: '', data: '' }
   setRelayInfo ({ commit }, payload) {
     commit(types.SET_RELAY_INFO, payload)
+  },
+
+  // Note: This can be broken up in the future if we need to update these separately,
+  //       but right now they are all getting updated at the same time.
+  // payload: { currentBlockVerified: 0, relayHealthCheck: 0, sourceHealthCheck: 0 }
+  setMinsAgo ({ commit }, payload) {
+    commit(types.SET_MINS_AGO, payload)
   },
 
   getExternalInfo ({ dispatch, state }) {
@@ -121,11 +138,13 @@ Digest:,
       }
       // Than verify height against relay
       dispatch('relay/verifyHeight', hash.toString(), { root: true })
+
+      // Set last communication
+      dispatch('setLastComms', { source: 'external', date: new Date() })
     }).catch((err) => {
       console.log('blockcypher error', err)
     })
 
-    dispatch('setLastComms', { source: 'external', date: new Date() })
   }
 }
 

@@ -70,7 +70,6 @@ export default {
 
 .tooltip-text {
   font-size: 12px;
-  /* height: 16px; */
   padding: 2px 10px;
 }
 </style>

@@ -91,15 +91,6 @@ const actions = {
       )
     }
   }
-
-  // // Called when external info updates
-  // relay_socket_return_verify_height ({ dispatch }, data) {
-  //   console.log('return verify height', data)
-  //   if (data) {
-  //     dispatch('info/setCurrentBlock', { verifiedAt: new Date() })
-  //     dispatch('info/setLastComms', { source: 'relay', date: new Date() })
-  //   }
-  // }
 }
 
 // state,
