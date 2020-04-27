@@ -3,23 +3,19 @@
     <h3>External Info</h3>
     <v-divider class="external-info__divider" />
     <v-layout>
-      <p class="external-info__item">Source:</p>
+      <p class="external-info__item mr-2">Source:</p>
       <p>{{ source }}</p>
     </v-layout>
     <v-layout>
-      <p class="external-info__item">Health Check:</p>
-      <p v-if="lastCommsExternal === null">Not completed</p>
-      <p v-else-if="lastCommsExternal < 1">Less than 1 minute ago</p>
-      <p v-else>{{ lastCommsExternal }} minute<span v-if="lastCommsExternal > 1">s</span> ago</p>
+      <p class="external-info__item mr-2">Health Check:</p>
+      <Display-Mins :timestamp="lastComms.external" />
     </v-layout>
     <v-layout>
-      <p class="external-info__item">Block Changed:</p>
-      <p v-if="verifiedAt === null">Unknown</p>
-      <p v-else-if="verifiedAt < 1">Less than 1 minute ago</p>
-      <p v-else>{{ verifiedAt }} minute<span v-if="verifiedAt > 1">s</span> ago</p>
+      <p class="external-info__item mr-2">Block Changed:</p>
+      <Display-Mins :timestamp="currentBlock.verifiedAt" />
     </v-layout>
     <v-layout>
-      <p class="external-info__item">Height:</p>
+      <p class="external-info__item mr-2">Height:</p>
       <p>{{ currentBlock.height || 'Unknown' }}</p>
     </v-layout>
   </v-card>
@@ -27,53 +23,20 @@
 
 <script>
 import { mapState } from 'vuex'
-import { getMinsAgo } from '@/utils/utils'
 
 export default {
   name: 'ExternalInfo',
+
+  components: {
+    DisplayMins: () => import(/* webpackChunkName: 'Display-Mins' */ './Display-Mins')
+  },
 
   computed: {
     ...mapState({
       lastComms: state => state.info.lastComms,
       currentBlock: state => state.info.currentBlock,
-      source: state => state.info.source,
-      verifiedAt: state => state.info.minsAgo.currentBlockVerified,
-      lastCommsExternal: state => state.info.minsAgo.sourceHealthCheck
+      source: state => state.info.source
     })
-  },
-
-  watch: {
-    lastComms: {
-      handler: function () {
-        console.log('Updated info')
-        this.healthCheckMins()
-      },
-      deep: true
-    }
-  },
-
-  mounted () {
-    // Calculate minutes for health check
-    this.healthCheckMins()
-
-    // Updates every minute
-    setInterval(() => {
-      this.healthCheckMins()
-    }, 60000)
-  },
-
-  methods: {
-    healthCheckMins () {
-      const currentBlockVerified = this.currentBlock.verifiedAt ? getMinsAgo(this.currentBlock.verifiedAt) : null
-      const relayHealthCheck = this.lastComms.relay ? getMinsAgo(this.lastComms.relay) : null
-      const sourceHealthCheck = this.lastComms.external ? getMinsAgo(this.lastComms.external) : null
-
-      this.$store.dispatch('info/setMinsAgo', {
-        currentBlockVerified,
-        relayHealthCheck,
-        sourceHealthCheck
-      })
-    }
   }
 }
 </script>

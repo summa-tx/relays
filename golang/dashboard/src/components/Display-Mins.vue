@@ -9,13 +9,33 @@
 </template>
 
 <script>
+import { getMinsAgo } from '@/utils/utils'
+
 export default {
   name: 'DisplayMins',
 
   props: {
-    minsAgo: {
+    timestamp: {
       required: true,
-      type: Number
+      type: Date,
+      default: null
+    }
+  },
+
+  data: () => ({
+    minsAgo: null
+  }),
+
+  mounted () {
+    this.updateMinsAgo()
+    setInterval(() => {
+      this.updateMinsAgo()
+    }, 10000)
+  },
+
+  methods: {
+    updateMinsAgo () {
+      this.minsAgo = this.timestamp ? getMinsAgo(this.timestamp) : null
     }
   }
 }

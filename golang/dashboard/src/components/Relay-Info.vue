@@ -16,8 +16,8 @@
           <v-layout column>
             <h2>Relay Info</h2>
             <v-layout>
-              <p>Health Check: </p>
-              <Display-Mins :mins-ago="lastCommsRelay" />
+              <p class="mr-2">Health Check:</p>
+              <Display-Mins :timestamp="lastComms.relay" />
             </v-layout>
           </v-layout>
           <Net-Type/>
@@ -52,9 +52,8 @@
         </v-flex>
 
         <v-flex class="relay-info__info__data" row>
-          <p v-if="verifiedAt === null">Unverified</p>
-          <p v-else-if="verifiedAt < 1">Verified: Less than 1 minute ago</p>
-          <p v-else>Verified: {{ verifiedAt }} minute<span v-if="verifiedAt > 1">s</span> ago</p>
+          <p class="mr-2">Verified:</p>
+          <Display-Mins :timestamp="currentBlock.verifiedAt" />
         </v-flex>
       </v-layout>
 
@@ -119,15 +118,11 @@ export default {
 
   computed: {
     ...mapState({
+      lastComms: state => state.info.lastComms,
       currentBlock: state => state.info.currentBlock,
       relay: state => state.info.relay,
-      verifiedAt: state => state.info.minsAgo.currentBlockVerified,
-      lastCommsRelay: state => state.info.minsAgo.relayHealthCheck
+      verifiedAt: state => state.info.minsAgo.currentBlockVerified
     })
-  },
-
-  mounted () {
-    this.onResize()
   },
 
   filters: {
@@ -170,10 +165,4 @@ export default {
   font-weight: 400;
   margin-left: 0px;
 }
-
-/* @media (max-width: 800px) {
-  .relay {
-    padding: 40px 20px;
-  }
-} */
 </style>

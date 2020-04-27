@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app class="app">
     <v-app-bar app>
       <v-layout
         justify-space-between
@@ -67,7 +67,9 @@ export default {
     this.getExternalInfo()
     // Get external info and set it in the store, start polling
     setInterval(this.getExternalInfo, 120000)
-    setInterval(this.getRelayInfo, 60000)
+    setInterval(this.getRelayInfo, 120000)
+
+    this.onResize()
   },
 
   methods: {
@@ -94,6 +96,10 @@ export default {
 </script>
 
 <style>
+.app {
+  margin-bottom: 40px;
+}
+
 .nav__content {
   max-width: 1200px;
   margin: auto;
@@ -101,10 +107,5 @@ export default {
 .nav__title {
   font-weight: 500;
   font-size: 0.8em;
-}
-
-.relay {
-  max-width: 1264px;
-  padding: 60px;
 }
 </style>
