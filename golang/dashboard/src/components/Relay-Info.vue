@@ -116,10 +116,6 @@ export default {
     windowWidth: Number,
   }),
 
-  mounted () {
-    this.onResize()
-  },
-
   computed: {
     ...mapState({
       lastComms: state => state.info.lastComms,
@@ -129,17 +125,21 @@ export default {
     })
   },
 
-  filters: {
-    crop (str) {
-      var first = str.slice(0, 6)
-      var last = str.slice((str.length - 6), str.length)
-      return `${first} . . . ${last}`
-    }
+  mounted () {
+    this.onResize()
   },
 
   methods: {
     onResize () {
       this.windowWidth = window.innerWidth
+    }
+  },
+
+  filters: {
+    crop (str) {
+      var first = str.slice(0, 6)
+      var last = str.slice((str.length - 6), str.length)
+      return `${first} . . . ${last}`
     }
   }
 }
