@@ -28,6 +28,8 @@
       </v-layout>
     </v-app-bar>
 
+    <Relay-Connection />
+
     <v-content>
       <Relay-Info/>
     </v-content>
@@ -36,6 +38,7 @@
 
 <script>
 import RelayInfo from './components/Relay-Info'
+import RelayConnection from './components/Relay-Connection'
 
 export default {
   name: 'OperatedRelayDashboard',
@@ -50,7 +53,8 @@ export default {
   },
 
   components: {
-    RelayInfo
+    RelayInfo,
+    RelayConnection
   },
 
   mounted () {
