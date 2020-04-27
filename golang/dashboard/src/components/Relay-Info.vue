@@ -1,5 +1,5 @@
 <template>
-  <v-card class="relay-info">
+  <v-card v-resize="onResize" class="relay-info">
     <v-card
       class="relay-info__banner"
       tile
@@ -116,6 +116,10 @@ export default {
     windowWidth: Number,
   }),
 
+  mounted () {
+    this.onResize()
+  },
+
   computed: {
     ...mapState({
       lastComms: state => state.info.lastComms,
@@ -130,6 +134,12 @@ export default {
       var first = str.slice(0, 6)
       var last = str.slice((str.length - 6), str.length)
       return `${first} . . . ${last}`
+    }
+  },
+
+  methods: {
+    onResize () {
+      this.windowWidth = window.innerWidth
     }
   }
 }

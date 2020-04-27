@@ -32,7 +32,6 @@
 
     <v-content>
       <v-container
-        v-resize="onResize"
         class="relay"
       >
         <Relay-Info />
@@ -68,8 +67,6 @@ export default {
     // Get external info and set it in the store, start polling
     setInterval(this.getExternalInfo, 120000)
     setInterval(this.getRelayInfo, 120000)
-
-    this.onResize()
   },
 
   methods: {
@@ -86,10 +83,6 @@ export default {
     updateAll () {
       this.getRelayInfo()
       this.getExternalInfo()
-    },
-
-    onResize () {
-      this.windowWidth = window.innerWidth
     }
   }
 }
