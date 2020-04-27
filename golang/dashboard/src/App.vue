@@ -31,15 +31,18 @@
     <Relay-Connection />
 
     <v-content>
-      <Relay-Info/>
+      <v-container
+        v-resize="onResize"
+        class="relay"
+      >
+        <Relay-Info />
+        <ExternalInfo />
+      </v-container>
     </v-content>
   </v-app>
 </template>
 
 <script>
-import RelayInfo from './components/Relay-Info'
-import RelayConnection from './components/Relay-Connection'
-
 export default {
   name: 'OperatedRelayDashboard',
 
@@ -53,8 +56,9 @@ export default {
   },
 
   components: {
-    RelayInfo,
-    RelayConnection
+    RelayInfo: () => import(/* webpackChunkName: 'Relay-Info' */ './components/Relay-Info'),
+    RelayConnection: () => import(/* webpackChunkName: 'Relay-Connection' */ './components/Relay-Connection'),
+    ExternalInfo: () => import(/* webpackChunkName: 'External-Info' */ './components/External-Info')
   },
 
   mounted () {
@@ -80,6 +84,10 @@ export default {
     updateAll () {
       this.getRelayInfo()
       this.getExternalInfo()
+    },
+
+    onResize () {
+      this.windowWidth = window.innerWidth
     }
   }
 }
@@ -93,5 +101,10 @@ export default {
 .nav__title {
   font-weight: 500;
   font-size: 0.8em;
+}
+
+.relay {
+  max-width: 1264px;
+  padding: 60px;
 }
 </style>

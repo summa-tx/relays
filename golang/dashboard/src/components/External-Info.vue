@@ -1,11 +1,6 @@
 <template>
-  <div class="relay-updates">
-    <v-layout>
-      <p class="relay-updates__title">Relay Health Check:</p>
-      <p v-if="lastCommsRelay === null">Not completed</p>
-      <p v-else-if="lastCommsRelay < 1">Less than 1 minute ago</p>
-      <p v-else>{{ lastCommsRelay }} minute<span v-if="lastCommsRelay > 1">s</span> ago</p>
-    </v-layout>
+  <v-card class="relay-updates">
+    <h3>External Info</h3>
     <v-layout>
       <p class="relay-updates__title">Source:</p>
       <p>{{ source }}</p>
@@ -26,7 +21,7 @@
       <p class="relay-updates__title">Source Height:</p>
       <p>{{ currentBlock.height || 'Unknown' }}</p>
     </v-layout>
-  </div>
+  </v-card>
 </template>
 
 <script>
@@ -34,7 +29,7 @@ import { mapState } from 'vuex'
 import { getMinsAgo } from '@/utils/utils'
 
 export default {
-  name: 'RelayHealthCheck',
+  name: 'ExternalInfo',
 
   computed: {
     ...mapState({
@@ -42,8 +37,7 @@ export default {
       currentBlock: state => state.info.currentBlock,
       source: state => state.info.source,
       verifiedAt: state => state.info.minsAgo.currentBlockVerified,
-      lastCommsExternal: state => state.info.minsAgo.sourceHealthCheck,
-      lastCommsRelay: state => state.info.minsAgo.relayHealthCheck
+      lastCommsExternal: state => state.info.minsAgo.sourceHealthCheck
     })
   },
 
@@ -85,8 +79,9 @@ export default {
 
 <style>
 .relay-updates {
-  margin-top: 20px;
-  /* max-width: 500px; */
+  margin-top: 40px;
+  padding: 20px;
+  max-width: 500px;
 }
 
 .relay-updates__title {
