@@ -32,7 +32,7 @@
               <template v-slot:activator="{ on }">
                 <v-icon v-on="on" size="20px">help</v-icon>
               </template>
-              <span>Something here</span>
+              <span>The most recent valid block detected by the relay</span>
             </v-tooltip>
           </v-layout>
 
@@ -66,7 +66,7 @@
               <template v-slot:activator="{ on }">
                 <v-icon v-on="on" size="20px">help</v-icon>
               </template>
-              <span>Something here</span>
+              <span>The digest of the best block, updated approximately every 5 blocks</span>
             </v-tooltip>
           </v-layout>
 
@@ -87,7 +87,7 @@
               <template v-slot:activator="{ on }">
                 <v-icon v-on="on" size="20px">help</v-icon>
               </template>
-              <span>Something here</span>
+              <span>The latest ancestral block of both the current best known digest and the previous best known digest</span>
             </v-tooltip>
           </v-layout>
           <v-flex class="relay__info__info" row>
