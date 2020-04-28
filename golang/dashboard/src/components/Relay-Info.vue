@@ -78,10 +78,10 @@
         <v-flex class="relay-info__info__data" row>
           <p>
             <span>Hash: </span>
-            <span v-if="windowWidth < 800">{{ relay.bkd | crop }}</span>
-            <span v-else>{{ relay.bkd }}</span>
+            <span v-if="windowWidth < 800">{{ bkd.hash | crop }}</span>
+            <span v-else>{{ bkd.hash }}</span>
           </p>
-          <Click-To-Copy :copy-value="relay.bkd"/>
+          <Click-To-Copy :copy-value="bkd.hash"/>
         </v-flex>
 
         <!-- <v-flex class="relay-info__info__data" row>
@@ -112,10 +112,10 @@
         <v-flex class="relay-info__info__data" row>
           <p>
             <span>Hash: </span>
-            <span v-if="windowWidth < 800">{{ relay.lca | crop }}</span>
-            <span v-else>{{ relay.lca }}</span>
+            <span v-if="windowWidth < 800">{{ lca.hash | crop }}</span>
+            <span v-else>{{ lca.hash }}</span>
           </p>
-          <Click-To-Copy :copy-value="relay.lca"/>
+          <Click-To-Copy :copy-value="lca.hash"/>
         </v-flex>
 
         <!-- <v-flex class="relay-info__info__data" row>
@@ -147,8 +147,8 @@ export default {
     ...mapState({
       lastComms: state => state.info.lastComms,
       currentBlock: state => state.info.currentBlock,
-      relay: state => state.info.relay,
-      verifiedAt: state => state.info.minsAgo.currentBlockVerified
+      bkd: state => state.info.bkd,
+      lca: state => state.info.lca
     })
   },
 

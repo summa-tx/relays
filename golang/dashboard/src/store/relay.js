@@ -26,9 +26,9 @@ const actions = {
       //   }
       // }
       dispatch(
-        'info/setRelayInfo',
+        'info/setBKD',
         {
-          key: 'bkd',
+          key: 'hash',
           data: reverseEndianness(res.data.result.result)
         },
         { root: true }
@@ -40,7 +40,7 @@ const actions = {
       )
     })
     .catch((e) => {
-      console.log('relay/getBKD: ', e)
+      console.error('relay/getBKD: ', e)
       commit(types.SET_CONNECTED, false)
     })
   },
@@ -57,9 +57,9 @@ const actions = {
       //   }
       // }
       dispatch(
-        'info/setRelayInfo',
+        'info/setLCA',
         {
-          key: 'lca',
+          key: 'hash',
           data: reverseEndianness(res.data.result.result)
         },
         { root: true }
@@ -71,7 +71,7 @@ const actions = {
       )
     })
     .catch((e) => {
-      console.log('relay/getLCA: ', e)
+      console.error('relay/getLCA: ', e)
       commit(types.SET_CONNECTED, false)
     })
   },
