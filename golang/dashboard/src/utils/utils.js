@@ -83,7 +83,8 @@ export const lStorage = new LStorage()
 const assert = require('bsert')
 
 export function isString (str) {
-  assert(str && typeof str === 'string', 'Must pass in string')
+  const isStr = typeof str === 'string'
+  assert(isStr, `Must pass in string, received ${typeof str}`)
 }
 
 /**
@@ -92,13 +93,11 @@ export function isString (str) {
  * @returns {Boolean} true if string is hex, false if not
  */
 export function isHex (str) {
-  isString()
+  isString(str)
 
-  if (/^[0-9a-fA-F]+$/.test(str)) {
-    return true
-  }
+  let hexStr = remove0x(str)
 
-  return false
+  assert(hexStr && /^[0-9a-fA-F]+$/.test(hexStr), 'Must pass in hex string')
 }
 
 export function remove0x (str) {
@@ -119,34 +118,12 @@ export function add0x (str) {
   return `0x${str}`
 }
 
-export function prependChars (chars, str) {
-  isString(str)
-  return `${chars}${str}`
-}
-
-export function reverseHex (str) {
+export function reverseHexBytes (str) {
   isHex(str)
   return str.match(/../g).reverse().join('')
 }
 
-export const convertEndian = {
-  littleToBig (str) {
-    isHex(str)
-    const reversed = reverseHex(remove0x(str))
-    return prependChars('00', reversed)
-  },
-
-  bigToLittle (str) {
-    isHex(str)
-    const reversed = reverseHex(str)
-    return add0x(reversed)
-  }
-}
-
 export function reverseEndianness (str) {
-  let croppedStr = str
-  if (str.slice(0,2) === "0x") {
-    croppedStr = str.slice(2)
-  }
-  return croppedStr.match(/../g).reverse().join("")
+  isHex(str)
+  return add0x(reverseHexBytes(remove0x(str)))
 }
