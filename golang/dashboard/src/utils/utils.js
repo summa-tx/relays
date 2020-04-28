@@ -144,8 +144,9 @@ export const convertEndian = {
 }
 
 export function reverseEndianness (str) {
+  let croppedStr = str
   if (str.slice(0,2) === "0x") {
-    return str.slice(2).match(/../g).reverse().join("")
+    croppedStr = str.slice(2)
   }
-  return str.match(/../g).reverse().join("")
+  return croppedStr.match(/../g).reverse().join("")
 }

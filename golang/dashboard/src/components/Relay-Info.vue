@@ -70,11 +70,24 @@
           </v-tooltip>
         </v-layout>
 
+        <!-- <v-flex class="relay-info__info__data" row>
+          <p>Height: {{ currentBlock.height }}</p>
+          <Click-To-Copy :copy-value="currentBlock.height"/>
+        </v-flex> -->
+
         <v-flex class="relay-info__info__data" row>
-          <p v-if="windowWidth < 800">{{ relay.bkd | crop }}</p>
-          <p v-else>{{ relay.bkd }}</p>
+          <p>
+            <span>Hash: </span>
+            <span v-if="windowWidth < 800">{{ relay.bkd | crop }}</span>
+            <span v-else>{{ relay.bkd }}</span>
+          </p>
           <Click-To-Copy :copy-value="relay.bkd"/>
         </v-flex>
+
+        <!-- <v-flex class="relay-info__info__data" row>
+          <p class="mr-2">Verified:</p>
+          <Display-Mins :timestamp="currentBlock.verifiedAt" />
+        </v-flex> -->
       </v-layout>
 
       <v-divider/>
@@ -90,11 +103,25 @@
             <span>The latest ancestral block of both the current best known digest and the previous best known digest</span>
           </v-tooltip>
         </v-layout>
+
+        <!-- <v-flex class="relay-info__info__data" row>
+          <p>Height: {{ currentBlock.height }}</p>
+          <Click-To-Copy :copy-value="currentBlock.height"/>
+        </v-flex> -->
+
         <v-flex class="relay-info__info__data" row>
-          <p v-if="windowWidth < 800">{{ relay.lca | crop }}</p>
-          <p v-else>{{ relay.lca }}</p>
+          <p>
+            <span>Hash: </span>
+            <span v-if="windowWidth < 800">{{ relay.lca | crop }}</span>
+            <span v-else>{{ relay.lca }}</span>
+          </p>
           <Click-To-Copy :copy-value="relay.lca"/>
         </v-flex>
+
+        <!-- <v-flex class="relay-info__info__data" row>
+          <p class="mr-2">Verified:</p>
+          <Display-Mins :timestamp="currentBlock.verifiedAt" />
+        </v-flex> -->
       </v-layout>
     </div>
   </v-card>
