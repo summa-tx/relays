@@ -1,5 +1,6 @@
 import axios from 'axios'
 import * as types from '@/store/mutation-types'
+import { reverseEndianness } from '@/utils/utils'
 const relayURL = '/relay'
 
 const state = {
@@ -24,13 +25,11 @@ const actions = {
       //     "result": "0x4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000"
       //   }
       // }
-      // commit(types.GET_BKD, res.data.result.result)
       dispatch(
         'info/setRelayInfo',
         {
           key: 'bkd',
-          // TODO: switch endian
-          data: res.data.result.result
+          data: reverseEndianness(res.data.result.result)
         },
         { root: true }
       )
@@ -61,8 +60,7 @@ const actions = {
         'info/setRelayInfo',
         {
           key: 'lca',
-          // TODO: switch endian
-          data: res.data.result.result
+          data: reverseEndianness(res.data.result.result)
         },
         { root: true }
       )

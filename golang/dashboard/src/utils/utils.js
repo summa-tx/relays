@@ -142,3 +142,10 @@ export const convertEndian = {
     return add0x(reversed)
   }
 }
+
+export function reverseEndianness (str) {
+  if (str.slice(0,2) === "0x") {
+    return str.slice(2).match(/../g).reverse().join("")
+  }
+  return str.match(/../g).reverse().join("")
+}
