@@ -17,7 +17,7 @@ export default {
   props: {
     timestamp: {
       required: true,
-      type: Date,
+      type: [Date, String],
       default: null
     }
   },
@@ -35,7 +35,11 @@ export default {
 
   methods: {
     updateMinsAgo () {
-      this.minsAgo = this.timestamp ? getMinsAgo(this.timestamp) : null
+      let date = this.timestamp
+      if (typeof date === 'string') {
+        date = new Date(this.timestamp)
+      }
+      this.minsAgo = date ? getMinsAgo(date) : null
     }
   }
 }
