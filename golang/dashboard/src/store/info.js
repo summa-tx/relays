@@ -92,7 +92,7 @@ const actions = {
     dispatch('setCurrentBlock', data)
   },
 
-  // payload: { name: '', value: '' }
+  // payload: { key: '', data: '' }
   setRelayInfo ({ commit }, payload) {
     commit(types.SET_RELAY_INFO, payload)
   },
@@ -121,11 +121,13 @@ Digest:,
       }
       // Than verify height against relay
       dispatch('relay/verifyHeight', hash.toString(), { root: true })
+
+      // Set last communication
+      dispatch('setLastComms', { source: 'external', date: new Date() })
     }).catch((err) => {
       console.log('blockcypher error', err)
     })
 
-    dispatch('setLastComms', { source: 'external', date: new Date() })
   }
 }
 
