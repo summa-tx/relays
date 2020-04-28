@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app class="app">
     <v-app-bar app>
       <v-layout
         justify-space-between
@@ -31,15 +31,15 @@
     <Relay-Connection />
 
     <v-content>
-      <Relay-Info/>
+      <v-container>
+        <Relay-Info />
+        <ExternalInfo />
+      </v-container>
     </v-content>
   </v-app>
 </template>
 
 <script>
-import RelayInfo from './components/Relay-Info'
-import RelayConnection from './components/Relay-Connection'
-
 export default {
   name: 'OperatedRelayDashboard',
 
@@ -53,8 +53,9 @@ export default {
   },
 
   components: {
-    RelayInfo,
-    RelayConnection
+    RelayInfo: () => import(/* webpackChunkName: 'Relay-Info' */ './components/Relay-Info'),
+    RelayConnection: () => import(/* webpackChunkName: 'Relay-Connection' */ './components/Relay-Connection'),
+    ExternalInfo: () => import(/* webpackChunkName: 'External-Info' */ './components/External-Info')
   },
 
   mounted () {
@@ -86,6 +87,10 @@ export default {
 </script>
 
 <style>
+.app {
+  margin-bottom: 40px;
+}
+
 .nav__content {
   max-width: 1200px;
   margin: auto;
