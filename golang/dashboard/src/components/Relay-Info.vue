@@ -84,10 +84,10 @@
           <Click-To-Copy :copy-value="bkd.hash"/>
         </v-flex>
 
-        <!-- <v-flex class="relay-info__info__data" row>
+        <v-flex class="relay-info__info__data" row>
           <p class="mr-2">Verified:</p>
-          <Display-Mins :timestamp="currentBlock.verifiedAt" />
-        </v-flex> -->
+          <Display-Mins :timestamp="bkd.verifiedAt" />
+        </v-flex>
       </v-layout>
 
       <v-divider/>
@@ -118,10 +118,10 @@
           <Click-To-Copy :copy-value="lca.hash"/>
         </v-flex>
 
-        <!-- <v-flex class="relay-info__info__data" row>
+        <v-flex class="relay-info__info__data" row>
           <p class="mr-2">Verified:</p>
-          <Display-Mins :timestamp="currentBlock.verifiedAt" />
-        </v-flex> -->
+          <Display-Mins :timestamp="lca.verifiedAt" />
+        </v-flex>
       </v-layout>
     </div>
   </v-card>

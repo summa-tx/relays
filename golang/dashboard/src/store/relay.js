@@ -34,6 +34,14 @@ const actions = {
         { root: true }
       )
       dispatch(
+        'info/setBKD',
+        {
+          key: 'verifiedAt',
+          data: new Date()
+        },
+        { root: true }
+      )
+      dispatch(
         'info/setLastComms',
         { source: 'relay', date: new Date() },
         { root: true }
@@ -61,6 +69,14 @@ const actions = {
         {
           key: 'hash',
           data: reverseEndianness(res.data.result.result)
+        },
+        { root: true }
+      )
+      dispatch(
+        'info/setLCA',
+        {
+          key: 'verifiedAt',
+          data: new Date()
         },
         { root: true }
       )
