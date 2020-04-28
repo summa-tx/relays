@@ -28,16 +28,9 @@ const actions = {
       dispatch(
         'info/setBKD',
         {
-          key: 'hash',
-          data: reverseEndianness(res.data.result.result)
-        },
-        { root: true }
-      )
-      dispatch(
-        'info/setBKD',
-        {
-          key: 'verifiedAt',
-          data: new Date()
+          height: res.data.height,
+          hash: reverseEndianness(res.data.result.result),
+          verifiedAt: new Date()
         },
         { root: true }
       )
@@ -67,16 +60,9 @@ const actions = {
       dispatch(
         'info/setLCA',
         {
-          key: 'hash',
-          data: reverseEndianness(res.data.result.result)
-        },
-        { root: true }
-      )
-      dispatch(
-        'info/setLCA',
-        {
-          key: 'verifiedAt',
-          data: new Date()
+          height: res.data.height,
+          hash: reverseEndianness(res.data.result.result),
+          verifiedAt: new Date()
         },
         { root: true }
       )

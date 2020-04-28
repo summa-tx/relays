@@ -66,14 +66,14 @@ const mutations = {
   },
 
   // NB: BKD = best known digest
-  [types.SET_BKD] (state, { key, data }) {
-    state.bkd[key] = data
+  [types.SET_BKD] (state, payload) {
+    state.bkd = payload
     lStorage.set('bkd', state.bkd)
   },
 
   // NB: LCA = last (reorg) common ancestor
-  [types.SET_LCA] (state, { key, data }) {
-    state.lca[key] = data
+  [types.SET_LCA] (state, payload) {
+    state.lca = payload
     lStorage.set('lca', state.lca)
   }
 }

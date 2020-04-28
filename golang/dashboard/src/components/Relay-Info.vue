@@ -70,10 +70,10 @@
           </v-tooltip>
         </v-layout>
 
-        <!-- <v-flex class="relay-info__info__data" row>
-          <p>Height: {{ currentBlock.height }}</p>
-          <Click-To-Copy :copy-value="currentBlock.height"/>
-        </v-flex> -->
+        <v-flex class="relay-info__info__data" row>
+          <p>Height: {{ bkd.height }}</p>
+          <Click-To-Copy :copy-value="bkd.height"/>
+        </v-flex>
 
         <v-flex class="relay-info__info__data" row>
           <p>
@@ -104,10 +104,10 @@
           </v-tooltip>
         </v-layout>
 
-        <!-- <v-flex class="relay-info__info__data" row>
-          <p>Height: {{ currentBlock.height }}</p>
-          <Click-To-Copy :copy-value="currentBlock.height"/>
-        </v-flex> -->
+        <v-flex class="relay-info__info__data" row>
+          <p>Height: {{ lca.height }}</p>
+          <Click-To-Copy :copy-value="lca.height"/>
+        </v-flex>
 
         <v-flex class="relay-info__info__data" row>
           <p>
