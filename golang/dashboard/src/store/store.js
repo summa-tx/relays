@@ -12,6 +12,9 @@ export const store = new Vuex.Store({
   },
 
   state: {
+    blockchainURL: process.env.MAINNET
+      ? 'https://api.blockcypher.com/v1/btc/main'
+      : 'https://api.blockcypher.com/v1/btc/test3',
     extension: ''
   }
 })

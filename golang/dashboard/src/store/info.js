@@ -1,10 +1,6 @@
 import axios from 'axios'
 import * as types from '@/store/mutation-types'
 import { lStorage, add0x } from '@/utils/utils'
-const isMain = process.env.MAINNET
-const blockchainURL = isMain
-  ? 'https://api.blockcypher.com/v1/btc/main'
-  : 'https://api.blockcypher.com/v1/btc/test3'
 
 const state = {
   source: 'blockcypher.com',
@@ -116,9 +112,9 @@ const actions = {
     commit(types.SET_LCA, payload)
   },
 
-  getExternalInfo ({ dispatch, state }) {
+  getExternalInfo ({ dispatch, state, rootState }) {
     console.log('Getting external info')
-    axios.get(blockchainURL).then((res) => {
+    axios.get(rootState.blockchainURL).then((res) => {
       console.log('EXTERNAL INFO:', res.data)
       const { height, hash } = res.data
       const fullHash = add0x(hash)

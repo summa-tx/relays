@@ -1,13 +1,7 @@
 import axios from 'axios'
 import * as types from '@/store/mutation-types'
-import { reverseEndianness } from '@/utils/utils'
+import { remove0x, reverseEndianness } from '@/utils/utils'
 const relayURL = '/relay'
-// TODO: move this to state?
-// const isMain = process.env.MAINNET
-const isMain = false
-const blockchainURL = isMain
-  ? 'https://api.blockcypher.com/v1/btc/main'
-  : 'https://api.blockcypher.com/v1/btc/test3'
 
 const state = {
   connected: true
@@ -20,13 +14,14 @@ const mutations = {
 }
 
 const actions = {
-  getBKD ({ commit, dispatch }) {
+  getBKD ({ rootState, commit, dispatch }) {
     axios.get(`${relayURL}/getbestdigest`).then((res) => {
       console.log('get BKD', res)
       commit(types.SET_CONNECTED, true)
 
       const hashBE = reverseEndianness(res.data.result.result)
-      axios.get(`${blockchainURL}/blocks/${hashBE}`).then((block) => {
+      console.log('blockchainURL', rootState.blockchainURL)
+      axios.get(`${rootState.blockchainURL}/blocks/${remove0x(hashBE)}`).then((block) => {
         console.log('block', block)
         dispatch(
           'info/setBKD',
@@ -41,10 +36,25 @@ const actions = {
           'info/setLastComms',
           { source: 'relay', date: new Date() },
           { root: true }
-          )
+        )
       }).catch((e) => {
         console.error('relay/getBKD:\n', e)
       })
+
+      // dispatch(
+      //   'info/setBKD',
+      //   {
+      //     height: res.data.height,
+      //     hash: hashBE,
+      //     verifiedAt: new Date()
+      //   },
+      //   { root: true }
+      // )
+      // dispatch(
+      //   'info/setLastComms',
+      //   { source: 'relay', date: new Date() },
+      //   { root: true }
+      // )
     })
     .catch((e) => {
       console.error('relay/getBKD:\n', e)
