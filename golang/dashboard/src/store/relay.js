@@ -1,21 +1,23 @@
 import axios from 'axios'
-// import * as types from '@/store/mutation-types'
+import * as types from '@/store/mutation-types'
+import { reverseEndianness } from '@/utils/utils'
 const relayURL = '/relay'
 
-// const state = {
+const state = {
+  connected: true
+}
 
-// }
-
-// const mutations: {
-
-// }
-
-// TODO: Convert to REST routes instead of socket calls. Update actions where used. Format of info dispatch actions should stay the same. See info.js for how data should be formatted. Will need to format BE and LE hex strings.
+const mutations = {
+  [types.SET_CONNECTED] (state, connected) {
+    state.connected = connected
+  }
+}
 
 const actions = {
-  getBKD ({ dispatch }) {
+  getBKD ({ commit, dispatch }) {
     axios.get(`${relayURL}/getbestdigest`).then((res) => {
       console.log('get BKD', res)
+      commit(types.SET_CONNECTED, true)
       // Data structure:
       // {
       //   "height": "0",
@@ -23,13 +25,12 @@ const actions = {
       //     "result": "0x4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000"
       //   }
       // }
-      // commit(types.GET_BKD, res.data.result.result)
       dispatch(
-        'info/setRelayInfo',
+        'info/setBKD',
         {
-          key: 'bkd',
-          // TODO: switch endian
-          data: res.data.result.result
+          height: res.data.height,
+          hash: reverseEndianness(res.data.result.result),
+          verifiedAt: new Date()
         },
         { root: true }
       )
@@ -40,13 +41,15 @@ const actions = {
       )
     })
     .catch((e) => {
-      console.log('relay/getBKD: ', e)
+      console.error('relay/getBKD: ', e)
+      commit(types.SET_CONNECTED, false)
     })
   },
 
-  getLCA ({ dispatch }) {
+  getLCA ({ commit, dispatch }) {
     axios.get(`${relayURL}/getlastreorglca`).then((res) => {
       console.log('get LCA', res)
+      commit(types.SET_CONNECTED, true)
       // Data structure:
       // {
       //   "height": "0",
@@ -55,11 +58,11 @@ const actions = {
       //   }
       // }
       dispatch(
-        'info/setRelayInfo',
+        'info/setLCA',
         {
-          key: 'lca',
-          // TODO: switch endian
-          data: res.data.result.result
+          height: res.data.height,
+          hash: reverseEndianness(res.data.result.result),
+          verifiedAt: new Date()
         },
         { root: true }
       )
@@ -68,6 +71,10 @@ const actions = {
         { source: 'relay', date: new Date() },
         { root: true }
       )
+    })
+    .catch((e) => {
+      console.error('relay/getLCA: ', e)
+      commit(types.SET_CONNECTED, false)
     })
   },
 
@@ -91,20 +98,13 @@ const actions = {
       )
     }
   }
-
-  // // Called when external info updates
-  // relay_socket_return_verify_height ({ dispatch }, data) {
-  //   console.log('return verify height', data)
-  //   if (data) {
-  //     dispatch('info/setCurrentBlock', { verifiedAt: new Date() })
-  //     dispatch('info/setLastComms', { source: 'relay', date: new Date() })
-  //   }
-  // }
 }
 
 // state,
 // mutations,
 export default {
   namespaced: true,
+  state,
+  mutations,
   actions
 }

@@ -12,9 +12,9 @@ Mostly pretty but also functional:
 - [ ] Show height for best known digest and updatedAt
 - [ ] Show height for lca and updatedAt
 - [ ] Format date strings
-- [ ] Add info tooltip explanations
+- [x] Add info tooltip explanations
 - [ ] Separate info at bottom into two areas (relay, external source)
-- [ ] Click to copy broken
+- [x] Click to copy broken
 
 ## Description
 

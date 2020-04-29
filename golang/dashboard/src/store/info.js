@@ -27,10 +27,18 @@ const state = {
   // and incoming block info goes to currentBlock
   previousBlocks: lStorage.get('previousBlocks') || [],
 
-  // Relay
-  relay: lStorage.get('relay') || {
-    bkd: '',     // String - best known digest
-    lca: ''      // String - last (reorg) common ancestor
+  // Best Known Digest
+  bkd: lStorage.get('bkd') || {
+    height: 0,              // Number - height of the BKD
+    hash: '',               // String - BKD hash
+    verifiedAt: undefined   // Date - When was the BKD last verified
+  },
+
+  // last (reorg) common ancestor
+  lca: lStorage.get('lca') || {
+    height: 0,              // Number - height of the LCA
+    hash: '',               // String - LCA hash
+    verifiedAt: undefined   // Date - When was the LCA last verified
   }
 }
 
@@ -58,9 +66,15 @@ const mutations = {
   },
 
   // NB: BKD = best known digest
-  [types.SET_RELAY_INFO] (state, { key, data }) {
-    state.relay[key] = data
-    lStorage.set('relay', state.relay)
+  [types.SET_BKD] (state, payload) {
+    state.bkd = payload
+    lStorage.set('bkd', state.bkd)
+  },
+
+  // NB: LCA = last (reorg) common ancestor
+  [types.SET_LCA] (state, payload) {
+    state.lca = payload
+    lStorage.set('lca', state.lca)
   }
 }
 
@@ -92,9 +106,14 @@ const actions = {
     dispatch('setCurrentBlock', data)
   },
 
-  // payload: { name: '', value: '' }
-  setRelayInfo ({ commit }, payload) {
-    commit(types.SET_RELAY_INFO, payload)
+  // payload: { key: '', data: '' }
+  setBKD ({ commit }, payload) {
+    commit(types.SET_BKD, payload)
+  },
+
+  // payload: { key: '', data: '' }
+  setLCA ({ commit }, payload) {
+    commit(types.SET_LCA, payload)
   },
 
   getExternalInfo ({ dispatch, state }) {
@@ -121,11 +140,13 @@ Digest:,
       }
       // Than verify height against relay
       dispatch('relay/verifyHeight', hash.toString(), { root: true })
+
+      // Set last communication
+      dispatch('setLastComms', { source: 'external', date: new Date() })
     }).catch((err) => {
       console.log('blockcypher error', err)
     })
 
-    dispatch('setLastComms', { source: 'external', date: new Date() })
   }
 }
 
