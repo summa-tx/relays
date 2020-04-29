@@ -77,10 +77,6 @@ const actions = {
       })
   },
 
-  // relay_socket_new_extension({ state }, data) {
-  //   console.log('new extension event', state.extension, data)
-  // },
-
   // NB: Verify height does not actually verify height. This is for updating only. See `info/getExternalInfo`
   verifyHeight ({ dispatch }, data) {
     console.log('verify height', data)

@@ -1,6 +1,6 @@
 <template>
   <h4>
-    <span>({{ chainNet}}-{{ netType }})</span>
+    <span>({{ chainNet }}: {{ netType }}) | (bitcoin: main)</span>
   </h4>
 </template>
 

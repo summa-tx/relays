@@ -12,9 +12,11 @@ export const store = new Vuex.Store({
   },
 
   state: {
-    blockchainURL: process.env.MAINNET
-      ? 'https://api.blockcypher.com/v1/btc/main'
-      : 'https://api.blockcypher.com/v1/btc/test3',
+    // blockchainURL: process.env.MAINNET
+    //   ? 'https://api.blockcypher.com/v1/btc/main'
+    //   : 'https://api.blockcypher.com/v1/btc/test3',
+    // For now, bitcoin net is always mainnet
+    blockchainURL: 'https://api.blockcypher.com/v1/btc/main',
     extension: ''
   }
 })
