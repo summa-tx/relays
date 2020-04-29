@@ -1,5 +1,6 @@
 import axios from 'axios'
 import * as types from '@/store/mutation-types'
+import { reverseEndianness } from '@/utils/utils'
 const relayURL = '/relay'
 
 const state = {
@@ -24,13 +25,12 @@ const actions = {
       //     "result": "0x4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000"
       //   }
       // }
-      // commit(types.GET_BKD, res.data.result.result)
       dispatch(
-        'info/setRelayInfo',
+        'info/setBKD',
         {
-          key: 'bkd',
-          // TODO: switch endian
-          data: res.data.result.result
+          height: res.data.height,
+          hash: reverseEndianness(res.data.result.result),
+          verifiedAt: new Date()
         },
         { root: true }
       )
@@ -41,7 +41,7 @@ const actions = {
       )
     })
     .catch((e) => {
-      console.log('relay/getBKD: ', e)
+      console.error('relay/getBKD: ', e)
       commit(types.SET_CONNECTED, false)
     })
   },
@@ -58,11 +58,11 @@ const actions = {
       //   }
       // }
       dispatch(
-        'info/setRelayInfo',
+        'info/setLCA',
         {
-          key: 'lca',
-          // TODO: switch endian
-          data: res.data.result.result
+          height: res.data.height,
+          hash: reverseEndianness(res.data.result.result),
+          verifiedAt: new Date()
         },
         { root: true }
       )
@@ -73,7 +73,7 @@ const actions = {
       )
     })
     .catch((e) => {
-      console.log('relay/getLCA: ', e)
+      console.error('relay/getLCA: ', e)
       commit(types.SET_CONNECTED, false)
     })
   },
