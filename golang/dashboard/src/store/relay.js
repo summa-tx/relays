@@ -18,9 +18,10 @@ const actions = {
     axios.get(`${relayURL}/getbestdigest`)
       .then((res) => {
         commit(types.SET_CONNECTED, true)
-        console.log('get BKD', res.data.result.result)
+
         const hashBE = reverseEndianness(res.data.result.result)
-        console.log({hashBE})
+        console.log('get BKD: ', hashBE)
+
         dispatch('info/setBKD', { hash: hashBE }, { root: true })
         dispatch('verifyHash', { hashFromRelay: hashBE, type: 'BKD' })
       })
@@ -36,21 +37,17 @@ const actions = {
     axios.get(`${relayURL}/getlastreorglca`)
       .then((res) => {
         commit(types.SET_CONNECTED, true)
-        console.log('get LCA', res.data.result.result)
 
-        dispatch(
-          'info/setLCA',
-          {
-            height: res.data.height,
-            hash: reverseEndianness(res.data.result.result),
-            verifiedAt: new Date()
-          },
-          { root: true }
-        )
+        const hashBE = reverseEndianness(res.data.result.result)
+        console.log('get LCA: ', hashBE)
+
+        dispatch( 'info/setLCA', { hash: hashBE }, { root: true })
       })
       .catch((e) => {
         console.error('relay/getLCA:\n', e)
-        commit(types.SET_CONNECTED, false)
+        if (e.message === 'Request failed with status code 500') {
+          commit(types.SET_CONNECTED, false)
+        }
       })
   },
 
