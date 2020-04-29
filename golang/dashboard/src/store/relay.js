@@ -23,7 +23,7 @@ const actions = {
         console.log('get BKD: ', hashBE)
 
         dispatch('info/setBKD', { hash: hashBE }, { root: true })
-        dispatch('verifyHash', { hashFromRelay: hashBE, type: 'BKD' })
+        dispatch('verifyHash', { hash: hashBE, type: 'BKD' })
       })
       .catch((e) => {
         console.error('relay/getBKD:\n', e)
@@ -41,7 +41,8 @@ const actions = {
         const hashBE = reverseEndianness(res.data.result.result)
         console.log('get LCA: ', hashBE)
 
-        dispatch( 'info/setLCA', { hash: hashBE }, { root: true })
+        dispatch('info/setLCA', { hash: hashBE }, { root: true })
+        dispatch('verifyHash', { hash: hashBE, type: 'LCA'})
       })
       .catch((e) => {
         console.error('relay/getLCA:\n', e)
@@ -52,16 +53,14 @@ const actions = {
   },
 
   verifyHash ({ rootState, dispatch }, data) {
-    // data.hashFromRelay, data.type = 'BKD', 'LCA'
+    // data.hash, data.type = 'BKD', 'LCA'
     console.log({ data })
-    axios.get(`${rootState.blockchainURL}/blocks/${data.hashFromRelay}`)
+    axios.get(`${rootState.blockchainURL}/blocks/${data.hash}`)
       .then((block) => {
         console.log('block', block)
         dispatch(
-          `info/set${data.type}`, {
-          height: block.data.height,
-          verifiedAt: new Date()
-        },
+          `info/set${data.type}`,
+          { height: block.data.height, verifiedAt: new Date() },
           { root: true }
         )
         dispatch(
