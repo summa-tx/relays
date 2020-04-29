@@ -14,6 +14,7 @@ const state = {
   currentBlock: lStorage.get('currentBlock') || {
     height: 0,              // Number - Current block height, from external
     hash: '',               // String - Current block hash, from external
+    time: undefined,        // Date - Current block timestamp, from external
     updatedAt: undefined,   // Date - When was this data updated
     verifiedAt: undefined   // Date - When block was verified
   },
@@ -91,8 +92,12 @@ const actions = {
     commit(types.SET_CURRENT_BLOCK, block)
   },
 
-  async addPreviousBlock ({ commit }, previous) {
-    return commit(types.ADD_PREVIOUS_BLOCK, previous)
+  async addPreviousBlock ({ commit, state }, previous) {
+    if (state.currentBlock.height > previous.height) {
+      console.log('adding previous block')
+      return commit(types.ADD_PREVIOUS_BLOCK, previous)
+    }
+    return
   },
 
   // Called when there is a new current block
@@ -116,7 +121,7 @@ const actions = {
     console.log('Getting external info')
     axios.get(rootState.blockchainURL).then((res) => {
       console.log('EXTERNAL INFO:', res.data)
-      const { height, hash } = res.data
+      const { height, hash, time } = res.data
       const currentHeight = state.currentBlock.height
       const currentHash = state.currentBlock.hash
       // NB: Do not change this weird spacing. Formats it pretty in console.
@@ -129,13 +134,12 @@ Digest:,
   New: ${hash}
 `)
 
-      // If res.data.height > state.currentBlock.height, then verify and update
-      if (height > currentHeight) {
-        // Update current block
-        dispatch('updateCurrentBlock', { height, hash, updatedAt: new Date() })
-      }
-      // Than verify height against relay
-      dispatch('relay/verifyHeight', hash.toString(), { root: true })
+      dispatch('updateCurrentBlock', {
+        height,
+        hash,
+        time,
+        updatedAt: new Date()
+      })
 
       // Set last communication
       dispatch('setLastComms', { source: 'external', date: new Date() })

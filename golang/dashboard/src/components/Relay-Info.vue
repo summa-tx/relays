@@ -33,7 +33,7 @@
             <template v-slot:activator="{ on }">
               <v-icon v-on="on" size="20px">help</v-icon>
             </template>
-            <span>The most recent valid block detected by the relay</span>
+            <span>The most recent block from the external source</span>
           </v-tooltip>
         </v-layout>
 
@@ -52,8 +52,15 @@
         </v-flex>
 
         <v-flex class="relay-info__info__data" row>
-          <p class="mr-2">Verified:</p>
-          <Display-Mins :timestamp="currentBlock.verifiedAt" />
+          <p>
+            <span>Timestamp: </span>
+            <span>{{ currentBlock.time | formatTime }}</span>
+          </p>
+        </v-flex>
+
+        <v-flex class="relay-info__info__data" row>
+          <p class="mr-2">Updated:</p>
+          <Display-Mins :timestamp="currentBlock.updatedAt" />
         </v-flex>
       </v-layout>
 
@@ -167,6 +174,11 @@ export default {
       var first = str.slice(0, 6)
       var last = str.slice((str.length - 6), str.length)
       return `${first} . . . ${last}`
+    },
+
+    formatTime (time) {
+      const d = new Date(time)
+      return `${d.toDateString()} ${d.toTimeString()}`
     }
   }
 }
