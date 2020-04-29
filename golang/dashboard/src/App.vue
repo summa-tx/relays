@@ -63,8 +63,8 @@ export default {
     this.getRelayInfo()
     this.getExternalInfo()
     // Get external info and set it in the store, start polling
-    setInterval(this.getExternalInfo, 120000)
-    setInterval(this.getRelayInfo, 60000)
+    setInterval(this.getExternalInfo, 180000) // 3 mins
+    setInterval(this.getRelayInfo, 120000) // 2 mins
   },
 
   methods: {

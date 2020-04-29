@@ -104,7 +104,7 @@ export function remove0x (str) {
   isString(str)
 
   if (str.slice(0, 2) === '0x') {
-    return str.slice(2, str.length - 1)
+    return str.slice(2, str.length)
   }
   return str
 }
@@ -118,12 +118,7 @@ export function add0x (str) {
   return `0x${str}`
 }
 
-export function reverseHexBytes (str) {
-  isHex(str)
-  return str.match(/../g).reverse().join('')
-}
-
 export function reverseEndianness (str) {
-  isHex(str)
-  return add0x(reverseHexBytes(remove0x(str)))
+  var formatStr = remove0x(str)
+  return formatStr.match(/../g).reverse().join('')
 }
