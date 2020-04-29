@@ -1,6 +1,6 @@
 import axios from 'axios'
 import * as types from '@/store/mutation-types'
-import { lStorage } from '@/utils/utils'
+import { lStorage, add0x } from '@/utils/utils'
 const isMain = process.env.MAINNET
 const blockchainURL = isMain
   ? 'https://api.blockcypher.com/v1/btc/main'
@@ -121,6 +121,7 @@ const actions = {
     axios.get(blockchainURL).then((res) => {
       console.log('EXTERNAL INFO:', res.data)
       const { height, hash } = res.data
+      const fullHash = add0x(hash)
       const currentHeight = state.currentBlock.height
       const currentHash = state.currentBlock.hash
       // NB: Do not change this weird spacing. Formats it pretty in console.
@@ -130,16 +131,16 @@ Height:,
   New: ${height},
 Digest:,
   Current:    ${currentHash},
-  New: ${hash}
+  New: ${fullHash}
 `)
 
       // If res.data.height > state.currentBlock.height, then verify and update
       if (height > currentHeight) {
         // Update current block
-        dispatch('updateCurrentBlock', { height, hash, updatedAt: new Date() })
+        dispatch('updateCurrentBlock', { height, hash: fullHash, updatedAt: new Date() })
       }
       // Than verify height against relay
-      dispatch('relay/verifyHeight', hash.toString(), { root: true })
+      dispatch('relay/verifyHeight', fullHash.toString(), { root: true })
 
       // Set last communication
       dispatch('setLastComms', { source: 'external', date: new Date() })
