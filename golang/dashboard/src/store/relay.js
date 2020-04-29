@@ -1,6 +1,6 @@
 import axios from 'axios'
 import * as types from '@/store/mutation-types'
-import { remove0x, reverseEndianness } from '@/utils/utils'
+import { reverseEndianness } from '@/utils/utils'
 const relayURL = '/relay'
 
 const state = {
@@ -14,22 +14,56 @@ const mutations = {
 }
 
 const actions = {
-  getBKD ({ rootState, commit, dispatch }) {
-    axios.get(`${relayURL}/getbestdigest`).then((res) => {
-      console.log('get BKD', res)
-      commit(types.SET_CONNECTED, true)
+  getBKD ({ commit, dispatch }) {
+    axios.get(`${relayURL}/getbestdigest`)
+      .then((res) => {
+        commit(types.SET_CONNECTED, true)
+        console.log('get BKD', res.data.result.result)
+        const hashBE = reverseEndianness(res.data.result.result)
+        console.log({hashBE})
+        dispatch('info/setBKD', { hash: hashBE }, { root: true })
+        dispatch('verifyHash', hashBE)
+      })
+      .catch((e) => {
+        console.error('relay/getBKD:\n', e)
+        if (e.message === 'Request failed with status code 500') {
+          commit(types.SET_CONNECTED, false)
+        }
+      })
+  },
 
-      const hashBE = reverseEndianness(res.data.result.result)
-      console.log('blockchainURL', rootState.blockchainURL)
-      axios.get(`${rootState.blockchainURL}/blocks/${remove0x(hashBE)}`).then((block) => {
-        console.log('block', block)
+  getLCA ({ commit, dispatch }) {
+    axios.get(`${relayURL}/getlastreorglca`)
+      .then((res) => {
+        commit(types.SET_CONNECTED, true)
+        console.log('get LCA', res.data.result.result)
+
         dispatch(
-          'info/setBKD',
+          'info/setLCA',
           {
-            height: block.data.height,
-            hash: hashBE,
+            height: res.data.height,
+            hash: reverseEndianness(res.data.result.result),
             verifiedAt: new Date()
           },
+          { root: true }
+        )
+      })
+      .catch((e) => {
+        console.error('relay/getLCA:\n', e)
+        commit(types.SET_CONNECTED, false)
+      })
+  },
+
+  verifyHash ({ rootState, dispatch }, data) {
+    console.log({ data })
+    axios.get(`${rootState.blockchainURL}/blocks/${data.hashFromRelay}`)
+      .then((block) => {
+        console.log('block', block)
+        dispatch(
+          'info/setBKD', {
+          height: block.data.height,
+          verifiedAt: new Date()
+        },
           { root: true }
         )
         dispatch(
@@ -40,58 +74,6 @@ const actions = {
       }).catch((e) => {
         console.error('relay/getBKD:\n', e)
       })
-
-      // dispatch(
-      //   'info/setBKD',
-      //   {
-      //     height: res.data.height,
-      //     hash: hashBE,
-      //     verifiedAt: new Date()
-      //   },
-      //   { root: true }
-      // )
-      // dispatch(
-      //   'info/setLastComms',
-      //   { source: 'relay', date: new Date() },
-      //   { root: true }
-      // )
-    })
-    .catch((e) => {
-      console.error('relay/getBKD:\n', e)
-      commit(types.SET_CONNECTED, false)
-    })
-  },
-
-  getLCA ({ commit, dispatch }) {
-    axios.get(`${relayURL}/getlastreorglca`).then((res) => {
-      console.log('get LCA', res)
-      commit(types.SET_CONNECTED, true)
-      // Data structure:
-      // {
-      //   "height": "0",
-      //   "result": {
-      //     "result": "0x4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000"
-      //   }
-      // }
-      dispatch(
-        'info/setLCA',
-        {
-          height: res.data.height,
-          hash: reverseEndianness(res.data.result.result),
-          verifiedAt: new Date()
-        },
-        { root: true }
-      )
-      dispatch(
-        'info/setLastComms',
-        { source: 'relay', date: new Date() },
-        { root: true }
-      )
-    })
-    .catch((e) => {
-      console.error('relay/getLCA:\n', e)
-      commit(types.SET_CONNECTED, false)
-    })
   },
 
   // relay_socket_new_extension({ state }, data) {
