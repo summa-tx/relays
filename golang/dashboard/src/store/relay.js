@@ -18,11 +18,12 @@ const actions = {
     axios.get(`${relayURL}/getbestdigest`)
       .then((res) => {
         commit(types.SET_CONNECTED, true)
-        console.log('get BKD', res.data.result.result)
+
         const hashBE = reverseEndianness(res.data.result.result)
-        console.log({hashBE})
+        console.log('get BKD: ', hashBE)
+
         dispatch('info/setBKD', { hash: hashBE }, { root: true })
-        dispatch('verifyHash', { hashFromRelay: hashBE, type: 'BKD' })
+        dispatch('verifyHash', { hash: hashBE, type: 'BKD' })
       })
       .catch((e) => {
         console.error('relay/getBKD:\n', e)
@@ -36,35 +37,30 @@ const actions = {
     axios.get(`${relayURL}/getlastreorglca`)
       .then((res) => {
         commit(types.SET_CONNECTED, true)
-        console.log('get LCA', res.data.result.result)
 
-        dispatch(
-          'info/setLCA',
-          {
-            height: res.data.height,
-            hash: reverseEndianness(res.data.result.result),
-            verifiedAt: new Date()
-          },
-          { root: true }
-        )
+        const hashBE = reverseEndianness(res.data.result.result)
+        console.log('get LCA: ', hashBE)
+
+        dispatch('info/setLCA', { hash: hashBE }, { root: true })
+        dispatch('verifyHash', { hash: hashBE, type: 'LCA'})
       })
       .catch((e) => {
         console.error('relay/getLCA:\n', e)
-        commit(types.SET_CONNECTED, false)
+        if (e.message === 'Request failed with status code 500') {
+          commit(types.SET_CONNECTED, false)
+        }
       })
   },
 
   verifyHash ({ rootState, dispatch }, data) {
-    // data.hashFromRelay, data.type = 'BKD', 'LCA'
+    // data.hash, data.type = 'BKD', 'LCA'
     console.log({ data })
-    axios.get(`${rootState.blockchainURL}/blocks/${data.hashFromRelay}`)
+    axios.get(`${rootState.blockchainURL}/blocks/${data.hash}`)
       .then((block) => {
         console.log('block', block)
         dispatch(
-          `info/set${data.type}`, {
-          height: block.data.height,
-          verifiedAt: new Date()
-        },
+          `info/set${data.type}`,
+          { height: block.data.height, verifiedAt: new Date() },
           { root: true }
         )
         dispatch(
