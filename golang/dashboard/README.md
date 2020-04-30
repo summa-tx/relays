@@ -38,12 +38,27 @@ $ echo "export PATH=\$PATH:\$GOBIN" >> ~/.bash_profile
 $ source ~/.bash_profile
 ```
 
+::: tip Troubleshooting
+If, after following steps 3 and 4 below, you are not able to successfully run `make install` or `make init` then try replacing the above lines with the following:
+
+```
+export GOPATH=$HOME/go
+export PATH=$GOPATH/bin:$PATH
+```
+
+Don't forget to run:
+```
+source ~/.bash_profile
+```
+
+You may even need to restart your terminal.
+:::
+
 3. Make sure you are in the `relays/golang` directory (one level up from here) and install the app into your `$GOBIN`
 
 ```bash
 $ make install
 ```
-
 4. Initialize a new chain for testing
 
 ```bash
