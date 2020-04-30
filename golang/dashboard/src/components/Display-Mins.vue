@@ -18,7 +18,7 @@ export default {
     timestamp: {
       required: true,
       type: [Date, String],
-      default: null
+      default: ''
     }
   },
 
@@ -36,7 +36,7 @@ export default {
   methods: {
     updateMinsAgo () {
       let date = this.timestamp
-      if (typeof date === 'string') {
+      if (date && typeof date === 'string') {
         date = new Date(this.timestamp)
       }
       this.minsAgo = date ? getMinsAgo(date) : null
