@@ -60,7 +60,11 @@ const actions = {
         console.log('block', block)
         dispatch(
           `info/set${data.type}`,
-          { height: block.data.height, verifiedAt: new Date() },
+          {
+            height: block.data.height,
+            time: block.data.time,
+            verifiedAt: new Date()
+          },
           { root: true }
         )
         dispatch(

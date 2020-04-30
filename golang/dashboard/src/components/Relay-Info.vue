@@ -92,6 +92,13 @@
         </v-flex>
 
         <v-flex class="relay-info__info__data" row>
+          <p>
+            <span>Timestamp: </span>
+            <span>{{ bkd.time | formatTime }}</span>
+          </p>
+        </v-flex>
+
+        <v-flex class="relay-info__info__data" row>
           <p class="mr-2">Verified:</p>
           <Display-Mins :timestamp="bkd.verifiedAt" />
         </v-flex>
@@ -123,6 +130,13 @@
             <span v-else>{{ lca.hash }}</span>
           </p>
           <Click-To-Copy :copy-value="lca.hash"/>
+        </v-flex>
+
+        <v-flex class="relay-info__info__data" row>
+          <p>
+            <span>Timestamp: </span>
+            <span>{{ lca.time | formatTime }}</span>
+          </p>
         </v-flex>
 
         <v-flex class="relay-info__info__data" row>
@@ -176,9 +190,10 @@ export default {
       return `${first} . . . ${last}`
     },
 
-    formatTime (time) {
-      const d = new Date(time)
-      return `${d.toDateString()} ${d.toTimeString()}`
+    formatTime (dateString) {
+      const d = new Date(dateString)
+      const date = d.toUTCString().slice(4, d.length)
+      return `${date}`
     }
   }
 }
