@@ -190,9 +190,10 @@ export default {
       return `${first} . . . ${last}`
     },
 
-    formatTime (time) {
-      const d = new Date(time)
-      return `${d.toLocaleString()} ${d.toTimeString().slice(17)}`
+    formatTime (dateString) {
+      const d = new Date(dateString)
+      const date = d.toUTCString().slice(4, d.length)
+      return `${date}`
     }
   }
 }
