@@ -28,6 +28,7 @@ const state = {
   bkd: lStorage.get('bkd') || {
     height: 0,              // Number - height of the BKD
     hash: '',               // String - BKD hash
+    time: undefined,        // Date - BKD timestamp, from external
     verifiedAt: undefined   // Date - When was the BKD last verified
   },
 
@@ -35,6 +36,7 @@ const state = {
   lca: lStorage.get('lca') || {
     height: 0,              // Number - height of the LCA
     hash: '',               // String - LCA hash
+    time: undefined,        // Date - LCA timestamp, from external
     verifiedAt: undefined   // Date - When was the LCA last verified
   }
 }

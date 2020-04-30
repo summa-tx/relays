@@ -1,21 +1,5 @@
 # cosmos-relay-dashboard
 
-## TODOs
-
-Functional:
-
-- [ ] Convert socket calls to REST. [Available Routes](https://github.com/summa-tx/relays/blob/master/golang/x/relay/client/rest/rest.go)
-- [ ] Add poll time for REST calls
-
-Mostly pretty but also functional:
-
-- [ ] Show height for best known digest and updatedAt
-- [ ] Show height for lca and updatedAt
-- [ ] Format date strings
-- [x] Add info tooltip explanations
-- [ ] Separate info at bottom into two areas (relay, external source)
-- [x] Click to copy broken
-
 ## Description
 
 The dashboard displays the Cosmos Relay chain data and verifies it against an external Bitcoin explorer (currently BlockCypher).
@@ -43,57 +27,60 @@ $ source ~/.bash_profile
  > If, after following steps 3 and 4 below, you are not able to successfully run `make install` or `make init` then try replacing the above lines with the following:
  >
  >```bash
- > export GOPATH=$HOME/go
- > export PATH=$GOPATH/bin:$PATH
+ > $ export GOPATH=$HOME/go
+ > $ export PATH=$GOPATH/bin:$PATH
  > ```
  >
  > Don't forget to run:
  > ```bash
- > source ~/.bash_profile
+ > $ source ~/.bash_profile
  > ```
  >
  > You may even need to restart your terminal.
 
-3. Make sure you are in the `relays/golang` directory (one level up from here) and install the app into your `$GOBIN`
+3. Make sure you are in the `relays/golang` directory (one level up from here) and install the app into your `$GOBIN`.
 
 ```bash
 $ make install
 ```
-4. Initialize a new chain for testing
+
+4. Initialize a new chain for testing.
 
 ```bash
 $ make init
 ```
 
-5. In the same folder, but in another terminal window, run the REST routes `rest-server`. This will make the relay application routes available on `http://localhost:1317`.
+5. In the same folder, but in another terminal window, run the REST routes `rest-server`. This will make the relay application REST routes available on `http://localhost:1317`.
 
 ```bash
 $ relaycli rest-server --chain-id relay
 ```
 
-All routes are at `/relay/${route}`
+All routes are at `/relay/${route}`. For a list of available routes, see the golang README located at `relays/golang/README.md`.
 
 [Relay Chain Instructions](https://github.com/summa-tx/relays/blob/master/golang/scripts/README.md).
 
 ### Dashboard
 
-#### Install dependencies:
+1. Install dependencies (`/relay/golang/dashboard`).
 
-```
+```base
 $ npm install
 ```
 
-#### Start dashboard
+2. Start dashboard.
 
-```sh
+```bash
 $ npm run serve
 ```
 
 View at http://localhost:8080 in your browser.
 
-### Development
+--------------------------
 
-#### Set Environment Variables
+## Development
+
+### Set Environment Variables
 
 If no `.env` file is present, defaults are used. See `/src/config.js`.
 
@@ -129,44 +116,48 @@ $ npm run build
 
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
-## How Things Work
+--------------------------
 
-### Dashboard Overview
+## Dashboard Overview: How Things Work
 
-### Dashboard - Newest Header
+There are 2 sources used for the dashboard, the relay and an external source.  The Best Known Digest and Last Reorg Common Ancestor are polled every 2 minutes from the relay.  Information from the external source is polled every 3 minutes.
+
+### Current Block
 
 The user wants to know about new headers. In order to do that, we:
 
-1. Get the best tip (most recent block height) from an external source
-2. Check if relay can find this block with `findHeight`
-    1. If yes, then display this height along with the block hash
-    2. Otherwise, show flag that this isn't verified by the relay.
+1. Get the best tip (most recent block height) from an external source.
+2. Check if relay can verify this block with `findHeight`.
+    - If yes, then display this height along with the block hash.
+    - Otherwise, show flag that this isn't verified by the relay.
+3. Display the height, hash, timestamp and verified status.
 
 These are conceptually equivalent to Github commits.
 
-### Dashboard - Best Known Digest
+### Best Known Digest
 
 This is the block that is the best. It is updated approximately every 5 blocks, and will be behind the newest header.
 We should buffer against this.
 
-1. Listen for "Reorg" contract events
-2. Display and store digest when it changes. Also display height.
+1. Poll `/relay/getbestdigest`.
+2. Store digest and display the height, hash, timestamp, and update status.
 
 This is conceptually equivalent to Github tags.
 
-#### Dashboard - Last (Reorg) Common Ancestor (LCA)
+### Last (Reorg) Common Ancestor (LCA)
 
 This is the latest block that is in the history of both the current best known digest, and the previous best known digest.
 
-1. Call `getLastReorgCommonAncestor()` to get LCA
+1. Poll `/relay/getlastreorglca`.
+2. Store LCA and display the height, hash, timestamp, and update status.
 
-#### Dashboard - Health Checks and Verification
+### Health Checks and Verification
 
 The dashboard keeps track of and displays the following:
 
 * **lastComms**: When was the last successful communication made?
-  * **lastComms.relay**
-  * **lastComms.external**
+  * **lastComms.relay** - Last successful communication from the relay.
+  * **lastComms.external** - Last successful communication from the external source.
 
 * **currentBlock.verifiedAt**: When was the current block verified i.e. When did `findHeight` return true?
 
@@ -174,22 +165,24 @@ The dashboard keeps track of and displays the following:
 
 Health pulses are displayed as `TIME in MINUTES ago`.
 
-### Dashboard - Networks Names
+### Networks Names
+TODO: Update this section
+
 Display for the user what network they are on in the format `eth_network_name-bitcoin_network_name`.
 
 Examples:
-- If we are on Ropsten and BTC Testnet, the network should be displayed as `ropsten-test`
-- If we are on Celo BTC Mainnet, the network should be displayed as `alfajores-test`
+- If we are on Ropsten and BTC Testnet, the network should be displayed as `ropsten-test`.
+- If we are on Celo BTC Mainnet, the network should be displayed as `alfajores-test`.
 
 --------------------------
 
-### Relay
+## Relay
 
 The following is mainly for informational purposes, rather than development.
 
-#### Relay updates
+### Relay updates
 
-The relay is updated ~every 5 blocks
+The relay is updated ~every 5 blocks.
 
 **Advance chaining:**
 Suppose this happens:
