@@ -53,7 +53,7 @@ export default {
   },
 
   components: {
-    RelayInfo: () => import(/* webpackChunkName: 'Relay-Info' */ './components/Relay-Info'),
+    RelayInfo: () => import(/* webpackChunkName: 'Relay-Info' */ './components/Relay-Info/Index'),
     RelayConnection: () => import(/* webpackChunkName: 'Relay-Connection' */ './components/Relay-Connection'),
     ExternalInfo: () => import(/* webpackChunkName: 'External-Info' */ './components/External-Info')
   },

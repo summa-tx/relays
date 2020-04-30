@@ -36,13 +36,13 @@ export default {
 }
 </script>
 
-<style>
-  .alert {
-    top: 64px;
-    color: #000;
-  }
-  .alert__content {
-    max-width: 1140px;
-    margin: auto;
-  }
+<style scoped>
+.alert {
+  top: 64px;
+  color: #000;
+}
+.alert__content {
+  max-width: 1140px;
+  margin: auto;
+}
 </style>

@@ -1,14 +1,14 @@
 <template>
-  <v-card v-resize="onResize" class="relay-info">
+  <v-card v-resize="onResize" class="mt-5">
     <v-card
-      class="relay-info__banner"
+      class="banner"
       tile
       color="teal"
       dark
     >
       <v-layout column>
         <v-layout
-          class="relay-info__banner__title"
+          class="banner__title"
           row
           justify-space-between
           align-content-center
@@ -200,15 +200,11 @@ export default {
 </script>
 
 <style scoped>
-.relay-info {
-  margin-top: 20px;
-}
-
-.relay-info__banner {
+.banner {
   padding: 20px;
 }
 
-.relay-info__banner__title {
+.banner__title {
   margin: 0;
 }
 
