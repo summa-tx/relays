@@ -38,21 +38,21 @@ $ echo "export PATH=\$PATH:\$GOBIN" >> ~/.bash_profile
 $ source ~/.bash_profile
 ```
 
-::: tip Troubleshooting
-If, after following steps 3 and 4 below, you are not able to successfully run `make install` or `make init` then try replacing the above lines with the following:
-
-```
-export GOPATH=$HOME/go
-export PATH=$GOPATH/bin:$PATH
-```
-
-Don't forget to run:
-```
-source ~/.bash_profile
-```
-
-You may even need to restart your terminal.
-:::
+ > *Troubleshooting tip*
+ >
+ > If, after following steps 3 and 4 below, you are not able to successfully run `make install` or `make init` then try replacing the above lines with the following:
+ >
+ >```bash
+ > export GOPATH=$HOME/go
+ > export PATH=$GOPATH/bin:$PATH
+ > ```
+ >
+ > Don't forget to run:
+ > ```bash
+ > source ~/.bash_profile
+ > ```
+ >
+ > You may even need to restart your terminal.
 
 3. Make sure you are in the `relays/golang` directory (one level up from here) and install the app into your `$GOBIN`
 
@@ -65,7 +65,7 @@ $ make install
 $ make init
 ```
 
-1. In another terminal window, run the REST routes `rest-server`. This will make the relay application routes available on `http://localhost:1317`.
+5. In the same folder, but in another terminal window, run the REST routes `rest-server`. This will make the relay application routes available on `http://localhost:1317`.
 
 ```bash
 $ relaycli rest-server --chain-id relay
@@ -138,7 +138,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 The user wants to know about new headers. In order to do that, we:
 
 1. Get the best tip (most recent block height) from an external source
-2. Check if relay can this block with `findHeight`
+2. Check if relay can find this block with `findHeight`
     1. If yes, then display this height along with the block hash
     2. Otherwise, show flag that this isn't verified by the relay.
 
