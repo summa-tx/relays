@@ -22,6 +22,22 @@ $ echo "export PATH=\$PATH:\$GOBIN" >> ~/.bash_profile
 $ source ~/.bash_profile
 ```
 
+ > *Troubleshooting tip*
+ >
+ > If, after following steps 3 and 4 below, you are not able to successfully run `make install` or `make init` then try replacing the above lines with the following:
+ >
+ >```bash
+ > $ export GOPATH=$HOME/go
+ > $ export PATH=$GOPATH/bin:$PATH
+ > ```
+ >
+ > Don't forget to run:
+ > ```bash
+ > $ source ~/.bash_profile
+ > ```
+ >
+ > You may even need to restart your terminal.
+
 3. Make sure you are in the `relays/golang` directory (one level up from here) and install the app into your `$GOBIN`.
 
 ```bash
@@ -34,7 +50,7 @@ $ make install
 $ make init
 ```
 
-5. In another terminal window, run the `rest-server`. This will make the relay application REST routes available on `http://localhost:1317`.
+5. In the same folder, but in another terminal window, run the REST routes `rest-server`. This will make the relay application REST routes available on `http://localhost:1317`.
 
 ```bash
 $ relaycli rest-server --chain-id relay
@@ -48,13 +64,13 @@ All routes are at `/relay/${route}`. For a list of available routes, see the gol
 
 1. Install dependencies (`/relay/golang/dashboard`).
 
-```
+```base
 $ npm install
 ```
 
 2. Start dashboard.
 
-```sh
+```bash
 $ npm run serve
 ```
 
