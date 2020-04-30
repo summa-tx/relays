@@ -33,7 +33,7 @@
             <template v-slot:activator="{ on }">
               <v-icon v-on="on" size="20px">help</v-icon>
             </template>
-            <span>The most recent valid block detected by the relay</span>
+            <span>The most recent block from the external source</span>
           </v-tooltip>
         </v-layout>
 
@@ -52,8 +52,15 @@
         </v-flex>
 
         <v-flex class="relay-info__info__data" row>
-          <p class="mr-2">Verified:</p>
-          <Display-Mins :timestamp="currentBlock.verifiedAt" />
+          <p>
+            <span>Timestamp: </span>
+            <span>{{ currentBlock.time | formatTime }}</span>
+          </p>
+        </v-flex>
+
+        <v-flex class="relay-info__info__data" row>
+          <p class="mr-2">Updated:</p>
+          <Display-Mins :timestamp="currentBlock.updatedAt" />
         </v-flex>
       </v-layout>
 
@@ -71,9 +78,22 @@
         </v-layout>
 
         <v-flex class="relay-info__info__data" row>
-          <p v-if="windowWidth < 800">{{ relay.bkd | crop }}</p>
-          <p v-else>{{ relay.bkd }}</p>
-          <Click-To-Copy :copy-value="relay.bkd"/>
+          <p>Height: {{ bkd.height }}</p>
+          <Click-To-Copy :copy-value="bkd.height"/>
+        </v-flex>
+
+        <v-flex class="relay-info__info__data" row>
+          <p>
+            <span>Hash: </span>
+            <span v-if="windowWidth < 800">{{ bkd.hash | crop }}</span>
+            <span v-else>{{ bkd.hash }}</span>
+          </p>
+          <Click-To-Copy :copy-value="bkd.hash"/>
+        </v-flex>
+
+        <v-flex class="relay-info__info__data" row>
+          <p class="mr-2">Verified:</p>
+          <Display-Mins :timestamp="bkd.verifiedAt" />
         </v-flex>
       </v-layout>
 
@@ -90,10 +110,24 @@
             <span>The latest ancestral block of both the current best known digest and the previous best known digest</span>
           </v-tooltip>
         </v-layout>
+
         <v-flex class="relay-info__info__data" row>
-          <p v-if="windowWidth < 800">{{ relay.lca | crop }}</p>
-          <p v-else>{{ relay.lca }}</p>
-          <Click-To-Copy :copy-value="relay.lca"/>
+          <p>Height: {{ lca.height }}</p>
+          <Click-To-Copy :copy-value="lca.height"/>
+        </v-flex>
+
+        <v-flex class="relay-info__info__data" row>
+          <p>
+            <span>Hash: </span>
+            <span v-if="windowWidth < 800">{{ lca.hash | crop }}</span>
+            <span v-else>{{ lca.hash }}</span>
+          </p>
+          <Click-To-Copy :copy-value="lca.hash"/>
+        </v-flex>
+
+        <v-flex class="relay-info__info__data" row>
+          <p class="mr-2">Verified:</p>
+          <Display-Mins :timestamp="lca.verifiedAt" />
         </v-flex>
       </v-layout>
     </div>
@@ -120,8 +154,8 @@ export default {
     ...mapState({
       lastComms: state => state.info.lastComms,
       currentBlock: state => state.info.currentBlock,
-      relay: state => state.info.relay,
-      verifiedAt: state => state.info.minsAgo.currentBlockVerified
+      bkd: state => state.info.bkd,
+      lca: state => state.info.lca
     })
   },
 
@@ -140,6 +174,11 @@ export default {
       var first = str.slice(0, 6)
       var last = str.slice((str.length - 6), str.length)
       return `${first} . . . ${last}`
+    },
+
+    formatTime (time) {
+      const d = new Date(time)
+      return `${d.toDateString()} ${d.toTimeString()}`
     }
   }
 }
