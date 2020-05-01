@@ -32,7 +32,8 @@ export default {
   name: "RelayInfoBanner",
 
   components: {
-    NetType: () => import(/* webpackChunkName: 'Net-Type' */ '../Net-Type')
+    NetType: () => import(/* webpackChunkName: 'Net-Type' */ '../Net-Type'),
+    DisplayMins: () => import(/* webpackChunkName: 'Display-Mins */ '../Display-Mins')
   },
 
   computed: {

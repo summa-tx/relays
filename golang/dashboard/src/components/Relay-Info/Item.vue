@@ -45,11 +45,11 @@ export default {
     },
     time: {
       required: true,
-      type: Date
+      type: String
     },
     verified: {
       required: true,
-      type: Date
+      type: [Date, String]
     }
   },
 
