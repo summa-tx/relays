@@ -12,7 +12,7 @@
         :height="currentBlock.height"
         :hash="currentBlock.hash"
         :time="currentBlock.time"
-        :verified="currentBlock.updatedAt"
+        :updated="currentBlock.updatedAt"
       ></Relay-Info-Item>
     </v-layout>
 
@@ -28,7 +28,7 @@
         :height="bkd.height"
         :hash="bkd.hash"
         :time="bkd.time"
-        :verified="bkd.verifiedAt"
+        :updated="bkd.updatedAt"
       ></Relay-Info-Item>
     </v-layout>
 
@@ -44,7 +44,7 @@
         :height="lca.height"
         :hash="lca.hash"
         :time="lca.time"
-        :verified="lca.verifiedAt"
+        :updated="lca.updatedAt"
       ></Relay-Info-Item>
     </v-layout>
   </v-card>

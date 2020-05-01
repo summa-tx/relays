@@ -16,7 +16,6 @@ const state = {
     hash: '',               // String - Current block hash, from external
     time: undefined,        // Date - Current block timestamp, from external
     updatedAt: undefined,   // Date - When was this data updated
-    verifiedAt: undefined   // Date - When block was verified
   },
 
   // Keep track of previous block information
@@ -29,7 +28,7 @@ const state = {
     height: 0,              // Number - height of the BKD
     hash: '',               // String - BKD hash
     time: undefined,        // Date - BKD timestamp, from external
-    verifiedAt: undefined   // Date - When was the BKD last verified
+    updatedAt: undefined   // Date - When was the BKD last verified
   },
 
   // last (reorg) common ancestor
@@ -37,7 +36,7 @@ const state = {
     height: 0,              // Number - height of the LCA
     hash: '',               // String - LCA hash
     time: undefined,        // Date - LCA timestamp, from external
-    verifiedAt: undefined   // Date - When was the LCA last verified
+    updatedAt: undefined   // Date - When was the LCA last verified
   }
 }
 
@@ -90,7 +89,7 @@ const actions = {
   // block: {
   //   height: Number,
   //   hash: String,
-  //   verifiedAt: Date,
+  //   updatedAt: Date,
   //   isVerified: Boolean
   // }
   // Can pass one or all

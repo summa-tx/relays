@@ -63,7 +63,7 @@ const actions = {
           {
             height: block.data.height,
             time: block.data.time,
-            verifiedAt: new Date()
+            updatedAt: new Date()
           },
           { root: true }
         )
@@ -83,7 +83,7 @@ const actions = {
     if (data) {
       dispatch(
         'info/setCurrentBlock',
-        { verifiedAt: new Date() },
+        { updatedAt: new Date() },
         { root: true }
       )
       dispatch(

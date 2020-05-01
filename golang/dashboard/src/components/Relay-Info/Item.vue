@@ -22,8 +22,8 @@
     </v-flex>
 
     <v-flex class="info-item__data" row>
-      <p class="mr-2">Verified:</p>
-      <Display-Mins :timestamp="verified" />
+      <p class="mr-2">Updated:</p>
+      <Display-Mins :timestamp="updated" />
     </v-flex>
   </v-layout>
 </template>
@@ -47,7 +47,7 @@ export default {
       required: true,
       type: String
     },
-    verified: {
+    updated: {
       required: true,
       type: [Date, String]
     }
