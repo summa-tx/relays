@@ -45,7 +45,7 @@ export default {
     },
     time: {
       required: true,
-      type: String
+      type: [Date,String]
     },
     updated: {
       required: true,
