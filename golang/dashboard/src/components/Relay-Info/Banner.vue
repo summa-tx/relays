@@ -33,7 +33,7 @@ export default {
 
   components: {
     NetType: () => import(/* webpackChunkName: 'Net-Type' */ '../Net-Type'),
-    DisplayMins: () => import(/* webpackChunkName: 'Display-Mins */ '../Display-Mins')
+    DisplayMins: () => import(/* webpackChunkName: 'Display-Mins' */ '../Display-Mins')
   },
 
   computed: {
