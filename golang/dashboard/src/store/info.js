@@ -6,10 +6,7 @@ const state = {
   source: 'blockstream.info',
   // When was the last time a successful communication was made?
   // If last successful check was > 5 minutes ago, show flag
-  lastComms: lStorage.get('lastComms') || {
-    relay: undefined,       // Date
-    external: undefined,    // Date
-  },
+  lastComms: lStorage.get('lastCommsExternal') || undefined, // Date
 
   currentBlock: lStorage.get('currentBlock') || {
     height: 0,              // Number - Current block height, from external
@@ -21,29 +18,13 @@ const state = {
   // Keep track of previous block information
   // If incoming block number increments, then move currentBlock info to here
   // and incoming block info goes to currentBlock
-  previousBlocks: lStorage.get('previousBlocks') || [],
-
-  // Best Known Digest
-  bkd: lStorage.get('bkd') || {
-    height: 0,              // Number - height of the BKD
-    hash: '',               // String - BKD hash
-    time: undefined,        // Date - BKD timestamp, from external
-    updatedAt: undefined   // Date - When was the BKD last verified
-  },
-
-  // last (reorg) common ancestor
-  lca: lStorage.get('lca') || {
-    height: 0,              // Number - height of the LCA
-    hash: '',               // String - LCA hash
-    time: undefined,        // Date - LCA timestamp, from external
-    updatedAt: undefined   // Date - When was the LCA last verified
-  }
+  previousBlocks: lStorage.get('previousBlocks') || []
 }
 
 const mutations = {
-  [types.SET_LAST_COMMS] (state, { source, date }) {
-    state.lastComms[source] = date
-    lStorage.set('lastComms', state.lastComms)
+  [types.SET_LAST_COMMS] (state, date) {
+    state.lastComms = date
+    lStorage.set('lastCommsExternal', state.lastComms)
   },
 
   [types.SET_CURRENT_BLOCK] (state, block) {
@@ -61,29 +42,12 @@ const mutations = {
   [types.ADD_PREVIOUS_BLOCK] (state, block) {
     state.previousBlocks.push(block)
     lStorage.set('previousBlocks', state.previousBlocks)
-  },
-
-  // NB: BKD = best known digest
-  [types.SET_BKD] (state, payload) {
-    for (let key in payload) {
-      state.bkd[key] = payload[key]
-    }
-    lStorage.set('bkd', state.bkd)
-  },
-
-  // NB: LCA = last (reorg) common ancestor
-  [types.SET_LCA] (state, payload) {
-    for (let key in payload) {
-      state.lca[key] = payload[key]
-    }
-    lStorage.set('lca', state.lca)
   }
 }
 
 const actions = {
-  // info: { source: String, date: Date }
-  setLastComms ({ commit }, info) {
-    commit(types.SET_LAST_COMMS, info)
+  setLastComms ({ commit }, { date }) {
+    commit(types.SET_LAST_COMMS, date)
   },
 
   // block: {
@@ -112,16 +76,6 @@ const actions = {
     dispatch('setCurrentBlock', data)
   },
 
-  // payload: { key: '', data: '' }
-  setBKD ({ commit }, payload) {
-    commit(types.SET_BKD, payload)
-  },
-
-  // payload: { key: '', data: '' }
-  setLCA ({ commit }, payload) {
-    commit(types.SET_LCA, payload)
-  },
-
   getExternalInfo ({ dispatch, state, rootState }) {
     console.log('Getting external info')
     axios.get(`${rootState.blockchainURL}/blocks`).then((res) => {
@@ -142,7 +96,7 @@ const actions = {
       })
 
       // Set last communication
-      dispatch('setLastComms', { source: 'external', date: new Date() })
+      dispatch('setLastComms', { date: new Date() })
     }).catch((err) => {
       console.log('blockstream error', err)
     })

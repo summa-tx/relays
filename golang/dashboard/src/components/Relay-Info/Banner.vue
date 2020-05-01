@@ -50,7 +50,7 @@ export default {
 
   computed: {
     ...mapState({
-      lastCommsRelay: state => state.info.lastComms.relay,
+      lastCommsRelay: state => state.relay.lastComms,
     })
   },
 

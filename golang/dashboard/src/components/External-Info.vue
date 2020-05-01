@@ -6,7 +6,7 @@
     </v-layout>
     <v-layout>
       <p class="external-info__item mr-2">Last Connected:</p>
-      <Display-Mins :timestamp="lastComms.external" />
+      <Display-Mins :timestamp="lastComms" />
     </v-layout>
     <v-layout>
       <p class="external-info__item mr-2">Block Changed:</p>

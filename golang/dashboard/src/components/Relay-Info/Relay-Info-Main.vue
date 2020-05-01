@@ -65,8 +65,8 @@ export default {
   computed: {
     ...mapState({
       currentBlock: state => state.info.currentBlock,
-      bkd: state => state.info.bkd,
-      lca: state => state.info.lca
+      bkd: state => state.relay.bkd,
+      lca: state => state.relay.lca
     })
   }
 }
