@@ -41,7 +41,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .external-info {
   margin-top: 40px;
   padding: 20px;
