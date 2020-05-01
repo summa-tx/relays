@@ -1,6 +1,6 @@
 import axios from 'axios'
 import * as types from '@/store/mutation-types'
-import { lStorage } from '@/utils/utils'
+import { lStorage, convertUnixTimestamp } from '@/utils/utils'
 
 const state = {
   source: 'blockstream.info',
@@ -130,6 +130,7 @@ const actions = {
       const { height, id: hash, timestamp } = res.data[0]
       const currentHeight = state.currentBlock.height
       const currentHash = state.currentBlock.hash
+      const time = convertUnixTimestamp(timestamp)
 
       console.log(`VERIFY\n\tHeight:\n\t\tCurrent: ${currentHeight},\n\t\tNew: ${height},
         \n\tDigest:\n\t\tCurrent: ${currentHash},\n\t\tNew: ${hash}`)
@@ -137,7 +138,7 @@ const actions = {
       dispatch('updateCurrentBlock', {
         height,
         hash,
-        time: timestamp,
+        time,
         updatedAt: new Date()
       })
 

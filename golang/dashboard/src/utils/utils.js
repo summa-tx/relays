@@ -82,6 +82,11 @@ export const lStorage = new LStorage()
 
 const assert = require('bsert')
 
+/**
+ * Checks if value is of type string
+ * @param {String} str - string value to check
+ * @returns {Boolean} true if value is string, false if not
+ */
 export function isString (str) {
   const isStr = typeof str === 'string'
   assert(isStr, `Must pass in string, received ${typeof str}`)
@@ -100,6 +105,11 @@ export function isHex (str) {
   assert(hexStr && /^[0-9a-fA-F]+$/.test(hexStr), 'Must pass in hex string')
 }
 
+/**
+ * If a hex string is '0x' prepended, it removes it
+ * @param {String} str - hex string
+ * @returns {String} hex string without '0x'
+ */
 export function remove0x (str) {
   isString(str)
 
@@ -109,6 +119,11 @@ export function remove0x (str) {
   return str
 }
 
+/**
+ * If a hex string is not already '0x' prepended, it adds it
+ * @param {String} str - hex string
+ * @returns {String} hex string beginning with '0x'
+ */
 export function add0x (str) {
   isString(str)
 
@@ -118,7 +133,22 @@ export function add0x (str) {
   return `0x${str}`
 }
 
+/**
+ * Reverses Endianness of a hex bytes string
+ * @param {String} str - hex string
+ * @returns {String} hex string with reverse endianness
+ */
 export function reverseEndianness (str) {
   var formatStr = remove0x(str)
   return formatStr.match(/../g).reverse().join('')
+}
+
+/**
+ * Converts a Unix timestamp
+ * BlockStream returns Unix timestamps that must be converted
+ * @param {Number} time - hex string
+ * @returns {Date} time as a JavaScript Date object
+ */
+export function convertUnixTimestamp (time) {
+  return new Date(time * 1000)
 }

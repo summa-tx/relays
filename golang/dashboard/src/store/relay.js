@@ -1,6 +1,6 @@
 import axios from 'axios'
 import * as types from '@/store/mutation-types'
-import { reverseEndianness } from '@/utils/utils'
+import { reverseEndianness, convertUnixTimestamp } from '@/utils/utils'
 const relayURL = '/relay'
 
 const state = {
@@ -62,7 +62,7 @@ const actions = {
           `info/set${data.type}`,
           {
             height: block.data.height,
-            time: block.data.timestamp,
+            time: convertUnixTimestamp(block.data.timestamp),
             verifiedAt: new Date()
           },
           { root: true }
