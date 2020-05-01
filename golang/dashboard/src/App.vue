@@ -33,7 +33,6 @@
     <v-content>
       <v-container>
         <Relay-Info />
-        <ExternalInfo />
       </v-container>
     </v-content>
   </v-app>
@@ -54,8 +53,7 @@ export default {
 
   components: {
     RelayInfo: () => import(/* webpackChunkName: 'Relay-Info' */ './components/Relay-Info/Relay-Info-Main'),
-    RelayConnection: () => import(/* webpackChunkName: 'Relay-Connection' */ './components/Relay-Connection'),
-    ExternalInfo: () => import(/* webpackChunkName: 'External-Info' */ './components/External-Info')
+    RelayConnection: () => import(/* webpackChunkName: 'Relay-Connection' */ './components/Relay-Connection')
   },
 
   mounted () {
