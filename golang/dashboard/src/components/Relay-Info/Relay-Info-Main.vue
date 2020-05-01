@@ -54,7 +54,7 @@
 import { mapState } from 'vuex'
 
 export default {
-  name: 'Relay',
+  name: 'RelayInfo',
 
   components: {
     RelayInfoBanner: () => import(/* webpackChunkName: 'Relay-Info-Banner' */ './Banner'),
