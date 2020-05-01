@@ -1,6 +1,6 @@
 import axios from 'axios'
 import * as types from '@/store/mutation-types'
-import { reverseEndianness } from '@/utils/utils'
+import { reverseEndianness, convertUnixTimestamp } from '@/utils/utils'
 const relayURL = '/relay'
 
 const state = {
@@ -55,14 +55,14 @@ const actions = {
   verifyHash ({ rootState, dispatch }, data) {
     // data.hash, data.type = 'BKD', 'LCA'
     console.log({ data })
-    axios.get(`${rootState.blockchainURL}/blocks/${data.hash}`)
+    axios.get(`${rootState.blockchainURL}/block/${data.hash}`)
       .then((block) => {
         console.log('block', block)
         dispatch(
           `info/set${data.type}`,
           {
             height: block.data.height,
-            time: block.data.time,
+            time: convertUnixTimestamp(block.data.timestamp),
             updatedAt: new Date()
           },
           { root: true }
