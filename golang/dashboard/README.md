@@ -2,7 +2,7 @@
 
 ## Description
 
-The dashboard displays the Cosmos Relay chain data and verifies it against an external Bitcoin explorer (currently BlockCypher).
+The dashboard displays the Cosmos Relay chain data and verifies it against an external Bitcoin explorer (currently BlockStream).
 
 --------------------------
 

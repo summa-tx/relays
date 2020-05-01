@@ -130,15 +130,9 @@ const actions = {
       const { height, id: hash, timestamp } = res.data[0]
       const currentHeight = state.currentBlock.height
       const currentHash = state.currentBlock.hash
-      // NB: Do not change this weird spacing. Formats it pretty in console.
-      console.log(`VERIFY:
-Height:,
-  Current:    ${currentHeight},
-  New: ${height},
-Digest:,
-  Current:    ${currentHash},
-  New: ${hash}
-`)
+
+      console.log(`VERIFY\n\tHeight:\n\t\tCurrent: ${currentHeight},\n\t\tNew: ${height},
+        \n\tDigest:\n\t\tCurrent: ${currentHash},\n\t\tNew: ${hash}`)
 
       dispatch('updateCurrentBlock', {
         height,
@@ -150,7 +144,7 @@ Digest:,
       // Set last communication
       dispatch('setLastComms', { source: 'external', date: new Date() })
     }).catch((err) => {
-      console.log('blockcypher error', err)
+      console.log('blockstream error', err)
     })
 
   }
