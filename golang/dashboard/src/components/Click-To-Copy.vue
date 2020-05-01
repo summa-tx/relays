@@ -61,7 +61,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .ctc {
   position: relative;
   bottom: 5px;
