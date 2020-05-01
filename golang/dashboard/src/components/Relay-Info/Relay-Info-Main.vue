@@ -36,7 +36,7 @@
 
     <v-layout column class="relay-info">
       <Relay-Info-Item-Title
-        title="Best Known Digest:"
+        title="Last Reorg Common Ancestor:"
         tip="The latest ancestral block of both the current best known digest and the previous best known digest"
       ></Relay-Info-Item-Title>
 
