@@ -1,9 +1,9 @@
 import axios from 'axios'
 import * as types from '@/store/mutation-types'
-import { lStorage } from '@/utils/utils'
+import { lStorage, convertUnixTimestamp } from '@/utils/utils'
 
 const state = {
-  source: 'blockcypher.com',
+  source: 'blockstream.info',
   // When was the last time a successful communication was made?
   // If last successful check was > 5 minutes ago, show flag
   lastComms: lStorage.get('lastComms') || {
@@ -125,20 +125,15 @@ const actions = {
 
   getExternalInfo ({ dispatch, state, rootState }) {
     console.log('Getting external info')
-    axios.get(rootState.blockchainURL).then((res) => {
-      console.log('EXTERNAL INFO:', res.data)
-      const { height, hash, time } = res.data
+    axios.get(`${rootState.blockchainURL}/blocks`).then((res) => {
+      console.log('EXTERNAL INFO:', res.data[0])
+      const { height, id: hash, timestamp } = res.data[0]
       const currentHeight = state.currentBlock.height
       const currentHash = state.currentBlock.hash
-      // NB: Do not change this weird spacing. Formats it pretty in console.
-      console.log(`VERIFY:
-Height:,
-  Current:    ${currentHeight},
-  New: ${height},
-Digest:,
-  Current:    ${currentHash},
-  New: ${hash}
-`)
+      const time = convertUnixTimestamp(timestamp)
+
+      console.log(`VERIFY\n\tHeight:\n\t\tCurrent: ${currentHeight},\n\t\tNew: ${height},
+        \n\tDigest:\n\t\tCurrent: ${currentHash},\n\t\tNew: ${hash}`)
 
       dispatch('updateCurrentBlock', {
         height,
@@ -150,7 +145,7 @@ Digest:,
       // Set last communication
       dispatch('setLastComms', { source: 'external', date: new Date() })
     }).catch((err) => {
-      console.log('blockcypher error', err)
+      console.log('blockstream error', err)
     })
 
   }
