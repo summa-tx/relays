@@ -127,20 +127,14 @@ There are 2 sources used for the dashboard, the relay and an external source.  T
 The user wants to know about new headers. In order to do that, we:
 
 1. Get the best tip (most recent block height) from an external source.
-2. Check if relay can verify this block with `findHeight`.
-    - If yes, then display this height along with the block hash.
-    - Otherwise, show flag that this isn't verified by the relay.
-3. Display the height, hash, timestamp and verified status.
-
-These are conceptually equivalent to Github commits.
+2. Display the height, hash, and timestamp.
 
 ### Best Known Digest
 
-This is the block that is the best. It is updated approximately every 5 blocks, and will be behind the newest header.
-We should buffer against this.
+This is most current and best block the relay knows about. It is updated approximately every 5 blocks, and will be behind the newest header.
 
 1. Poll `/relay/getbestdigest`.
-2. Store digest and display the height, hash, timestamp, and update status.
+2. Store digest and display the height, hash, and timestamp.
 
 This is conceptually equivalent to Github tags.
 
@@ -149,7 +143,7 @@ This is conceptually equivalent to Github tags.
 This is the latest block that is in the history of both the current best known digest, and the previous best known digest.
 
 1. Poll `/relay/getlastreorglca`.
-2. Store LCA and display the height, hash, timestamp, and update status.
+2. Store LCA and display the height, hash, and timestamp.
 
 ### Health Checks and Verification
 
@@ -159,20 +153,13 @@ The dashboard keeps track of and displays the following:
   * **lastComms.relay** - Last successful communication from the relay.
   * **lastComms.external** - Last successful communication from the external source.
 
-* **currentBlock.verifiedAt**: When was the current block verified i.e. When did `findHeight` return true?
-
-* **previousBlock.verifiedAt**: When was the previous block verified?
+* **blockDifference**: What is the difference in blocks between the relay and the external source?
 
 Health pulses are displayed as `TIME in MINUTES ago`.
 
 ### Networks Names
-TODO: Update this section
 
-Display for the user what network they are on in the format `eth_network_name-bitcoin_network_name`.
-
-Examples:
-- If we are on Ropsten and BTC Testnet, the network should be displayed as `ropsten-test`.
-- If we are on Celo BTC Mainnet, the network should be displayed as `alfajores-test`.
+Displays the network for the relay and for the external source. For these purposes, the relay will always be a locally run relay, and the external source shows mainnet blocks.
 
 --------------------------
 
