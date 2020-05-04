@@ -70,7 +70,10 @@ const actions = {
       })
       .catch((e) => {
         console.error('relay/getBKD:\n', e)
-        if (e.message === 'Request failed with status code 500') {
+        if (
+          e.message === 'Request failed with status code 500' ||
+          e.message === 'Network Error'
+        ) {
           commit(types.SET_CONNECTED, false)
         }
       })
@@ -89,7 +92,10 @@ const actions = {
       })
       .catch((e) => {
         console.error('relay/getLCA:\n', e)
-        if (e.message === 'Request failed with status code 500') {
+        if (
+          e.message === 'Request failed with status code 500' ||
+          e.message === 'Network Error'
+        ) {
           commit(types.SET_CONNECTED, false)
         }
       })
