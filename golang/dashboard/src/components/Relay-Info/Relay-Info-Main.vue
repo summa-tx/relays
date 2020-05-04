@@ -96,7 +96,6 @@
               :height="currentBlock.height"
               :hash="currentBlock.hash"
               :time="currentBlock.time"
-              :updated="currentBlock.updatedAt"
             ></Relay-Info-Item>
           </v-layout>
 
