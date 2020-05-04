@@ -21,7 +21,7 @@
       </p>
     </v-flex>
 
-    <v-flex class="info-item__data" row>
+    <v-flex v-if="updated" class="info-item__data" row>
       <p class="mr-2">Updated:</p>
       <Display-Mins :timestamp="updated" />
     </v-flex>
