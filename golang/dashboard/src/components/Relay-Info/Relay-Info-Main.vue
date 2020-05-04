@@ -41,7 +41,6 @@
               :height="bkd.height"
               :hash="bkd.hash"
               :time="bkd.time"
-              :updated="bkd.updatedAt"
             ></Relay-Info-Item>
           </v-col>
 
@@ -57,7 +56,6 @@
               :height="lca.height"
               :hash="lca.hash"
               :time="lca.time"
-              :updated="lca.updatedAt"
             ></Relay-Info-Item>
           </v-col>
         </v-card>
