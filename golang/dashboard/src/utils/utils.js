@@ -59,7 +59,14 @@ class LStorage {
   get (item) {
     if (this._verify()) {
       const i = window.localStorage.getItem(item)
-      return JSON.parse(i)
+
+      let value
+      try {
+        value = JSON.parse(i)
+      } catch (e) {
+        console.log('storage error', e)
+      }
+      return value
     } else {
       console.error('Error getting value from localStorage')
     }

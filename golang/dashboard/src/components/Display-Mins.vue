@@ -1,10 +1,8 @@
 <template>
   <div class="display-mins">
-    <v-layout>
-      <p v-if="minsAgo === null">Not completed</p>
-      <p v-else-if="minsAgo < 1">Less than 1 minute ago</p>
-      <p v-else>{{ minsAgo }} minute<span v-if="minsAgo > 1">s</span> ago</p>
-    </v-layout>
+    <div v-if="minsAgo === null"></div>
+    <div v-else-if="minsAgo < 1">Less than 1 min ago</div>
+    <div v-else>{{ minsAgo }} min<span v-if="minsAgo > 1">s</span> ago</div>
   </div>
 </template>
 

@@ -18,7 +18,7 @@
       class="alert"
     >
       <div class="alert__content">
-        <v-icon class="mr-3">error</v-icon>Not connected to the Relay. Try refreshing page or hit "Update" button.
+        <v-icon class="mr-3">error</v-icon>Relay Connection Error. Make sure local relay is running and refresh page.
       </div>
     </v-alert>
   </div>

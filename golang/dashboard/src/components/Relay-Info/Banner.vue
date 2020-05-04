@@ -1,55 +1,67 @@
 <template>
   <v-card
-    class="banner"
-    tile
+    class="mx-auto banner"
     color="teal"
     dark
   >
-    <v-layout column>
-      <v-layout
-        class="banner__title"
-        row
-        justify-space-between
-        align-content-center
-      >
-        <v-layout column>
-          <h2>Relay Info</h2>
-          <v-layout>
-            <p class="mr-2">Health Check:</p>
-            <Display-Mins :timestamp="lastCommsRelay" />
-          </v-layout>
-        </v-layout>
-        <Net-Type/>
-      </v-layout>
-    </v-layout>
+    <v-card-title>
+      {{ chainNet }} Relay
+    </v-card-title>
+    <v-row
+      justify="space-between"
+    >
+      <v-col cols="4">
+        <button>{{  netType }}</button>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <p class="mr-2">Last Connected:</p>
+      <Display-Mins :timestamp="lastCommsRelay" />
+    </v-row>
+
   </v-card>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import config from '@/config'
 
 export default {
-  name: "RelayInfoBanner",
+  name: 'RelayInfoBanner',
 
   components: {
-    NetType: () => import(/* webpackChunkName: 'Net-Type' */ '../Net-Type'),
-    DisplayMins: () => import(/* webpackChunkName: 'Display-Mins */ '../Display-Mins')
+    DisplayMins: () => import(/* webpackChunkName: 'Display-Mins' */ '../Display-Mins')
   },
+
+  data: () => ({
+    netType: config.netType
+  }),
 
   computed: {
     ...mapState({
-      lastCommsRelay: state => state.info.lastComms.relay,
-    })
+      lastCommsRelay: state => state.relay.lastComms,
+    }),
+
+    chainNet () {
+      return this.capitalize(config.chainNet)
+    }
+  },
+
+  methods: {
+    capitalize (str) {
+      return str.charAt(0).toUpperCase() + str.slice(1)
+    }
+  },
+
+  filters: {
+    capitalize (str) {
+      return str.charAt(0).toUpperCase() + str.slice(1)
+    }
   }
 }
 </script>
 
 <style scoped>
-.banner {
-  padding: 20px;
-}
 
-.banner__title {
-  margin: 0;
-}
 </style>

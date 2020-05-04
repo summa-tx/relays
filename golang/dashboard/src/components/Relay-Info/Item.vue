@@ -8,8 +8,8 @@
     <v-flex class="info-item__data" row>
       <p>
         <span>Hash: </span>
-        <span v-if="windowWidth < 800">{{ hash | crop }}</span>
-        <span v-else>{{ hash }}</span>
+        <span class="info-item__data__hash" v-if="windowWidth < 800">{{ hash | crop }}</span>
+        <span class="info-item__data__hash" v-else>{{ hash }}</span>
       </p>
       <Click-To-Copy :copy-value="hash"/>
     </v-flex>
@@ -21,9 +21,9 @@
       </p>
     </v-flex>
 
-    <v-flex class="info-item__data" row>
-      <p class="mr-2">Verified:</p>
-      <Display-Mins :timestamp="verified" />
+    <v-flex v-if="updated" class="info-item__data" row>
+      <p class="mr-2">Updated:</p>
+      <Display-Mins :timestamp="updated" />
     </v-flex>
   </v-layout>
 </template>
@@ -45,10 +45,9 @@ export default {
     },
     time: {
       required: true,
-      type: String
+      type: [Date,String]
     },
-    verified: {
-      required: true,
+    updated: {
       type: [Date, String]
     }
   },
@@ -89,6 +88,10 @@ export default {
 </script>
 
 <style scoped>
+.info-item {
+  min-width: 103%;
+}
+
 .info-item__title {
   margin-right: 7px;
   font-weight: 900;
@@ -97,5 +100,9 @@ export default {
 .info-item__data {
   font-weight: 400;
   margin-left: 0px;
+}
+
+.info-item__data__hash {
+  font-size: 0.85em;
 }
 </style>

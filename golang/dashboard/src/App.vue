@@ -18,24 +18,18 @@
         <v-spacer/>
 
         <div class="nav__title">
-          <h1>Bitcoin Relay</h1>
+          <h1>Cosmos - Bitcoin Relay</h1>
         </div>
 
         <v-spacer/>
-
-        <v-btn @click="updateAll">UPDATE</v-btn>
-
       </v-layout>
     </v-app-bar>
 
     <Relay-Connection />
 
-    <v-content>
-      <v-container>
-        <Relay-Info />
-        <ExternalInfo />
-      </v-container>
-    </v-content>
+    <Relay-Info />
+    <v-btn class="app__content__update" @click="updateAll">REFRESH</v-btn>
+
   </v-app>
 </template>
 
@@ -54,8 +48,7 @@ export default {
 
   components: {
     RelayInfo: () => import(/* webpackChunkName: 'Relay-Info' */ './components/Relay-Info/Relay-Info-Main'),
-    RelayConnection: () => import(/* webpackChunkName: 'Relay-Connection' */ './components/Relay-Connection'),
-    ExternalInfo: () => import(/* webpackChunkName: 'External-Info' */ './components/External-Info')
+    RelayConnection: () => import(/* webpackChunkName: 'Relay-Connection' */ './components/Relay-Connection')
   },
 
   mounted () {
@@ -87,8 +80,9 @@ export default {
 </script>
 
 <style>
-.app {
-  margin-bottom: 40px;
+.app__content__update {
+  width: 100px;
+  margin: 10px auto;
 }
 
 .nav__content {
