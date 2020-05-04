@@ -48,7 +48,6 @@ export default {
       type: [Date,String]
     },
     updated: {
-      required: true,
       type: [Date, String]
     }
   },
