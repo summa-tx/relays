@@ -35,27 +35,27 @@
 
 <script>
 export default {
-  name: 'OperatedRelayDashboard',
+  name: 'CosmosRelayDashboard',
 
   metaInfo: {
-    title: 'Operated Bitcoin Relay',
+    title: 'Cosmos-Bitcoin Relay Dashboard',
     meta: [
       { 'http-equiv': 'Content-Type', content: 'text/html; charset=utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { name: 'description', content: 'Operated Bitcoin Relay Dashboard' }
+      { name: 'description', content: 'Cosmos-Bitcoin Relay Dashboard' }
     ]
   },
 
   components: {
-    RelayInfo: () => import(/* webpackChunkName: 'Relay-Info' */ './components/Relay-Info/Relay-Info-Main'),
+    RelayInfo: () => import(/* webpackChunkName: 'Relay-Info' */ './components/Relay-Info/Info-Main'),
     RelayConnection: () => import(/* webpackChunkName: 'Relay-Connection' */ './components/Relay-Connection')
   },
 
   mounted () {
     // Get relay info - best know digest(BKD), last common ancestor(LCA)
     this.getRelayInfo()
-    this.getExternalInfo()
     // Get external info and set it in the store, start polling
+    this.getExternalInfo()
     setInterval(this.getExternalInfo, 180000) // 3 mins
     setInterval(this.getRelayInfo, 120000) // 2 mins
   },
@@ -68,7 +68,7 @@ export default {
     },
 
     getExternalInfo () {
-      this.$store.dispatch('info/getExternalInfo')
+      this.$store.dispatch('external/getExternalInfo')
     },
 
     updateAll () {

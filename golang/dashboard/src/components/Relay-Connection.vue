@@ -31,7 +31,7 @@ export default {
   name: 'RelayConnection',
 
   computed: mapState({
-    isConnected: (state) => state.relay.connected
+    isConnected: state => state.relay.connected
   })
 }
 </script>

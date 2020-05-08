@@ -12,7 +12,7 @@
 
 <script>
 export default {
-  name: "RelayInfoItemTitle",
+  name: 'InfoItemTitle',
 
   props: {
     title: {

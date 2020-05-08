@@ -17,7 +17,7 @@ const state = {
     height: 0,              // Number - height of the BKD
     hash: '',               // String - BKD hash
     time: undefined,        // Date - BKD timestamp, from external
-    updatedAt: undefined   // Date - When was the BKD last verified
+    updatedAt: undefined    // Date - When was the BKD last updated
   },
 
   // last (reorg) common ancestor
@@ -25,7 +25,7 @@ const state = {
     height: 0,              // Number - height of the LCA
     hash: '',               // String - LCA hash
     time: undefined,        // Date - LCA timestamp, from external
-    updatedAt: undefined   // Date - When was the LCA last verified
+    updatedAt: undefined    // Date - When was the LCA last updated
   }
 }
 
@@ -34,7 +34,7 @@ const mutations = {
     state.connected = connected
   },
 
-  [types.SET_LAST_COMMS] (state, { date }) {
+  [types.SET_LAST_COMMS_RELAY] (state, { date }) {
     state.lastComms = date
     lStorage.set('lastCommsRelay', state.lastComms)
   },
@@ -101,7 +101,7 @@ const actions = {
       })
   },
 
-  verifyHash ({ rootState, dispatch }, data) {
+  verifyHash ({ rootState, dispatch, commit }, data) {
     // data.hash, data.type = 'BKD', 'LCA'
     console.log({ data })
     axios.get(`${rootState.blockchainURL}/block/${data.hash}`)
@@ -115,11 +115,7 @@ const actions = {
             updatedAt: new Date()
           }
         )
-        dispatch(
-          'info/setLastComms',
-          { date: new Date() },
-          { root: true }
-        )
+        commit(types.SET_LAST_COMMS_RELAY, { date: new Date() })
       }).catch((e) => {
         console.error('relay/verifyHash:\n', e)
       })
@@ -128,13 +124,13 @@ const actions = {
   // payload: { key: '', data: '' }
   setBKD ({ commit }, payload) {
     commit(types.SET_BKD, payload)
-    commit(types.SET_LAST_COMMS, { date: new Date() })
+    commit(types.SET_LAST_COMMS_RELAY, { date: new Date() })
   },
 
   // payload: { key: '', data: '' }
   setLCA ({ commit }, payload) {
     commit(types.SET_LCA, payload)
-    commit(types.SET_LAST_COMMS, { date: new Date() })
+    commit(types.SET_LAST_COMMS_RELAY, { date: new Date() })
   },
 }
 

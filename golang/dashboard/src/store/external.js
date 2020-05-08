@@ -4,8 +4,7 @@ import { lStorage, convertUnixTimestamp } from '@/utils/utils'
 
 const state = {
   source: 'blockstream.info',
-  // When was the last time a successful communication was made?
-  // If last successful check was > 5 minutes ago, show flag
+
   lastComms: lStorage.get('lastCommsExternal') || undefined, // Date
 
   currentBlock: lStorage.get('currentBlock') || {
@@ -22,7 +21,7 @@ const state = {
 }
 
 const mutations = {
-  [types.SET_LAST_COMMS] (state, date) {
+  [types.SET_LAST_COMMS_EXTERNAL] (state, date) {
     state.lastComms = date
     lStorage.set('lastCommsExternal', state.lastComms)
   },
@@ -46,47 +45,24 @@ const mutations = {
 }
 
 const actions = {
-  setLastComms ({ commit }, { date }) {
-    commit(types.SET_LAST_COMMS, date)
-  },
-
-  // block: {
-  //   height: Number,
-  //   hash: String,
-  //   updatedAt: Date,
-  //   isVerified: Boolean
-  // }
-  // Can pass one or all
-  setCurrentBlock ({ commit }, block) {
-    commit(types.SET_CURRENT_BLOCK, block)
-  },
-
-  async addPreviousBlock ({ commit, state }, previous) {
-    if (state.currentBlock.height > previous.height) {
-      console.log('adding previous block')
-      return commit(types.ADD_PREVIOUS_BLOCK, previous)
+  addPreviousBlock ({ commit, state }, newBlock) {
+    if (newBlock.height > state.currentBlock.height) {
+      commit(types.ADD_PREVIOUS_BLOCK, state.currentBlock)
     }
-    return
   },
 
-  // Called when there is a new current block
-  // Relay-Info should trigger this in watch()
-  async updateCurrentBlock ({ dispatch, state }, data) {
-    await dispatch('addPreviousBlock', state.currentBlock)
-    dispatch('setCurrentBlock', data)
+  async updateCurrentBlock ({ dispatch, commit }, newBlock) {
+    await dispatch('addPreviousBlock', newBlock)
+    commit(types.SET_CURRENT_BLOCK, newBlock)
+
   },
 
-  getExternalInfo ({ dispatch, state, rootState }) {
+  getExternalInfo ({ dispatch, commit, rootState }) {
     console.log('Getting external info')
     axios.get(`${rootState.blockchainURL}/blocks`).then((res) => {
       console.log('EXTERNAL INFO:', res.data[0])
       const { height, id: hash, timestamp } = res.data[0]
-      const currentHeight = state.currentBlock.height
-      const currentHash = state.currentBlock.hash
       const time = convertUnixTimestamp(timestamp)
-
-      console.log(`VERIFY\n\tHeight:\n\t\tCurrent: ${currentHeight},\n\t\tNew: ${height},
-        \n\tDigest:\n\t\tCurrent: ${currentHash},\n\t\tNew: ${hash}`)
 
       dispatch('updateCurrentBlock', {
         height,
@@ -95,8 +71,7 @@ const actions = {
         updatedAt: new Date()
       })
 
-      // Set last communication
-      dispatch('setLastComms', { date: new Date() })
+      commit(types.SET_LAST_COMMS_EXTERNAL, new Date())
     }).catch((err) => {
       console.log('blockstream error', err)
     })

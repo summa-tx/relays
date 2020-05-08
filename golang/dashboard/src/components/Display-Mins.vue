@@ -1,8 +1,10 @@
 <template>
   <div class="display-mins">
-    <div v-if="minsAgo === null"></div>
-    <div v-else-if="minsAgo < 1">Less than 1 min ago</div>
-    <div v-else>{{ minsAgo }} min<span v-if="minsAgo > 1">s</span> ago</div>
+    <span v-if="minsAgo > 1" class="white--text">{{ minsAgo }} min<span v-if="minsAgo > 1">s</span> ago</span>
+    <span v-else-if="minsAgo >= 0" class="white--text">
+      Less than 1 min ago
+    </span>
+    <span v-else-if="!minsAgo"></span>
   </div>
 </template>
 
@@ -20,24 +22,9 @@ export default {
     }
   },
 
-  data: () => ({
-    minsAgo: null
-  }),
-
-  mounted () {
-    this.updateMinsAgo()
-    setInterval(() => {
-      this.updateMinsAgo()
-    }, 10000)
-  },
-
-  methods: {
-    updateMinsAgo () {
-      let date = this.timestamp
-      if (date && typeof date === 'string') {
-        date = new Date(this.timestamp)
-      }
-      this.minsAgo = date ? getMinsAgo(date) : null
+  computed: {
+    minsAgo () {
+      return getMinsAgo(this.timestamp)
     }
   }
 }

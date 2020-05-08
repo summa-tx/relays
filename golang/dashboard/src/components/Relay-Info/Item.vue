@@ -8,7 +8,9 @@
     <v-flex class="info-item__data" row>
       <p>
         <span>Hash: </span>
-        <span class="info-item__data__hash" v-if="windowWidth < 800">{{ hash | crop }}</span>
+        <span class="info-item__data__hash" v-if="windowWidth < 800">
+          {{ hash | crop }}
+        </span>
         <span class="info-item__data__hash" v-else>{{ hash }}</span>
       </p>
       <Click-To-Copy :copy-value="hash"/>
@@ -30,13 +32,13 @@
 
 <script>
 export default {
-  name: 'RelayInfoItem',
+  name: 'InfoItem',
 
   props: {
     height: {
       required: true,
       type: Number,
-      default: undefined
+      default: null
     },
     hash: {
       required: true,
@@ -45,7 +47,7 @@ export default {
     },
     time: {
       required: true,
-      type: [Date,String]
+      type: [Date, String]
     },
     updated: {
       type: [Date, String]
@@ -53,8 +55,8 @@ export default {
   },
 
   components: {
-    ClickToCopy: () => import(/* webpackChunkName: 'Click-To-Copy' */ '../Click-To-Copy'),
-    DisplayMins: () => import(/* webpackChunkName: 'Display-Mins' */ '../Display-Mins'),
+    ClickToCopy: () => import(/* webpackChunkName: 'Click-To-Copy' */ '@/components/Click-To-Copy'),
+    DisplayMins: () => import(/* webpackChunkName: 'Display-Mins' */ '@/components/Display-Mins'),
   },
 
   mounted () {
