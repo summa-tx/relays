@@ -320,6 +320,7 @@ contract Relay is IRelay {
         bytes memory _newBest,
         uint256 _limit
     ) internal returns (bool) {
+        require(_limit <= 2016, "Requested limit is greater than 1 difficulty period");
         bytes32 _newBestDigest = _newBest.hash256();
         bytes32 _currentBestDigest = _currentBest.hash256();
         require(_currentBestDigest == bestKnownDigest, "Passed in best is not best known");
@@ -400,22 +401,6 @@ contract Relay is IRelay {
         if (_leftCurrent == _rightCurrent) {return false;} /* NB: If the same, they're a nearer ancestor */
         if (_leftPrev != _rightPrev) {return false;} /* NB: Both must be ancestor */
         return true;
-    }
-
-    /// @notice             Checks if a digest is an ancestor of the current one
-    /// @dev                Limit the amount of lookups (and thus gas usage) with _limit
-    /// @param _ancestor    The prospective shared ancestor
-    /// @param _left        A chain tip
-    /// @param _right       A chain tip
-    /// @param _limit       The maximum number of blocks to check
-    /// @return             true if it is the most recent common ancestor within _limit, false otherwise
-    function isMostRecentAncestor(
-        bytes32 _ancestor,
-        bytes32 _left,
-        bytes32 _right,
-        uint256 _limit
-    ) external view returns (bool) {
-        return _isMostRecentAncestor(_ancestor, _left, _right, _limit);
     }
 
     /// @notice             Decides which header is heaviest from the ancestor

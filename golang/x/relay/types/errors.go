@@ -92,6 +92,11 @@ const (
 
 	// 400-block -- MarkNewBestHeight
 
+	// LimitTooHigh indicates that the requested limit is >2016
+	LimitTooHigh sdk.CodeType = 402
+	// LimitTooHighMessage is the corresponding message
+	LimitTooHighMessage = "Requested lookup limit must be 2016 or lower. Got %d"
+
 	// NotBestKnown means a block should have been the best known, but wasn't
 	NotBestKnown sdk.CodeType = 403
 	// NotBestKnownMessage is the corresponding message
@@ -192,6 +197,7 @@ func ErrBadHeight(codespace sdk.CodespaceType, label string, digest Hash256Diges
 	return sdk.NewError(codespace, BadHeight, fmt.Sprintf(BadHeightMessage, label, digest))
 }
 
+// ErrHeightMismatch throws an error
 func ErrHeightMismatch(codespace sdk.CodespaceType, prevDigest, digest Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, HeightMismatch, fmt.Sprintf(HeightMismatchMessage, prevDigest, digest))
 }
@@ -224,6 +230,11 @@ func ErrPeriodMismatch(codespace sdk.CodespaceType) sdk.Error {
 // ErrBadRetarget throws an error
 func ErrBadRetarget(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, BadRetarget, BadRetargetMessage)
+}
+
+// ErrLimitTooHigh throws an error
+func ErrLimitTooHigh(codespace sdk.CodespaceType, limit uint32) sdk.Error {
+	return sdk.NewError(codespace, LimitTooHigh, fmt.Sprintf(LimitTooHighMessage, limit))
 }
 
 // ErrNotBestKnown throws an error
