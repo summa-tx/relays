@@ -50,13 +50,13 @@ Instructions for setting up manual testing can be found in the README in
 - - [X] Follow API of existing Solidity Relay
 - - [X] Validate SPV Proofs
 - - [X] `ProvideProof` message
-- [ ] Milestone 3
+- [X] Milestone 3
 - - [X] Provide tooling for manual testing (scripts, docs, json test files)
 - - [X] Integration Tests
-- - [ ] Document relay design & architecture
+- - [X] Document relay design & architecture
 - - [X] Document public interface
 - - [X] Provide hooks to execute tasks + dispatch messages
-- - [ ] Add a basic web dashboard with Relay health
+- - [X] Add a basic web dashboard with Relay health
 
 
 ## API

@@ -312,8 +312,7 @@ contract Relay is IRelay {
         return false;
     }
 
-    /// @notice                   Gives a starting point for the relay
-    /// @dev                      We don't check this AT ALL really. Don't use relays with bad genesis
+    /// @notice                   Marks the new best-known chain tip
     /// @param  _ancestor         The digest of the most recent common ancestor
     /// @param  _currentBest      The 80-byte header referenced by bestKnownDigest
     /// @param  _newBest          The 80-byte header to mark as the new best
