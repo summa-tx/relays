@@ -153,6 +153,10 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 	newBestDigest := btcspv.Hash256(newBest[:])
 	currentBestDigest := btcspv.Hash256(currentBest[:])
 
+	if limit > 2016 {
+		return types.ErrLimitTooHigh(types.DefaultCodespace, limit)
+	}
+
 	if !k.HasHeader(ctx, newBestDigest) {
 		return types.ErrUnknownBlock(types.DefaultCodespace, "newBest", newBestDigest)
 	}

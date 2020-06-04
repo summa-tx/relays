@@ -7,52 +7,7 @@ import {SafeMath} from "@summa-tx/bitcoin-spv-sol/contracts/SafeMath.sol";
 import {BytesLib} from "@summa-tx/bitcoin-spv-sol/contracts/BytesLib.sol";
 import {BTCUtils} from "@summa-tx/bitcoin-spv-sol/contracts/BTCUtils.sol";
 import {ValidateSPV} from "@summa-tx/bitcoin-spv-sol/contracts/ValidateSPV.sol";
-
-interface IRelay {
-
-    event Extension(bytes32 indexed _first, bytes32 indexed _last);
-    event Reorg(bytes32 indexed _from, bytes32 indexed _to, bytes32 indexed _gcd);
-
-    function isMostRecentAncestor(
-        bytes32 _ancestor,
-        bytes32 _left,
-        bytes32 _right,
-        uint256 _limit
-    ) external view returns (bool);
-
-    function getCurrentEpochDifficulty() external view returns (uint256);
-    function getPrevEpochDifficulty() external view returns (uint256);
-    function getRelayGenesis() external view returns (bytes32);
-    function getBestKnownDigest() external view returns (bytes32);
-    function getLastReorgCommonAncestor() external view returns (bytes32);
-
-    function findHeight(bytes32 _digest) external view returns (uint256);
-
-    function findAncestor(bytes32 _digest, uint256 _offset) external view returns (bytes32);
-
-    function isAncestor(bytes32 _ancestor, bytes32 _descendant, uint256 _limit) external view returns (bool);
-
-    function heaviestFromAncestor(
-        bytes32 _ancestor,
-        bytes calldata _left,
-        bytes calldata _right
-    ) external view returns (bytes32);
-
-    function addHeaders(bytes calldata _anchor, bytes calldata _headers) external returns (bool);
-
-    function addHeadersWithRetarget(
-        bytes calldata _oldPeriodStartHeader,
-        bytes calldata _oldPeriodEndHeader,
-        bytes calldata _headers
-    ) external returns (bool);
-
-    function markNewHeaviest(
-        bytes32 _ancestor,
-        bytes calldata _currentBest,
-        bytes calldata _newBest,
-        uint256 _limit
-    ) external returns (bool);
-}
+import {IRelay} from "./Interfaces.sol";
 
 contract Relay is IRelay {
     using SafeMath for uint256;
@@ -94,6 +49,105 @@ contract Relay is IRelay {
         blockHeight[_periodStart] = _height.sub(_height % 2016);
 
         currentEpochDiff = _genesisHeader.extractDifficulty();
+    }
+
+    /// @notice     Getter for currentEpochDiff
+    /// @dev        This is updated when a new heavist header has a new diff
+    /// @return     The difficulty of the bestKnownDigest
+    function getCurrentEpochDifficulty() external view returns (uint256) {
+        return currentEpochDiff;
+    }
+    /// @notice     Getter for prevEpochDiff
+    /// @dev        This is updated when a difficulty change is accepted
+    /// @return     The difficulty of the previous epoch
+    function getPrevEpochDifficulty() external view returns (uint256) {
+        return prevEpochDiff;
+    }
+
+    /// @notice     Getter for relayGenesis
+    /// @dev        This is an initialization parameter
+    /// @return     The hash of the first block of the relay
+    function getRelayGenesis() public view returns (bytes32) {
+        return relayGenesis;
+    }
+
+    /// @notice     Getter for bestKnownDigest
+    /// @dev        This updated only by calling markNewHeaviest
+    /// @return     The hash of the best marked chain tip
+    function getBestKnownDigest() public view returns (bytes32) {
+        return bestKnownDigest;
+    }
+
+    /// @notice     Getter for relayGenesis
+    /// @dev        This is updated only by calling markNewHeaviest
+    /// @return     The hash of the shared ancestor of the most recent fork
+    function getLastReorgCommonAncestor() public view returns (bytes32) {
+        return lastReorgCommonAncestor;
+    }
+
+    /// @notice         Finds the height of a header by its digest
+    /// @dev            Will fail if the header is unknown
+    /// @param _digest  The header digest to search for
+    /// @return         The height of the header, or error if unknown
+    function findHeight(bytes32 _digest) external view returns (uint256) {
+        return _findHeight(_digest);
+    }
+
+    /// @notice         Finds an ancestor for a block by its digest
+    /// @dev            Will fail if the header is unknown
+    /// @param _digest  The header digest to search for
+    /// @return         The height of the header, or error if unknown
+    function findAncestor(bytes32 _digest, uint256 _offset) external view returns (bytes32) {
+        return _findAncestor(_digest, _offset);
+    }
+
+    /// @notice             Checks if a digest is an ancestor of the current one
+    /// @dev                Limit the amount of lookups (and thus gas usage) with _limit
+    /// @param _ancestor    The prospective ancestor
+    /// @param _descendant  The descendant to check
+    /// @param _limit       The maximum number of blocks to check
+    /// @return             true if ancestor is at most limit blocks lower than descendant, otherwise false
+    function isAncestor(bytes32 _ancestor, bytes32 _descendant, uint256 _limit) external view returns (bool) {
+        return _isAncestor(_ancestor, _descendant, _limit);
+    }
+
+    /// @notice             Adds headers to storage after validating
+    /// @dev                We check integrity and consistency of the header chain
+    /// @param  _anchor     The header immediately preceeding the new chain
+    /// @param  _headers    A tightly-packed list of 80-byte Bitcoin headers
+    /// @return             True if successfully written, error otherwise
+    function addHeaders(bytes calldata _anchor, bytes calldata _headers) external returns (bool) {
+        return _addHeaders(_anchor, _headers, false);
+    }
+
+    /// @notice                       Adds headers to storage, performs additional validation of retarget
+    /// @dev                          Checks the retarget, the heights, and the linkage
+    /// @param  _oldPeriodStartHeader The first header in the difficulty period being closed
+    /// @param  _oldPeriodEndHeader   The last header in the difficulty period being closed
+    /// @param  _headers              A tightly-packed list of 80-byte Bitcoin headers
+    /// @return                       True if successfully written, error otherwise
+    function addHeadersWithRetarget(
+        bytes calldata _oldPeriodStartHeader,
+        bytes calldata _oldPeriodEndHeader,
+        bytes calldata _headers
+    ) external returns (bool) {
+        return _addHeadersWithRetarget(_oldPeriodStartHeader, _oldPeriodEndHeader, _headers);
+    }
+
+    /// @notice                   Gives a starting point for the relay
+    /// @dev                      We don't check this AT ALL really. Don't use relays with bad genesis
+    /// @param  _ancestor         The digest of the most recent common ancestor
+    /// @param  _currentBest      The 80-byte header referenced by bestKnownDigest
+    /// @param  _newBest          The 80-byte header to mark as the new best
+    /// @param  _limit            Limit the amount of traversal of the chain
+    /// @return                   True if successfully updates bestKnownDigest, error otherwise
+    function markNewHeaviest(
+        bytes32 _ancestor,
+        bytes calldata _currentBest,
+        bytes calldata _newBest,
+        uint256 _limit
+    ) external returns (bool) {
+        return _markNewHeaviest(_ancestor, _currentBest, _newBest, _limit);
     }
 
     /// @notice             Adds headers to storage after validating
@@ -157,29 +211,6 @@ contract Relay is IRelay {
             _anchor.hash256(),
             _currentDigest);
         return true;
-    }
-
-    /// @notice             Adds headers to storage after validating
-    /// @dev                We check integrity and consistency of the header chain
-    /// @param  _anchor     The header immediately preceeding the new chain
-    /// @param  _headers    A tightly-packed list of 80-byte Bitcoin headers
-    /// @return             True if successfully written, error otherwise
-    function addHeaders(bytes calldata _anchor, bytes calldata _headers) external returns (bool) {
-        return _addHeaders(_anchor, _headers, false);
-    }
-
-    /// @notice                       Adds headers to storage, performs additional validation of retarget
-    /// @dev                          Checks the retarget, the heights, and the linkage
-    /// @param  _oldPeriodStartHeader The first header in the difficulty period being closed
-    /// @param  _oldPeriodEndHeader   The last header in the difficulty period being closed
-    /// @param  _headers              A tightly-packed list of 80-byte Bitcoin headers
-    /// @return                       True if successfully written, error otherwise
-    function addHeadersWithRetarget(
-        bytes calldata _oldPeriodStartHeader,
-        bytes calldata _oldPeriodEndHeader,
-        bytes calldata _headers
-    ) external returns (bool) {
-        return _addHeadersWithRetarget(_oldPeriodStartHeader, _oldPeriodEndHeader, _headers);
     }
 
     /// @notice                       Adds headers to storage, performs additional validation of retarget
@@ -250,14 +281,6 @@ contract Relay is IRelay {
         revert("Unknown block");
     }
 
-    /// @notice         Finds the height of a header by its digest
-    /// @dev            Will fail if the header is unknown
-    /// @param _digest  The header digest to search for
-    /// @return         The height of the header, or error if unknown
-    function findHeight(bytes32 _digest) external view returns (uint256) {
-        return _findHeight(_digest);
-    }
-
     /// @notice         Finds an ancestor for a block by its digest
     /// @dev            Will fail if the header is unknown
     /// @param _digest  The header digest to search for
@@ -269,14 +292,6 @@ contract Relay is IRelay {
         }
         require(_current != bytes32(0), "Unknown ancestor");
         return _current;
-    }
-
-    /// @notice         Finds an ancestor for a block by its digest
-    /// @dev            Will fail if the header is unknown
-    /// @param _digest  The header digest to search for
-    /// @return         The height of the header, or error if unknown
-    function findAncestor(bytes32 _digest, uint256 _offset) external view returns (bytes32) {
-        return _findAncestor(_digest, _offset);
     }
 
     /// @notice             Checks if a digest is an ancestor of the current one
@@ -297,16 +312,6 @@ contract Relay is IRelay {
         return false;
     }
 
-    /// @notice             Checks if a digest is an ancestor of the current one
-    /// @dev                Limit the amount of lookups (and thus gas usage) with _limit
-    /// @param _ancestor    The prospective ancestor
-    /// @param _descendant  The descendant to check
-    /// @param _limit       The maximum number of blocks to check
-    /// @return             true if ancestor is at most limit blocks lower than descendant, otherwise false
-    function isAncestor(bytes32 _ancestor, bytes32 _descendant, uint256 _limit) external view returns (bool) {
-        return _isAncestor(_ancestor, _descendant, _limit);
-    }
-
     /// @notice                   Marks the new best-known chain tip
     /// @param  _ancestor         The digest of the most recent common ancestor
     /// @param  _currentBest      The 80-byte header referenced by bestKnownDigest
@@ -319,6 +324,7 @@ contract Relay is IRelay {
         bytes memory _newBest,
         uint256 _limit
     ) internal returns (bool) {
+        require(_limit <= 2016, "Requested limit is greater than 1 difficulty period");
         bytes32 _newBestDigest = _newBest.hash256();
         bytes32 _currentBestDigest = _currentBest.hash256();
         require(_currentBestDigest == bestKnownDigest, "Passed in best is not best known");
@@ -340,26 +346,11 @@ contract Relay is IRelay {
             currentEpochDiff = _newDiff;
         }
 
-        emit Reorg(
+        emit NewTip(
             _currentBestDigest,
             _newBestDigest,
             _ancestor);
         return true;
-    }
-
-    /// @notice                   Marks the new best-known chain tip
-    /// @param  _ancestor         The digest of the most recent common ancestor
-    /// @param  _currentBest      The 80-byte header referenced by bestKnownDigest
-    /// @param  _newBest          The 80-byte header to mark as the new best
-    /// @param  _limit            Limit the amount of traversal of the chain
-    /// @return                   True if successfully updates bestKnownDigest, error otherwise
-    function markNewHeaviest(
-        bytes32 _ancestor,
-        bytes calldata _currentBest,
-        bytes calldata _newBest,
-        uint256 _limit
-    ) external returns (bool) {
-        return _markNewHeaviest(_ancestor, _currentBest, _newBest, _limit);
     }
 
     /// @notice             Checks if a digest is an ancestor of the current one
@@ -398,22 +389,6 @@ contract Relay is IRelay {
         if (_leftCurrent == _rightCurrent) {return false;} /* NB: If the same, they're a nearer ancestor */
         if (_leftPrev != _rightPrev) {return false;} /* NB: Both must be ancestor */
         return true;
-    }
-
-    /// @notice             Checks if a digest is an ancestor of the current one
-    /// @dev                Limit the amount of lookups (and thus gas usage) with _limit
-    /// @param _ancestor    The prospective shared ancestor
-    /// @param _left        A chain tip
-    /// @param _right       A chain tip
-    /// @param _limit       The maximum number of blocks to check
-    /// @return             true if it is the most recent common ancestor within _limit, false otherwise
-    function isMostRecentAncestor(
-        bytes32 _ancestor,
-        bytes32 _left,
-        bytes32 _right,
-        uint256 _limit
-    ) external view returns (bool) {
-        return _isMostRecentAncestor(_ancestor, _left, _right, _limit);
     }
 
     /// @notice             Decides which header is heaviest from the ancestor
@@ -460,13 +435,20 @@ contract Relay is IRelay {
             }
         }
     }
+}
 
-    /// @notice             Decides which header is heaviest from the ancestor
-    /// @dev                Does not support reorgs above 2017 blocks (:
-    /// @param _ancestor    The prospective shared ancestor
-    /// @param _left        A chain tip
-    /// @param _right       A chain tip
-    /// @return             true if it is the most recent common ancestor within _limit, false otherwise
+// For unittests
+contract TestRelay is Relay {
+
+    /// @notice                   Gives a starting point for the relay
+    /// @dev                      We don't check this AT ALL really. Don't use relays with bad genesis
+    /// @param  _genesisHeader    The starting header
+    /// @param  _height           The starting height
+    /// @param  _periodStart      The hash of the first header in the genesis epoch
+    constructor(bytes memory _genesisHeader, uint256 _height, bytes32 _periodStart)
+        Relay(_genesisHeader, _height, _periodStart)
+    public {}
+
     function heaviestFromAncestor(
         bytes32 _ancestor,
         bytes calldata _left,
@@ -475,37 +457,12 @@ contract Relay is IRelay {
         return _heaviestFromAncestor(_ancestor, _left, _right);
     }
 
-    /// @notice     Getter for currentEpochDiff
-    /// @dev        This is updated when a new heavist header has a new diff
-    /// @return     The difficulty of the bestKnownDigest
-    function getCurrentEpochDifficulty() external view returns (uint256) {
-        return currentEpochDiff;
-    }
-    /// @notice     Getter for prevEpochDiff
-    /// @dev        This is updated when a difficulty change is accepted
-    /// @return     The difficulty of the previous epoch
-    function getPrevEpochDifficulty() external view returns (uint256) {
-        return prevEpochDiff;
-    }
-
-    /// @notice     Getter for relayGenesis
-    /// @dev        This is an initialization parameter
-    /// @return     The hash of the first block of the relay
-    function getRelayGenesis() public view returns (bytes32) {
-        return relayGenesis;
-    }
-
-    /// @notice     Getter for bestKnownDigest
-    /// @dev        This updated only by calling markNewHeaviest
-    /// @return     The hash of the best marked chain tip
-    function getBestKnownDigest() public view returns (bytes32) {
-        return bestKnownDigest;
-    }
-
-    /// @notice     Getter for relayGenesis
-    /// @dev        This is updated only by calling markNewHeaviest
-    /// @return     The hash of the shared ancestor of the most recent fork
-    function getLastReorgCommonAncestor() public view returns (bytes32) {
-        return lastReorgCommonAncestor;
+    function isMostRecentAncestor(
+        bytes32 _ancestor,
+        bytes32 _left,
+        bytes32 _right,
+        uint256 _limit
+    ) external view returns (bool) {
+        return _isMostRecentAncestor(_ancestor, _left, _right, _limit);
     }
 }

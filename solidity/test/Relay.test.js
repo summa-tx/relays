@@ -5,7 +5,7 @@ const REGULAR_CHAIN = require('./headers.json');
 const RETARGET_CHAIN = require('./headersWithRetarget.json');
 const REORG_AND_RETARGET_CHAIN = require('./headersReorgAndRetarget.json');
 
-const Relay = artifacts.require('Relay');
+const Relay = artifacts.require('TestRelay');
 
 contract('Relay', async () => {
   let instance;
@@ -704,7 +704,7 @@ contract('Relay', async () => {
         20
       );
       const eventList = await instance.getPastEvents(
-        'Reorg',
+        'NewTip',
         { fromBlock: blockNumber, toBlock: 'latest' }
       );
       /* eslint-disable no-underscore-dangle */
