@@ -67,23 +67,23 @@ The relay coordinates an interaction between 3 roles:
 While implementation details differ, the architecture is simple:
 
 1. Requesters register a request for SPV Proofs.
-  1. The request specifies a transaction filter and a proof handler.
-  1. golang: submit a `MsgRequestProof`.
-  1. golang CLI: `relaycli tx relay newrequest`.
-  1. solidity: `OndemandSPV.request()`.
+    1. The request specifies a transaction filter and a proof handler.
+    1. golang: submit a `MsgRequestProof`.
+    1. golang CLI: `relaycli tx relay newrequest`.
+    1. solidity: `OndemandSPV.request()`.
 1. An event with request details is logged.
-  1. golang: watch for `proof_request` events.
-  1. solidity: subscribe to `NewProofRequest` events.
+    1. golang: watch for `proof_request` events.
+    1. solidity: subscribe to `NewProofRequest` events.
 1. Indexers watch the Bitcoin chain for transactions that satisfy Requests.
-  1. [Example](https://github.com/summa-tx/bcoin-relaylib).
+    1. [Example](https://github.com/summa-tx/bcoin-relaylib).
 1. Indexers create an SPV Proof and submit it to the relay.
-  1. golang: submit a `MsgProvideProof`.
-  1. golang CLI: `relaycli tx relay provideproof`.
-  1. solidity: call `OnDemandSPV.provideProof()`.
+    1. golang: submit a `MsgProvideProof`.
+    1. golang CLI: `relaycli tx relay provideproof`.
+    1. solidity: call `OnDemandSPV.provideProof()`.
 1. The relay validates this proof.
 1. If valid, on-chain handler dispatches tx info to the proof Handler
-  1. golang: the module's `ProofHandler` routes info the the Handler
-  1. solidity: the relay calls `spv()` on the handling contract
+    1. golang: the module's `ProofHandler` routes info the the Handler
+    1. solidity: the relay calls `spv()` on the handling contract
 
 Essentially the requester is subscribing to a feed of Bitcoin transactions
 matching a specific filter. This filter can specify which UTXO is being spent,
