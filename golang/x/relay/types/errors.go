@@ -189,7 +189,7 @@ const (
 
 // ErrBadHeaderLength throws an error
 func ErrBadHeaderLength(codespace sdk.CodespaceType, label string, digest RawHeader, length int) sdk.Error {
-	return sdk.NewError(codespace, BadHeaderLength, fmt.Sprint(BadHeaderLengthMessage, label, digest, length))
+	return sdk.NewError(codespace, BadHeaderLength, fmt.Sprintf(BadHeaderLengthMessage, label, digest, length))
 }
 
 // ErrBadHeight throws an error
@@ -204,12 +204,12 @@ func ErrHeightMismatch(codespace sdk.CodespaceType, prevDigest, digest Hash256Di
 
 // ErrUnknownBlock throws an error
 func ErrUnknownBlock(codespace sdk.CodespaceType, label string, digest Hash256Digest) sdk.Error {
-	return sdk.NewError(codespace, UnknownBlock, fmt.Sprint(UnknownBlockMessage, label, digest))
+	return sdk.NewError(codespace, UnknownBlock, fmt.Sprintf(UnknownBlockMessage, label, digest))
 }
 
 // ErrUnexpectedRetarget throws an error
 func ErrUnexpectedRetarget(codespace sdk.CodespaceType, rawHeader RawHeader) sdk.Error {
-	return sdk.NewError(codespace, UnexpectedRetarget, fmt.Sprint(UnexpectedRetargetMessage, rawHeader))
+	return sdk.NewError(codespace, UnexpectedRetarget, fmt.Sprintf(UnexpectedRetargetMessage, rawHeader))
 }
 
 // ErrWrongEnd throws an error
