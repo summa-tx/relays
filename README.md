@@ -54,7 +54,7 @@ to the relay.
 
 ### Requests and Proofs
 
-The Relay implementations here have a SPV request system built in. This allows
+The Relay implementations here have an SPV request system built in. This allows
 for abstraction of the off-chain proving software. Requesters don't need to
 write a custom Bitcoin indexer, and existing Bitcoin indexers can work with any
 requester, whether it's a module, a smart contract, or a user.
@@ -95,9 +95,10 @@ existing Bitcoin filtering systems (e.g. BIP37 & BIP157) In the future,
 the filter system may be upgraded to support more complex transaction
 descriptions.
 
-**Important**: All requests may be filled more than once. The handler should
-expect this situation. Setting a `spends` filter is NOT sufficient to prevent
-this, as long reorgs may cause a UTXO to be spend multiple times.
+**Important**: All requests may be filled more than once. Setting a `spends`
+filter is NOT sufficient to prevent this, as long reorgs may cause a UTXO to be
+spent multiple times. There is NO WAY to ensure that only a single proof is
+provided, so the handler should deal with multiple proofs gracefully.
 
 ### Misc Project Notes
 
