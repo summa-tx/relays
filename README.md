@@ -41,7 +41,66 @@ This model provides large gas savings compared to previous relay designs (TODO:
 benchmarking). It also gets especially attractive if EIP2028 activates,
 reducing calldata gas costs.
 
-### Project Notes
+### A Note on Endianness
+
+Bitcoin internally uses little-endian representations of integers and digests.
+Block explorers and most user-facing applications use the more common
+big-endian representation. To minimize order swaps and prevent confusion, all
+our tooling uses the LE representation exclusively. If using the JS, rust,
+golang, or python tooling in [bitcoin-spv](http://bitcoin-spv.com), everything
+will Just Work. If writing custom software using data from block explorers,
+full nodes, or other data sources, make sure digests are LE before submitting
+to the relay.
+
+### Requests and Proofs
+
+The Relay implementations here have an SPV request system built in. This allows
+for abstraction of the off-chain proving software. Requesters don't need to
+write a custom Bitcoin indexer, and existing Bitcoin indexers can work with any
+requester, whether it's a module, a smart contract, or a user.
+
+The relay coordinates an interaction between 3 roles:
+1. Requester: creates a new SPV Proof request and designates a Handler
+2. Handler: handles incoming SPV Proofs on the Requester's behalf
+3. Indexer: watches requests, indexes Bitcoin, and provides SPV Proofs
+
+While implementation details differ, the architecture is simple:
+
+1. Requesters register a request for SPV Proofs.
+  1. The request specifies a transaction filter and a proof handler.
+  1. golang: submit a `MsgRequestProof`.
+  1. golang CLI: `relaycli tx relay newrequest`.
+  1. solidity: `OndemandSPV.request()`.
+1. An event with request details is logged.
+  1. golang: watch for `proof_request` events.
+  1. solidity: subscribe to `NewProofRequest` events.
+1. Indexers watch the Bitcoin chain for transactions that satisfy Requests.
+  1. [Example](https://github.com/summa-tx/bcoin-relaylib).
+1. Indexers create an SPV Proof and submit it to the relay.
+  1. golang: submit a `MsgProvideProof`.
+  1. golang CLI: `relaycli tx relay provideproof`.
+  1. solidity: call `OnDemandSPV.provideProof()`.
+1. The relay validates this proof.
+1. If valid, on-chain handler dispatches tx info to the proof Handler
+  1. golang: the module's `ProofHandler` routes info the the Handler
+  1. solidity: the relay calls `spv()` on the handling contract
+
+Essentially the requester is subscribing to a feed of Bitcoin transactions
+matching a specific filter. This filter can specify which UTXO is being spent,
+and/or an address that receives funds. The handler expects to receive
+a stream of transactions that meet the filter's specifications.
+
+**Note**: Due to solidity constraints, this filter system is unrelated to
+existing Bitcoin filtering systems (e.g. BIP37 & BIP157) In the future,
+the filter system may be upgraded to support more complex transaction
+descriptions.
+
+**Important**: All requests may be filled more than once. Setting a `spends`
+filter is NOT sufficient to prevent this, as long reorgs may cause a UTXO to be
+spent multiple times. There is NO WAY to ensure that only a single proof is
+provided, so the handler should deal with multiple proofs gracefully.
+
+### Misc Project Notes
 
 Complete relays are available in Solidity, for EVM-based chains (like Ethereum)
 and Golang using the cosmos-sdk framework.
