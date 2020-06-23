@@ -1,6 +1,6 @@
 {
   "name": "@summa-tx/relay-sol",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Bitcoin Relay",
   "main": "index.js",
   "scripts": {
@@ -14,7 +14,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@celo/contractkit": "^0.3.3",
-    "@summa-tx/bitcoin-spv-sol": "^2.2.0",
+    "@summa-tx/bitcoin-spv-sol": "^3.1.0",
     "bn.js": "^5.1.1",
     "dotenv": "^8.2.0"
   },

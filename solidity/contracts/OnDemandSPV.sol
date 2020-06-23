@@ -337,9 +337,9 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         bool _hasPays = _pays != bytes32(0);
         if (_hasPays) {
             bytes memory _out = _vout.extractOutputAtIndex(uint8(_outputIndex));
-            uint8 _len = uint8(_out.extractOutputScriptLen()[0]);
+            bytes memory _scriptPubkey = _out.slice(8, _out.length - 8);
             require(
-                keccak256(_out.slice(8, _len + 1)) == _pays,
+                keccak256(_scriptPubkey) == _pays,
                 "Does not match pays request");
             uint64 _paysValue = _req.paysValue;
             require(
