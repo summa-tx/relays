@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='summa-relay',
-    version='0.1.0',
+    version='0.2.0',
     description=('Summa minimal relay'),
     author=["James Prestwich"],
     license="LGPLv3.0",
