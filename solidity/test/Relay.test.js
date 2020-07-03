@@ -93,7 +93,7 @@ contract('Relay', async () => {
         await instance.addHeaders('0x00', headers);
         assert(false, 'expected an error');
       } catch (e) {
-        assert.include(e.message, 'Unknown block');
+        assert.include(e.message, 'Anchor must be 80 bytes');
       }
     });
 
@@ -197,7 +197,7 @@ contract('Relay', async () => {
         await instance.addHeadersWithRetarget('0x00', lastHeader.hex, headers);
         assert(false, 'expected an error');
       } catch (e) {
-        assert.include(e.message, 'Unknown block');
+        assert.include(e.message, 'Bad args. Check header and array byte lengths.');
       }
     });
 
