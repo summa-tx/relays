@@ -105,7 +105,7 @@ contract DummyOnDemandSPV is OnDemandSPV {
     ) external view returns (bool) {
         return _checkInclusion(
             _header.ref(0).tryAsHeader().assertValid(),
-            _proof.ref(0).tryAsMerkleArray().assertValid(), 
+            _proof.ref(0).tryAsMerkleArray().assertValid(),
             _index,
             _txid,
             _requestID
