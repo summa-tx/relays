@@ -103,7 +103,13 @@ contract DummyOnDemandSPV is OnDemandSPV {
         bytes32 _txid,
         uint256 _requestID
     ) external view returns (bool) {
-        return _checkInclusion(_header, _proof, _index, _txid, _requestID);
+        return _checkInclusion(
+            _header.ref(0).tryAsHeader().assertValid(),
+            _proof.ref(0).tryAsMerkleArray().assertValid(), 
+            _index,
+            _txid,
+            _requestID
+        );
     }
 
     function _getConfs(bytes32 _header) internal view returns (uint8){

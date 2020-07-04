@@ -4,6 +4,7 @@ pragma solidity ^0.5.10;
 /** @author Summa (https://summa.one) */
 
 import {OnDemandSPV} from "./OnDemandSPV.sol";
+import {TypedMemView} from "@summa-tx/bitcoin-spv-sol/contracts/TypedMemView.sol";
 
 contract TestnetRelay is OnDemandSPV {
 
@@ -24,11 +25,14 @@ contract TestnetRelay is OnDemandSPV {
         bytes memory _oldPeriodEndHeader,
         bytes memory _headers
     ) internal returns (bool) {
-        return _addHeaders(_oldPeriodEndHeader, _headers);
-    }
+        bytes29 _oldEnd = _oldPeriodEndHeader.ref(0).tryAsHeader();
+        bytes29 _headersView = _headers.ref(0).tryAsHeaderArray();
 
-    function _addHeaders(bytes memory _anchor, bytes memory _headers, bool) internal returns (bool) {
-        return _addHeaders(_anchor, _headers);
+        require(
+            _oldEnd.notNull() && _headersView.notNull(),
+            "Bad args. Check header and array byte lengths."
+        );
+        return _addHeaders(_oldEnd, _headersView, true);
     }
 
     /// @notice             Adds headers to storage after validating
@@ -36,19 +40,16 @@ contract TestnetRelay is OnDemandSPV {
     /// @param  _anchor     The header immediately preceeding the new chain
     /// @param  _headers    A tightly-packed list of new 80-byte Bitcoin headers to record
     /// @return             True if successfully written, error otherwise
-    function _addHeaders(bytes memory _anchor, bytes memory _headers) internal returns (bool) {
-        uint256 _height;
-        bytes memory _header;
-        bytes32 _currentDigest;
+    function _addHeaders(bytes29 _anchor, bytes29 _headers, bool _internal) internal returns (bool) {
+        /// Extract basic info
         bytes32 _previousDigest = _anchor.hash256();
-
-        /* uint256 _target = _headers.slice(0, 80).extractTarget(); */
         uint256 _anchorHeight = _findHeight(_previousDigest);  /* NB: errors if unknown */
+        uint256 _target = _headers.indexHeaderArray(0).target();
 
-        /* require(
-            _internal || _anchor.extractTarget() == _target,
-            "Unexpected retarget on external call"); */
-        require(_headers.length % 80 == 0, "Header array length must be divisible by 80");
+        require(
+            _internal || _anchor.target() == _target,
+            "Unexpected retarget on external call"
+        );
 
         /*
         NB:
@@ -57,8 +58,10 @@ contract TestnetRelay is OnDemandSPV {
         3. Store the block connection
         4. Store the height
         */
-        for (uint256 i = 0; i < _headers.length / 80; i = i.add(1)) {
-            _header = _headers.slice(i.mul(80), 80);
+        uint256 _height;
+        bytes32 _currentDigest;
+        for (uint256 i = 0; i < _headers.len() / 80; i += 1) {
+            bytes29 _header = _headers.indexHeaderArray(i);
             _height = _anchorHeight.add(i + 1);
             _currentDigest = _header.hash256();
 
@@ -69,8 +72,9 @@ contract TestnetRelay is OnDemandSPV {
             */
             if (previousBlock[_currentDigest] == bytes32(0)) {
                 require(
-                    abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _header.extractTarget(),
-                    "Header work is insufficient");
+                    TypedMemView.reverseUint256(uint256(_currentDigest)) <= _target,
+                    "Header work is insufficient"
+                );
                 previousBlock[_currentDigest] = _previousDigest;
                 if (_height % HEIGHT_INTERVAL == 0) {
                     /*
@@ -81,8 +85,8 @@ contract TestnetRelay is OnDemandSPV {
             }
 
             /* NB: we do still need to make chain level checks tho */
-            /* require(_header.extractTarget() == _target, "Target changed unexpectedly"); */
-            require(_header.validateHeaderPrevHash(_previousDigest), "Headers do not form a consistent chain");
+            require(_header.target() == _target, "Target changed unexpectedly");
+            require(_header.checkParent(_previousDigest), "Headers do not form a consistent chain");
 
             _previousDigest = _currentDigest;
         }
