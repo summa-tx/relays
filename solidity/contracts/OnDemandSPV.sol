@@ -122,6 +122,8 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         return _request(_spends, _pays, _paysValue, _consumer, _numConfs, _notBefore);
     }
 
+    event DEBUG(bytes _a);
+
     /// @notice                 Subscribe to a feed of Bitcoin txns matching a request
     /// @dev                    The request can be a spent utxo and/or a created utxo
     /// @param  _spendsBytes    An outpoint that must be spent in acceptable txns (optional)
@@ -140,24 +142,31 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         uint256 _notBefore
     ) internal returns (uint256) {
         bytes29 _maybePays = _paysBytes.ref(0).tryAsSPK();
-        bytes29 _maybeSpends = _paysBytes.ref(0).castTo(uint40(ViewBTC.BTCTypes.Outpoint));
+        bytes29 _maybeSpends = _spendsBytes.ref(0).castTo(uint40(ViewBTC.BTCTypes.Outpoint));
 
         uint256 _requestID = nextID;
         nextID = nextID + 1;
         ProofRequest storage _req = requests[_requestID];
         _req.owner = msg.sender;
 
+        // First add critical qualities
         if (_maybeSpends.len() > 0) {
             require(_maybeSpends.len() == 36, "Not a valid UTXO");
-            _req.spends = _maybeSpends.hash256();
+            _req.spends = _maybeSpends.keccak();
         }
-        if (_maybePays.notNull()) {
+        if (_maybePays.isValid()) {
             require(
                 _maybePays.payload().notNull() || // standard output OR
                 _maybePays.opReturnPayload().notNull(), // OP_RETURN output
                 "Not a standard output type");
-            _req.pays = _maybePays.hash256();
+            _req.pays = _maybePays.keccak();
         }
+        require(
+            _req.spends != bytes32(0) || _req.pays != bytes32(0),
+            "No request specified"
+        );
+
+        // Then fill in request details
         if (_paysValue > 0) {
             _req.paysValue = _paysValue;
         }

@@ -14,7 +14,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@celo/contractkit": "^0.3.3",
-    "@summa-tx/bitcoin-spv-sol": "^4.0.0",
+    "@summa-tx/bitcoin-spv-sol": "^4.0.1",
     "bn.js": "^5.1.1",
     "dotenv": "^8.2.0"
   },
