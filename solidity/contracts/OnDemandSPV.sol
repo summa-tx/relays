@@ -122,8 +122,6 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         return _request(_spends, _pays, _paysValue, _consumer, _numConfs, _notBefore);
     }
 
-    event DEBUG(bytes _a);
-
     /// @notice                 Subscribe to a feed of Bitcoin txns matching a request
     /// @dev                    The request can be a spent utxo and/or a created utxo
     /// @param  _spendsBytes    An outpoint that must be spent in acceptable txns (optional)
