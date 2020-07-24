@@ -16,18 +16,21 @@ use thiserror::Error;
 /// Most of these are copied directly from bitcoin spv
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
 pub enum RelayError {
-    // TODO: more here
     /// Relay is already init
     #[error("AlreadyInit")]
     AlreadyInit,
-
     /// State account has insufficient space to update the state
     #[error("InsufficientStateSpace")]
     InsufficientStateSpace,
-
     /// A difficulty change mismatch occured while adding headers
     #[error("IncorrectDifficultyChange")]
     IncorrectDifficultyChange,
+    /// Failed to update to new heaviest header because new digest is not heavier
+    #[error("NotHeavier")]
+    NotHeavier,
+    /// Failed to update to new heaviest header because a later ancestor was found
+    #[error("NotLatestAncestor")]
+    NotLatestAncestor,
 
     // Below copied from bitcoin-spv
     /// Overran a checked read on a slice
@@ -145,6 +148,8 @@ impl PrintProgramError for RelayError {
             RelayError::AlreadyInit => info!("RelayError: AlreadyInit"),
             RelayError::InsufficientStateSpace => info!("RelayError: InsufficientStateSpace"),
             RelayError::IncorrectDifficultyChange => info!("RelayError: IncorrectDifficultyChange"),
+            RelayError::NotHeavier => info!("RelayError: NotHeavier"),
+            RelayError::NotLatestAncestor => info!("RelayError: NotLatestAncestor"),
             RelayError::ReadOverrun => info!("RelayError: ReadOverrun"),
             RelayError::BadCompactInt => info!("RelayError: BadCompactInt"),
             RelayError::MalformattedOpReturnOutput => {

@@ -1,4 +1,7 @@
-use bitcoin_spv::{btcspv::retarget_algorithm, types::{Hash256Digest, HeaderArray, RawHeader}};
+use bitcoin_spv::{
+    btcspv::retarget_algorithm,
+    types::{Hash256Digest, HeaderArray, RawHeader},
+};
 
 use solana_sdk::{
     account_info::{next_account_info, AccountInfo},
@@ -43,8 +46,8 @@ pub struct RawWithInfo<'a> {
 /// A Bitcoin relay
 pub struct Relay {
     relay_genesis: HeaderInfo,
+    pre_genesis_epoch_start: Hash256Digest,
     current_best_index: u32,
-    epoch_start: Hash256Digest,
     best_known_digest: Hash256Digest,
     last_reorg_lca: Hash256Digest,
     // TODO: reap things older than 4032?
@@ -52,19 +55,16 @@ pub struct Relay {
 }
 
 impl Relay {
-    fn read_header_store(&self, index: u32) -> &HeaderInfo {
+    fn read_info_store(&self, index: u32) -> &HeaderInfo {
         &self.header_store[index as usize]
     }
 
     fn attach_metadata(&self, index: u32, raw: RawHeader) -> Result<RawWithInfo, RelayError> {
-        let info = self.read_header_store(index);
+        let info = self.read_info_store(index);
         if info.digest != raw.digest() {
             return Err(RelayError::WrongDigest);
         }
-        Ok(RawWithInfo {
-            raw,
-            info,
-        })
+        Ok(RawWithInfo { raw, info })
     }
 
     // Load a header using its index and 80-bytes form
@@ -73,10 +73,9 @@ impl Relay {
         self.attach_metadata(index, header)
     }
 
-
     // Call only after validating the chain
     fn attach_to_store(&mut self, anchor_index: u32, headers: &HeaderArray) {
-        let anchor = self.read_header_store(anchor_index);
+        let anchor = self.read_info_store(anchor_index);
         // sanity check
         assert!(
             anchor.digest == headers.index(0).parent(),
@@ -159,7 +158,7 @@ impl State {
         };
 
         relay.relay_genesis = genesis_info;
-        relay.epoch_start = epoch_start.into();
+        relay.pre_genesis_epoch_start = epoch_start.into();
         relay.current_best_index = genesis_height;
         relay.best_known_digest = genesis_digest;
         relay.last_reorg_lca = genesis_digest;
@@ -204,13 +203,7 @@ impl State {
         let relay_state = next_account_info(iter)?;
         let mut relay = Self::get_relay(relay_state)?;
 
-        Self::add_headers(
-            &mut relay,
-            anchor_index,
-            anchor_bytes,
-            header_bytes,
-            false,
-        )?;
+        Self::add_headers(&mut relay, anchor_index, anchor_bytes, header_bytes, false)?;
 
         // Commit and return
         Self::commit_relay(relay, relay_state)?;
@@ -231,7 +224,10 @@ impl State {
 
         let headers = HeaderArray::new(&header_bytes).map_err(Into::<RelayError>::into)?;
         let old_period_end = relay.load_header(old_period_end_index, &old_period_end_bytes)?;
-        let old_period_start = relay.load_header(old_period_end.info.epoch_start_index, &old_period_start_bytes)?;
+        let old_period_start = relay.load_header(
+            old_period_end.info.epoch_start_index,
+            &old_period_start_bytes,
+        )?;
 
         // Ensure a change is allowed
         if old_period_end.info.height % 2016 != 2015 {
@@ -247,7 +243,7 @@ impl State {
         let expected_target = &retarget_algorithm(
             &old_period_start.raw.target(),
             old_period_start.raw.timestamp(),
-            old_period_end.raw.timestamp()
+            old_period_end.raw.timestamp(),
         );
 
         // NB:
@@ -272,14 +268,103 @@ impl State {
         Ok(())
     }
 
+    // true for right (should update), false for left
+    fn verify_better_descendant<'a>(
+        relay: &Relay,
+        ancestor: &'a HeaderInfo,
+        left: &'a RawWithInfo,
+        right: &'a RawWithInfo,
+    ) -> Result<(), RelayError> {
+        if ancestor.digest == left.info.digest && ancestor.digest == right.info.digest {
+            return Err(RelayError::NotHeavier); // Everything is the same
+        }
+
+        // First we have to check that the ancestor is the latest common ancestor
+        {
+            let mut left_current = left.info;
+            let mut right_current = right.info;
+            let mut left_prev = left.info;
+            let mut right_prev = right.info;
+
+            // TODO: limit this better
+            for _ in 0..200 {
+                if left_prev != ancestor {
+                    left_current = left_prev;
+                    left_prev = relay.read_info_store(left_prev.parent_index);
+                }
+                if right_prev != ancestor {
+                    right_current = right_prev;
+                    right_prev = relay.read_info_store(right_prev.parent_index);
+                }
+            }
+            if left_current == right_current {
+                return Err(RelayError::NotLatestAncestor);
+            } // newer ancestor exists.
+            if left_prev != right_prev {
+                return Err(RelayError::NotLatestAncestor);
+            } // Common ancestor not found
+        }
+
+        // NB:
+        // 1. Left is in a new window, right is in the old window. Left is heavier
+        // 2. Right is in a new window, left is in the old window. Right is heavier
+        // 3. Both are in the same window, choose the higher one
+        // 4. They're in different new windows. Choose the heavier one
+        let next_period_start_height = (ancestor.height + 2016) - (ancestor.height % 2016);
+        let left_in_period = left.info.height < next_period_start_height;
+        let right_in_period = right.info.height < next_period_start_height;
+
+        if !left_in_period && right_in_period {
+            return Err(RelayError::NotHeavier);
+        }
+        if left_in_period && !right_in_period {
+            return Ok(());
+        }
+        if left_in_period && right_in_period {
+            if right.info.height > left.info.height {
+                return Ok(());
+            } else {
+                return Err(RelayError::NotHeavier);
+            }
+        }
+
+        let left_acc_diff = (left.info.height % 2016) * left.raw.difficulty();
+        let right_acc_diff = (right.info.height % 2016) * right.raw.difficulty();
+
+        if right_acc_diff > left_acc_diff {
+            Ok(())
+        } else {
+            Err(RelayError::NotHeavier)
+        }
+    }
+
     /// Process the `MarkNewHeaviest` instruction
     pub fn process_mark_new_heaviest(
-        _lca_index: u32,
-        _current_best: Vec<u8>, // always 80 bytes
-        _new_best_index: u32,
-        _new_best: Vec<u8>, // always 80 bytes
+        lca_index: u32,
+        current_best: Vec<u8>, // always 80 bytes
+        new_best_index: u32,
+        new_best: Vec<u8>, // always 80 bytes
+        accounts: &[AccountInfo],
     ) -> ProgramResult {
-        unimplemented!()
+        let iter = &mut accounts.iter();
+        let relay_state = next_account_info(iter)?;
+        let mut relay = Self::get_relay(relay_state)?;
+
+        // Isolate all the borrows
+        let (new_best, ancestor) = {
+            let new_best = relay.load_header(new_best_index, &new_best)?;
+            let current_best = relay.load_header(relay.current_best_index, &current_best)?;
+            let ancestor = relay.read_info_store(lca_index);
+            Self::verify_better_descendant(&relay, &ancestor, &current_best, &new_best)?;
+            (new_best.info.digest, ancestor.digest)
+        };
+
+        relay.last_reorg_lca = ancestor;
+        relay.best_known_digest = new_best;
+        relay.current_best_index = new_best_index;
+
+        Self::commit_relay(relay, relay_state)?;
+        Ok(())
     }
 
     /// Processes an [Instruction](enum.Instruction.html).
@@ -300,12 +385,7 @@ impl State {
                 headers,
             } => {
                 info!("Instruction: AddHeaders");
-                Self::process_add_headers(
-                    anchor_index,
-                    anchor_bytes,
-                    headers,
-                    accounts,
-                )
+                Self::process_add_headers(anchor_index, anchor_bytes, headers, accounts)
             }
             RelayInstruction::AddDifficultyChange {
                 old_period_start_bytes,
@@ -329,7 +409,13 @@ impl State {
                 new_best,
             } => {
                 info!("Instruction: MarkNewHeaviest");
-                Self::process_mark_new_heaviest(lca_index, current_best, new_best_index, new_best)
+                Self::process_mark_new_heaviest(
+                    lca_index,
+                    current_best,
+                    new_best_index,
+                    new_best,
+                    accounts,
+                )
             }
         }
     }
