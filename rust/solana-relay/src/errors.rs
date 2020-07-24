@@ -25,6 +25,10 @@ pub enum RelayError {
     #[error("InsufficientStateSpace")]
     InsufficientStateSpace,
 
+    /// A difficulty change mismatch occured while adding headers
+    #[error("IncorrectDifficultyChange")]
+    IncorrectDifficultyChange,
+
     // Below copied from bitcoin-spv
     /// Overran a checked read on a slice
     #[error("ReadOverrun")]
@@ -140,6 +144,7 @@ impl PrintProgramError for RelayError {
         match self {
             RelayError::AlreadyInit => info!("RelayError: AlreadyInit"),
             RelayError::InsufficientStateSpace => info!("RelayError: InsufficientStateSpace"),
+            RelayError::IncorrectDifficultyChange => info!("RelayError: IncorrectDifficultyChange"),
             RelayError::ReadOverrun => info!("RelayError: ReadOverrun"),
             RelayError::BadCompactInt => info!("RelayError: BadCompactInt"),
             RelayError::MalformattedOpReturnOutput => {

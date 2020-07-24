@@ -1,4 +1,4 @@
-use bitcoin_spv::types::{Hash256Digest, HeaderArray, RawHeader};
+use bitcoin_spv::{btcspv::retarget_algorithm, types::{Hash256Digest, HeaderArray, RawHeader}};
 
 use solana_sdk::{
     account_info::{next_account_info, AccountInfo},
@@ -26,9 +26,16 @@ pub enum State {
 /// Information about a header
 pub struct HeaderInfo {
     digest: Hash256Digest,
-    parent_index: u64,
-    epoch_start_index: u64,
-    height: u64,
+    parent_index: u32,
+    epoch_start_index: u32,
+    height: u32,
+}
+
+/// A Raw header with its associated info
+#[derive(Debug, Clone, Copy)]
+pub struct RawWithInfo<'a> {
+    raw: RawHeader,
+    info: &'a HeaderInfo,
 }
 
 #[repr(C)]
@@ -36,7 +43,7 @@ pub struct HeaderInfo {
 /// A Bitcoin relay
 pub struct Relay {
     relay_genesis: HeaderInfo,
-    current_best_index: u64,
+    current_best_index: u32,
     epoch_start: Hash256Digest,
     best_known_digest: Hash256Digest,
     last_reorg_lca: Hash256Digest,
@@ -45,13 +52,38 @@ pub struct Relay {
 }
 
 impl Relay {
+    fn read_header_store(&self, index: u32) -> &HeaderInfo {
+        &self.header_store[index as usize]
+    }
+
+    fn attach_metadata(&self, index: u32, raw: RawHeader) -> Result<RawWithInfo, RelayError> {
+        let info = self.read_header_store(index);
+        if info.digest != raw.digest() {
+            return Err(RelayError::WrongDigest);
+        }
+        Ok(RawWithInfo {
+            raw,
+            info,
+        })
+    }
+
+    // Load a header using its index and 80-bytes form
+    fn load_header<T: AsRef<[u8]>>(&self, index: u32, raw: &T) -> Result<RawWithInfo, RelayError> {
+        let header = RawHeader::new(raw).map_err(Into::<RelayError>::into)?;
+        self.attach_metadata(index, header)
+    }
+
+
     // Call only after validating the chain
-    fn attach_to_store(&mut self, anchor_index: u64, headers: &HeaderArray) {
-        let anchor = self.header_store[anchor_index as usize];
+    fn attach_to_store(&mut self, anchor_index: u32, headers: &HeaderArray) {
+        let anchor = self.read_header_store(anchor_index);
+        // sanity check
         assert!(
             anchor.digest == headers.index(0).parent(),
             "Attempted to attach to wrong anchor"
         );
+
+        // We'll update each of these for each header
         let mut parent_index = anchor_index;
         let mut height = anchor.height;
         let mut epoch_start_index = anchor.epoch_start_index;
@@ -98,7 +130,7 @@ impl State {
     /// Process the `Initialize` instruction
     pub fn process_initialize(
         genesis_header: Vec<u8>, // always 80 bytes,
-        genesis_height: u64,
+        genesis_height: u32,
         epoch_start: [u8; 32],
         accounts: &[AccountInfo],
     ) -> ProgramResult {
@@ -121,7 +153,7 @@ impl State {
 
         let genesis_info = HeaderInfo {
             digest: genesis_digest,
-            parent_index: u64::MAX, // will panic when indexing the vec
+            parent_index: u32::MAX, // will panic when indexing the vec
             epoch_start_index: genesis_height - (genesis_height % 2016),
             height: genesis_height,
         };
@@ -137,54 +169,114 @@ impl State {
         Ok(())
     }
 
-    /// Process the `AddHeaders` instruction
-    pub fn process_add_headers(
-        anchor_index: u64,
+    fn add_headers(
+        relay: &mut Relay,
+        anchor_index: u32,
         anchor_bytes: Vec<u8>,
         header_bytes: Vec<u8>,
         internal: bool,
+    ) -> ProgramResult {
+        let anchor = relay.load_header(anchor_index, &anchor_bytes)?;
+        let headers = HeaderArray::new(&header_bytes).map_err(Into::<RelayError>::into)?;
+
+        let first_new = headers.index(0);
+        if !internal && first_new.target() != anchor.raw.target() {
+            return Err(RelayError::UnexpectedDifficultyChange.into());
+        }
+
+        headers
+            .valid_difficulty(true)
+            .map_err(Into::<RelayError>::into)?;
+
+        // If we haven't errored yet, they're good.
+        relay.attach_to_store(anchor_index, &headers);
+        Ok(())
+    }
+
+    /// Process the `AddHeaders` instruction
+    pub fn process_add_headers(
+        anchor_index: u32,
+        anchor_bytes: Vec<u8>,
+        header_bytes: Vec<u8>,
         accounts: &[AccountInfo],
     ) -> ProgramResult {
         let iter = &mut accounts.iter();
         let relay_state = next_account_info(iter)?;
         let mut relay = Self::get_relay(relay_state)?;
 
-        let anchor_info = relay.header_store[anchor_index as usize];
-        let anchor = RawHeader::new(&anchor_bytes).map_err(Into::<RelayError>::into)?;
-        if anchor.digest() != anchor_info.digest {
-            return Err(RelayError::WrongPrevHash.into());
-        }
-        let headers = HeaderArray::new(&header_bytes).map_err(Into::<RelayError>::into)?;
+        Self::add_headers(
+            &mut relay,
+            anchor_index,
+            anchor_bytes,
+            header_bytes,
+            false,
+        )?;
 
-        let first_new = headers.index(0);
-        if !internal && first_new.target() != anchor.target() {
-            return Err(RelayError::UnexpectedDifficultyChange.into());
-        }
-
-        let _acc_diff = headers
-            .valid_difficulty(true)
-            .map_err(Into::<RelayError>::into)?;
-
-        // If we haven't errored yet, they're good.
-        relay.attach_to_store(anchor_index, &headers);
-
+        // Commit and return
         Self::commit_relay(relay, relay_state)?;
         Ok(())
     }
 
     /// Process the `AddDifficultyChange` instruction
     pub fn process_add_difficulty_change(
-        _old_period_end_index: u64,
-        _headers: Vec<u8>, // should be a vec of [u8; 80]
+        old_period_start_bytes: Vec<u8>,
+        old_period_end_index: u32,
+        old_period_end_bytes: Vec<u8>,
+        header_bytes: Vec<u8>, // should be a vec of [u8; 80]
+        accounts: &[AccountInfo],
     ) -> ProgramResult {
-        unimplemented!()
+        let iter = &mut accounts.iter();
+        let relay_state = next_account_info(iter)?;
+        let mut relay = Self::get_relay(relay_state)?;
+
+        let headers = HeaderArray::new(&header_bytes).map_err(Into::<RelayError>::into)?;
+        let old_period_end = relay.load_header(old_period_end_index, &old_period_end_bytes)?;
+        let old_period_start = relay.load_header(old_period_end.info.epoch_start_index, &old_period_start_bytes)?;
+
+        // Ensure a change is allowed
+        if old_period_end.info.height % 2016 != 2015 {
+            return Err(RelayError::UnexpectedDifficultyChange.into());
+        }
+
+        // sanity checks. These should only fail if the store is corrupted
+        assert!(old_period_start.info.height == old_period_end.info.height - 2015);
+        assert!(old_period_start.raw.target() == old_period_end.raw.target());
+
+        // Validate the difficulty change
+        let new_target = headers.index(0).target();
+        let expected_target = &retarget_algorithm(
+            &old_period_start.raw.target(),
+            old_period_start.raw.timestamp(),
+            old_period_end.raw.timestamp()
+        );
+
+        // NB:
+        // This comparison looks weird because header nBits encoding truncates targets
+        // The target is encoded as a 3-byte LE significand with a 1-byte mantissa in base 256.
+        // It is expanded into a u256 for PoW checks.
+        // But the new target is generated as a full-precision u256.
+        if (new_target & expected_target) != *expected_target {
+            return Err(RelayError::IncorrectDifficultyChange.into());
+        }
+
+        // Proceed to add the headers
+        Self::add_headers(
+            &mut relay,
+            old_period_end_index,
+            old_period_end_bytes,
+            header_bytes,
+            true,
+        )?;
+
+        Self::commit_relay(relay, relay_state)?;
+        Ok(())
     }
 
     /// Process the `MarkNewHeaviest` instruction
     pub fn process_mark_new_heaviest(
-        _lca_index: u64,
+        _lca_index: u32,
         _current_best: Vec<u8>, // always 80 bytes
-        _new_best_index: u64,
+        _new_best_index: u32,
         _new_best: Vec<u8>, // always 80 bytes
     ) -> ProgramResult {
         unimplemented!()
@@ -212,16 +304,23 @@ impl State {
                     anchor_index,
                     anchor_bytes,
                     headers,
-                    false, // internal
                     accounts,
                 )
             }
             RelayInstruction::AddDifficultyChange {
+                old_period_start_bytes,
                 old_period_end_index,
+                old_period_end_bytes,
                 headers,
             } => {
                 info!("Instruction: AddDifficultyChange");
-                Self::process_add_difficulty_change(old_period_end_index, headers)
+                Self::process_add_difficulty_change(
+                    old_period_start_bytes,
+                    old_period_end_index,
+                    old_period_end_bytes,
+                    headers,
+                    accounts,
+                )
             }
             RelayInstruction::MarkNewHeaviest {
                 lca_index,

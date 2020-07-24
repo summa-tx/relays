@@ -13,7 +13,7 @@ pub enum RelayInstruction {
         /// The genesis header with which to initialize the relay
         genesis_header: Vec<u8>, // always 80 bytes,
         /// The height of the genesis header
-        genesis_height: u64,
+        genesis_height: u32,
         /// The LE digest of the Bitcoin block that starts the epoch containing the genesis header
         epoch_start: [u8; 32],
     },
@@ -22,7 +22,7 @@ pub enum RelayInstruction {
     ///   0. `[writable]` Existing Relay to update
     AddHeaders {
         /// The index of the anchor in the state vector
-        anchor_index: u64,
+        anchor_index: u32,
         /// The raw anchor header
         anchor_bytes: Vec<u8>, // always 80 bytes
         /// The tightly-packed raw headers
@@ -33,8 +33,12 @@ pub enum RelayInstruction {
     ///
     ///   0. `[writable]` Existing Relay to update
     AddDifficultyChange {
+        /// The raw old period start header
+        old_period_start_bytes: Vec<u8>, // always 80 bytes
         /// The index of the old period end header in the state vector
-        old_period_end_index: u64,
+        old_period_end_index: u32,
+        /// The raw old period end header
+        old_period_end_bytes: Vec<u8>, // always 80 bytes
         /// The tightly-packed raw headers
         headers: Vec<u8>,
     },
@@ -44,11 +48,11 @@ pub enum RelayInstruction {
     ///   0. `[writable]` Existing Relay to update
     MarkNewHeaviest {
         /// The index of the latest common ancestor header in the state vector
-        lca_index: u64,
+        lca_index: u32,
         /// The current best header
         current_best: Vec<u8>, // always 80 bytes
         /// The index of the new best header in the state vector
-        new_best_index: u64,
+        new_best_index: u32,
         /// The new best header
         new_best: Vec<u8>, // always 80 bytes
     },
