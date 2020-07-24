@@ -13,15 +13,17 @@ use solana_sdk::{
     pubkey::Pubkey,
 };
 
-use crate::{errors::*, instructions::*};
+use crate::{errors::*, instructions::*, fake_vec::*};
 
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[allow(clippy::large_enum_variant)]
 /// The state of this account
 pub enum State {
     /// Uninitialized
     Uninitialized,
     /// Actively running
+    // Active variant is 180376 bytes
     Active(Relay),
 }
 
@@ -55,13 +57,13 @@ pub struct Relay {
     last_reorg_lca: Hash256Digest,
     // TODO: reap things older than 4032?
     //       move to a ring buffer?
-    header_store: Vec<HeaderInfo>,
+    header_store: FakeVec<HeaderInfo, generic_array::typenum::U4096>,
 }
 
 impl Relay {
     /// Read the info store at a specified index
     pub fn read_info_store(&self, index: u32) -> &HeaderInfo {
-        &self.header_store[index as usize]
+        self.header_store.get(index as usize).unwrap() // panic if not found
     }
 
     /// Read the parent of a header

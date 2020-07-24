@@ -16,3 +16,6 @@ pub mod errors;
 
 /// Entrypoint
 pub mod entry;
+
+/// A fake vector
+pub mod fake_vec;
