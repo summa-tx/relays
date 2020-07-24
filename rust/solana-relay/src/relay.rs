@@ -71,7 +71,7 @@ impl Relay {
         parent
     }
 
-    /// Read the nth ancestor of a header
+    /// Read the nth ancestor of a header. Linear look ups in the distance between them.
     pub fn ancestor_of<'a>(&'a self, info: &'a HeaderInfo, depth: u32) -> &'a HeaderInfo {
         let mut current = info;
         for _ in 0..depth {
@@ -171,7 +171,7 @@ impl State {
     pub fn process_initialize(
         genesis_header: [u8; 80],
         genesis_height: u32,
-        epoch_start: [u8; 32],
+        epoch_start_digest: [u8; 32],
         accounts: &[AccountInfo],
     ) -> ProgramResult {
         let iter = &mut accounts.iter();
@@ -191,19 +191,27 @@ impl State {
             return Err(RelayError::InsufficientWork.into());
         }
 
+        let epoch_start = HeaderInfo {
+            digest: epoch_start_digest.into(),
+            parent_index: u32::MAX, // will panic when indexing the vec
+            epoch_start_index: 0,
+            height: genesis_height - (genesis_height % 2016),
+        };
+
         let genesis_info = HeaderInfo {
             digest: genesis_digest,
             parent_index: u32::MAX, // will panic when indexing the vec
-            epoch_start_index: genesis_height - (genesis_height % 2016),
+            epoch_start_index: 0,
             height: genesis_height,
         };
 
+        relay.header_store.push(epoch_start);  // index 0
+        relay.header_store.push(genesis_info); // index 1
         relay.relay_genesis = genesis_info;
-        relay.pre_genesis_epoch_start = epoch_start.into();
-        relay.current_best_index = genesis_height;
+        relay.pre_genesis_epoch_start = epoch_start_digest.into();
+        relay.current_best_index = 1;
         relay.best_known_digest = genesis_digest;
         relay.last_reorg_lca = genesis_digest;
-        relay.header_store.push(genesis_info);
 
         Self::commit_relay(relay, relay_state)?;
         Ok(())
