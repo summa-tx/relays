@@ -34,7 +34,9 @@ pub struct HeaderInfo {
     height: u32,
 }
 
-/// A Raw header with its associated info
+/// A Raw header with its associated info.
+/// Convenience struct to avoid declaring twice as many let bindings
+#[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct RawWithInfo<'a> {
     raw: RawHeader,
@@ -51,6 +53,7 @@ pub struct Relay {
     best_known_digest: Hash256Digest,
     last_reorg_lca: Hash256Digest,
     // TODO: reap things older than 4032?
+    //       move to a ring buffer?
     header_store: Vec<HeaderInfo>,
 }
 
@@ -68,8 +71,8 @@ impl Relay {
     }
 
     // Load a header using its index and 80-bytes form
-    fn load_header<T: AsRef<[u8]>>(&self, index: u32, raw: &T) -> Result<RawWithInfo, RelayError> {
-        let header = RawHeader::new(raw).map_err(Into::<RelayError>::into)?;
+    fn load_header(&self, index: u32, raw: [u8; 80]) -> Result<RawWithInfo, RelayError> {
+        let header = raw.into();
         self.attach_metadata(index, header)
     }
 
@@ -128,7 +131,7 @@ impl State {
 
     /// Process the `Initialize` instruction
     pub fn process_initialize(
-        genesis_header: Vec<u8>, // always 80 bytes,
+        genesis_header: [u8; 80],
         genesis_height: u32,
         epoch_start: [u8; 32],
         accounts: &[AccountInfo],
@@ -171,11 +174,11 @@ impl State {
     fn add_headers(
         relay: &mut Relay,
         anchor_index: u32,
-        anchor_bytes: Vec<u8>,
+        anchor_bytes: [u8; 80],
         header_bytes: Vec<u8>,
         internal: bool,
     ) -> ProgramResult {
-        let anchor = relay.load_header(anchor_index, &anchor_bytes)?;
+        let anchor = relay.load_header(anchor_index, anchor_bytes)?;
         let headers = HeaderArray::new(&header_bytes).map_err(Into::<RelayError>::into)?;
 
         let first_new = headers.index(0);
@@ -195,7 +198,7 @@ impl State {
     /// Process the `AddHeaders` instruction
     pub fn process_add_headers(
         anchor_index: u32,
-        anchor_bytes: Vec<u8>,
+        anchor_bytes: [u8; 80],
         header_bytes: Vec<u8>,
         accounts: &[AccountInfo],
     ) -> ProgramResult {
@@ -212,9 +215,9 @@ impl State {
 
     /// Process the `AddDifficultyChange` instruction
     pub fn process_add_difficulty_change(
-        old_period_start_bytes: Vec<u8>,
+        old_period_start_bytes: [u8; 80],
         old_period_end_index: u32,
-        old_period_end_bytes: Vec<u8>,
+        old_period_end_bytes: [u8; 80],
         header_bytes: Vec<u8>, // should be a vec of [u8; 80]
         accounts: &[AccountInfo],
     ) -> ProgramResult {
@@ -223,10 +226,10 @@ impl State {
         let mut relay = Self::get_relay(relay_state)?;
 
         let headers = HeaderArray::new(&header_bytes).map_err(Into::<RelayError>::into)?;
-        let old_period_end = relay.load_header(old_period_end_index, &old_period_end_bytes)?;
+        let old_period_end = relay.load_header(old_period_end_index, old_period_end_bytes)?;
         let old_period_start = relay.load_header(
             old_period_end.info.epoch_start_index,
-            &old_period_start_bytes,
+            old_period_start_bytes,
         )?;
 
         // Ensure a change is allowed
@@ -341,9 +344,9 @@ impl State {
     /// Process the `MarkNewHeaviest` instruction
     pub fn process_mark_new_heaviest(
         lca_index: u32,
-        current_best: Vec<u8>, // always 80 bytes
+        current_best: [u8; 80],
         new_best_index: u32,
-        new_best: Vec<u8>, // always 80 bytes
+        new_best: [u8; 80],
         accounts: &[AccountInfo],
     ) -> ProgramResult {
         let iter = &mut accounts.iter();
@@ -352,8 +355,8 @@ impl State {
 
         // Isolate all the borrows
         let (new_best, ancestor) = {
-            let new_best = relay.load_header(new_best_index, &new_best)?;
-            let current_best = relay.load_header(relay.current_best_index, &current_best)?;
+            let new_best = relay.load_header(new_best_index, new_best)?;
+            let current_best = relay.load_header(relay.current_best_index, current_best)?;
             let ancestor = relay.read_info_store(lca_index);
             Self::verify_better_descendant(&relay, &ancestor, &current_best, &new_best)?;
             (new_best.info.digest, ancestor.digest)
