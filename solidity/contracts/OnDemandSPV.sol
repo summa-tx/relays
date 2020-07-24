@@ -5,16 +5,20 @@ pragma solidity ^0.5.10;
 
 import {Relay} from "./Relay.sol";
 import {ISPVRequestManager, ISPVConsumer} from "./Interfaces.sol";
-import {BytesLib} from "@summa-tx/bitcoin-spv-sol/contracts/BytesLib.sol";
-import {BTCUtils} from "@summa-tx/bitcoin-spv-sol/contracts/BTCUtils.sol";
-import {ValidateSPV} from "@summa-tx/bitcoin-spv-sol/contracts/ValidateSPV.sol";
+
+import {TypedMemView} from "@summa-tx/bitcoin-spv-sol/contracts/TypedMemView.sol";
+import {ViewBTC} from "@summa-tx/bitcoin-spv-sol/contracts/ViewBTC.sol";
+import {ViewSPV} from "@summa-tx/bitcoin-spv-sol/contracts/ViewSPV.sol";
 import {SafeMath} from "@summa-tx/bitcoin-spv-sol/contracts/SafeMath.sol";
 
 
 contract OnDemandSPV is ISPVRequestManager, Relay {
     using SafeMath for uint256;
-    using BytesLib for bytes;
-    using BTCUtils for bytes;
+    using TypedMemView for bytes;
+    using TypedMemView for bytes29;
+    using ViewBTC for bytes29;
+    using ViewSPV for bytes29;
+
 
     struct ProofRequest {
         bytes32 spends;
@@ -120,54 +124,47 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
 
     /// @notice                 Subscribe to a feed of Bitcoin txns matching a request
     /// @dev                    The request can be a spent utxo and/or a created utxo
-    /// @param  _spends         An outpoint that must be spent in acceptable txns (optional)
-    /// @param  _pays           An output script that must be paid in acceptable txns (optional)
+    /// @param  _spendsBytes    An outpoint that must be spent in acceptable txns (optional)
+    /// @param  _paysBytes      An output script that must be paid in acceptable txns (optional)
     /// @param  _paysValue      A minimum value that must be paid to the output script (optional)
     /// @param  _consumer       The address of a ISPVConsumer exposing spv
     /// @param  _numConfs       The minimum number of Bitcoin confirmations to accept
     /// @param  _notBefore      A timestamp before which proofs are not accepted
     /// @return                 A unique request ID
     function _request(
-        bytes memory _spends,
-        bytes memory _pays,
+        bytes memory _spendsBytes,
+        bytes memory _paysBytes,
         uint64 _paysValue,
         address _consumer,
         uint8 _numConfs,
         uint256 _notBefore
     ) internal returns (uint256) {
+        bytes29 _maybePays = _paysBytes.ref(0).tryAsSPK();
+        bytes29 _maybeSpends = _spendsBytes.ref(0).castTo(uint40(ViewBTC.BTCTypes.Outpoint));
+
         uint256 _requestID = nextID;
         nextID = nextID + 1;
-        bytes memory pays = _pays;
-
-        require(_spends.length == 36 || _spends.length == 0, "Not a valid UTXO");
-
-        /* NB: This will fail if the output is not p2pkh, p2sh, p2wpkh, or p2wsh*/
-        uint256 _paysLen = pays.length;
-
-        // if it's not length-prefixed, length-prefix it
-        if (_paysLen > 0 && uint8(pays[0]) != _paysLen - 1) {
-            pays = abi.encodePacked(uint8(_paysLen), pays);
-            _paysLen += 1; // update the length because we made it longer
-        }
-
-        bytes memory _p = abi.encodePacked(bytes8(0), pays);
-        require(
-            _paysLen == 0 ||  // no request OR
-            _p.extractHash().length > 0 || // standard output OR
-            _p.extractOpReturnData().length > 0, // OP_RETURN output
-            "Not a standard output type");
-
-        require(_spends.length > 0 || _paysLen > 0, "No request specified");
-
         ProofRequest storage _req = requests[_requestID];
         _req.owner = msg.sender;
 
-        if (_spends.length > 0) {
-            _req.spends = keccak256(_spends);
+        // First add critical qualities
+        if (_maybeSpends.len() > 0) {
+            require(_maybeSpends.len() == 36, "Not a valid UTXO");
+            _req.spends = _maybeSpends.keccak();
         }
-        if (_paysLen > 0) {
-            _req.pays = keccak256(pays);
+        if (_maybePays.isValid()) {
+            require(
+                _maybePays.payload().notNull() || // standard output OR
+                _maybePays.opReturnPayload().notNull(), // OP_RETURN output
+                "Not a standard output type");
+            _req.pays = _maybePays.keccak();
         }
+        require(
+            _req.spends != bytes32(0) || _req.pays != bytes32(0),
+            "No request specified"
+        );
+
+        // Then fill in request details
         if (_paysValue > 0) {
             _req.paysValue = _paysValue;
         }
@@ -180,7 +177,7 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         _req.consumer = _consumer;
         _req.state = RequestStates.ACTIVE;
 
-        emit NewProofRequest(msg.sender, _requestID, _paysValue, _spends, pays);
+        emit NewProofRequest(msg.sender, _requestID, _paysValue, _spendsBytes, _paysBytes);
 
         return _requestID;
     }
@@ -208,15 +205,29 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         bytes calldata _vout,
         uint256 _requestID
     ) external returns (bool) {
-        bytes32 _txid = abi.encodePacked(_version, _vin, _vout, _locktime).hash256();
+        return _provideProof(_header, _proof,  _version, _locktime, _index, _reqIndices, _vin, _vout, _requestID);
+    }
+
+    function _provideProof(
+        bytes memory _header,
+        bytes memory _proof,
+        bytes4 _version,
+        bytes4 _locktime,
+        uint256 _index,
+        uint16 _reqIndices,
+        bytes memory _vin,
+        bytes memory _vout,
+        uint256 _requestID
+    ) internal returns (bool) {
+        bytes32 _txid = abi.encodePacked(_version, _vin, _vout, _locktime).ref(0).hash256();
         /*
-        NB: this shortcuts validation of any txn we've seen before
-            repeats can omit header, proof, and index
+        NB: This shortcuts validation of any txn we've seen before.
+            Repeats can omit header, proof, and index
         */
         if (!validatedTxns[_txid]) {
             _checkInclusion(
-                _header,
-                _proof,
+                _header.ref(0).tryAsHeader().assertValid(),
+                _proof.ref(0).tryAsMerkleArray().assertValid(),
                 _index,
                 _txid,
                 _requestID);
@@ -272,16 +283,16 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
     /// @param  _txid       The txid that is the proof leaf
     /// @param _requestID   The ID of the request to check against
     function _checkInclusion(
-        bytes memory _header,
-        bytes memory _proof,
+        bytes29 _header,    // Header
+        bytes29 _proof,     // MerkleArray
         uint256 _index,
         bytes32 _txid,
         uint256 _requestID
     ) internal view returns (bool) {
         require(
-            ValidateSPV.prove(
+            ViewSPV.prove(
                 _txid,
-                _header.extractMerkleRootLE().toBytes32(),
+                _header.merkleRoot(),
                 _proof,
                 _index),
             "Bad inclusion proof");
@@ -313,18 +324,20 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
 
     /// @notice                 Verifies that a tx meets the requester's request
     /// @dev                    Requests can be specify an input, and output, and/or an output value
-    /// @param  _reqIndices  The input and output index to check against the request, packed
-    /// @param  _vin            The tx input vector
-    /// @param  _vout           The tx output vector
-    /// @param  _requestID       The id of the request to check
+    /// @param  _reqIndices     The input and output index to check against the request, packed
+    /// @param  _vinBytes       The tx input vector
+    /// @param  _voutBytes      The tx output vector
+    /// @param  _requestID      The id of the request to check
     function _checkRequests (
         uint16 _reqIndices,
-        bytes memory _vin,
-        bytes memory _vout,
+        bytes memory _vinBytes,
+        bytes memory _voutBytes,
         uint256 _requestID
     ) internal view returns (bool) {
-        require(_vin.validateVin(), "Vin is malformatted");
-        require(_vout.validateVout(), "Vout is malformatted");
+        bytes29 _vin = _vinBytes.ref(0).tryAsVin();
+        bytes29 _vout = _voutBytes.ref(0).tryAsVout();
+        require(_vin.notNull(), "Vin is malformatted");
+        require(_vout.notNull(), "Vout is malformatted");
 
         uint8 _inputIndex = uint8(_reqIndices >> 8);
         uint8 _outputIndex = uint8(_reqIndices & 0xff);
@@ -336,25 +349,25 @@ contract OnDemandSPV is ISPVRequestManager, Relay {
         bytes32 _pays = _req.pays;
         bool _hasPays = _pays != bytes32(0);
         if (_hasPays) {
-            bytes memory _out = _vout.extractOutputAtIndex(uint8(_outputIndex));
-            bytes memory _scriptPubkey = _out.slice(8, _out.length - 8);
+            bytes29 _out = _vout.indexVout(_outputIndex);
+            bytes29 _scriptPubkey = _out.scriptPubkey();
             require(
-                keccak256(_scriptPubkey) == _pays,
+                _scriptPubkey.keccak() == _pays,
                 "Does not match pays request");
             uint64 _paysValue = _req.paysValue;
             require(
                 _paysValue == 0 ||
-                _out.extractValue() >= _paysValue,
+                _out.value() >= _paysValue,
                 "Does not match value request");
         }
 
         bytes32 _spends = _req.spends;
         bool _hasSpends = _spends != bytes32(0);
         if (_hasSpends) {
-            bytes memory _in = _vin.extractInputAtIndex(uint8(_inputIndex));
+            bytes29 _in = _vin.indexVin(_inputIndex);
             require(
                 !_hasSpends ||
-                keccak256(_in.extractOutpoint()) == _spends,
+                _in.outpoint().keccak() == _spends,
                 "Does not match spends request");
         }
         return true;

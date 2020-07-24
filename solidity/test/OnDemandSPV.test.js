@@ -123,9 +123,9 @@ contract('OnDemandSPV', async (accounts) => {
       }
     });
 
-    it('errors if the output is present, but nonstandard', async () => {
+    it('errors if the spk is valid, but nonstandard', async () => {
       try {
-        await instance.requestTest(sub4Id, '0x', '0x00000000000000000000000000', 0, consumer.address, 1, 0, { from: requestOwner });
+        await instance.requestTest(sub4Id, '0x', '0x0d00000000000000000000000000', 0, consumer.address, 1, 0, { from: requestOwner });
         assert(false, 'expected an error');
       } catch (e) {
         assert.include(e.message, 'Not a standard output type');

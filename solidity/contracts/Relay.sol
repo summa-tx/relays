@@ -4,16 +4,21 @@ pragma solidity ^0.5.10;
 /** @author Summa (https://summa.one) */
 
 import {SafeMath} from "@summa-tx/bitcoin-spv-sol/contracts/SafeMath.sol";
-import {BytesLib} from "@summa-tx/bitcoin-spv-sol/contracts/BytesLib.sol";
-import {BTCUtils} from "@summa-tx/bitcoin-spv-sol/contracts/BTCUtils.sol";
-import {ValidateSPV} from "@summa-tx/bitcoin-spv-sol/contracts/ValidateSPV.sol";
+import {TypedMemView} from "@summa-tx/bitcoin-spv-sol/contracts/TypedMemView.sol";
+import {ViewBTC} from "@summa-tx/bitcoin-spv-sol/contracts/ViewBTC.sol";
+import {ViewSPV} from "@summa-tx/bitcoin-spv-sol/contracts/ViewSPV.sol";
 import {IRelay} from "./Interfaces.sol";
 
 contract Relay is IRelay {
     using SafeMath for uint256;
-    using BytesLib for bytes;
+    using TypedMemView for bytes;
+    using TypedMemView for bytes29;
+    using ViewBTC for bytes29;
+    using ViewSPV for bytes29;
+
+    /* using BytesLib for bytes;
     using BTCUtils for bytes;
-    using ValidateSPV for bytes;
+    using ValidateSPV for bytes; */
 
     // How often do we store the height?
     // A higher number incurs less storage cost, but more lookup cost
@@ -35,8 +40,9 @@ contract Relay is IRelay {
     /// @param  _height           The starting height
     /// @param  _periodStart      The hash of the first header in the genesis epoch
     constructor(bytes memory _genesisHeader, uint256 _height, bytes32 _periodStart) public {
-        require(_genesisHeader.length == 80, "Stop being dumb");
-        bytes32 _genesisDigest = _genesisHeader.hash256();
+        bytes29 _genesisView = _genesisHeader.ref(0).tryAsHeader();
+        require(_genesisView.notNull(), "Stop being dumb");
+        bytes32 _genesisDigest = _genesisView.hash256();
 
         require(
             _periodStart & bytes32(0x0000000000000000000000000000000000000000000000000000000000ffffff) == bytes32(0),
@@ -47,8 +53,7 @@ contract Relay is IRelay {
         lastReorgCommonAncestor = _genesisDigest;
         blockHeight[_genesisDigest] = _height;
         blockHeight[_periodStart] = _height.sub(_height % 2016);
-
-        currentEpochDiff = _genesisHeader.extractDifficulty();
+        currentEpochDiff = _genesisView.diff();
     }
 
     /// @notice     Getter for currentEpochDiff
@@ -117,7 +122,13 @@ contract Relay is IRelay {
     /// @param  _headers    A tightly-packed list of 80-byte Bitcoin headers
     /// @return             True if successfully written, error otherwise
     function addHeaders(bytes calldata _anchor, bytes calldata _headers) external returns (bool) {
-        return _addHeaders(_anchor, _headers, false);
+        bytes29 _headersView = _headers.ref(0).tryAsHeaderArray();
+        bytes29 _anchorView = _anchor.ref(0).tryAsHeader();
+
+        require(_headersView.notNull(), "Header array length must be divisible by 80");
+        require(_anchorView.notNull(), "Anchor must be 80 bytes");
+
+        return _addHeaders(_anchorView, _headersView, false);
     }
 
     /// @notice                       Adds headers to storage, performs additional validation of retarget
@@ -131,7 +142,16 @@ contract Relay is IRelay {
         bytes calldata _oldPeriodEndHeader,
         bytes calldata _headers
     ) external returns (bool) {
-        return _addHeadersWithRetarget(_oldPeriodStartHeader, _oldPeriodEndHeader, _headers);
+        bytes29 _oldStart = _oldPeriodStartHeader.ref(0).tryAsHeader();
+        bytes29 _oldEnd = _oldPeriodEndHeader.ref(0).tryAsHeader();
+        bytes29 _headersView = _headers.ref(0).tryAsHeaderArray();
+
+        require(
+            _oldStart.notNull() && _oldEnd.notNull() && _headersView.notNull(),
+            "Bad args. Check header and array byte lengths."
+        );
+
+        return _addHeadersWithRetarget(_oldStart, _oldEnd, _headersView);
     }
 
     /// @notice                   Gives a starting point for the relay
@@ -147,7 +167,13 @@ contract Relay is IRelay {
         bytes calldata _newBest,
         uint256 _limit
     ) external returns (bool) {
-        return _markNewHeaviest(_ancestor, _currentBest, _newBest, _limit);
+        bytes29 _new = _newBest.ref(0).tryAsHeader();
+        bytes29 _current = _currentBest.ref(0).tryAsHeader();
+        require(
+            _new.notNull() && _current.notNull(),
+            "Bad args. Check header and array byte lengths."
+        );
+        return _markNewHeaviest(_ancestor, _current, _new, _limit);
     }
 
     /// @notice             Adds headers to storage after validating
@@ -156,19 +182,16 @@ contract Relay is IRelay {
     /// @param  _headers    A tightly-packed list of new 80-byte Bitcoin headers to record
     /// @param  _internal   True if called internally from addHeadersWithRetarget, false otherwise
     /// @return             True if successfully written, error otherwise
-    function _addHeaders(bytes memory _anchor, bytes memory _headers, bool _internal) internal returns (bool) {
-        uint256 _height;
-        bytes memory _header;
-        bytes32 _currentDigest;
+    function _addHeaders(bytes29 _anchor, bytes29 _headers, bool _internal) internal returns (bool) {
+        /// Extract basic info
         bytes32 _previousDigest = _anchor.hash256();
-
-        uint256 _target = _headers.slice(0, 80).extractTarget();
         uint256 _anchorHeight = _findHeight(_previousDigest);  /* NB: errors if unknown */
+        uint256 _target = _headers.indexHeaderArray(0).target();
 
         require(
-            _internal || _anchor.extractTarget() == _target,
-            "Unexpected retarget on external call");
-        require(_headers.length % 80 == 0, "Header array length must be divisible by 80");
+            _internal || _anchor.target() == _target,
+            "Unexpected retarget on external call"
+        );
 
         /*
         NB:
@@ -177,8 +200,10 @@ contract Relay is IRelay {
         3. Store the block connection
         4. Store the height
         */
-        for (uint256 i = 0; i < _headers.length / 80; i = i.add(1)) {
-            _header = _headers.slice(i.mul(80), 80);
+        uint256 _height;
+        bytes32 _currentDigest;
+        for (uint256 i = 0; i < _headers.len() / 80; i += 1) {
+            bytes29 _header = _headers.indexHeaderArray(i);
             _height = _anchorHeight.add(i + 1);
             _currentDigest = _header.hash256();
 
@@ -189,8 +214,9 @@ contract Relay is IRelay {
             */
             if (previousBlock[_currentDigest] == bytes32(0)) {
                 require(
-                    abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
-                    "Header work is insufficient");
+                    TypedMemView.reverseUint256(uint256(_currentDigest)) <= _target,
+                    "Header work is insufficient"
+                );
                 previousBlock[_currentDigest] = _previousDigest;
                 if (_height % HEIGHT_INTERVAL == 0) {
                     /*
@@ -201,8 +227,8 @@ contract Relay is IRelay {
             }
 
             /* NB: we do still need to make chain level checks tho */
-            require(_header.extractTarget() == _target, "Target changed unexpectedly");
-            require(_header.validateHeaderPrevHash(_previousDigest), "Headers do not form a consistent chain");
+            require(_header.target() == _target, "Target changed unexpectedly");
+            require(_header.checkParent(_previousDigest), "Headers do not form a consistent chain");
 
             _previousDigest = _currentDigest;
         }
@@ -215,18 +241,19 @@ contract Relay is IRelay {
 
     /// @notice                       Adds headers to storage, performs additional validation of retarget
     /// @dev                          Checks the retarget, the heights, and the linkage
-    /// @param  _oldPeriodStartHeader The first header in the difficulty period being closed
-    /// @param  _oldPeriodEndHeader   The last header in the difficulty period being closed
+    /// @param  _oldStart             The first header in the difficulty period being closed
+    /// @param  _oldEnd               The last header in the difficulty period being closed
     /// @param  _headers              A tightly-packed list of 80-byte Bitcoin headers
     /// @return                       True if successfully written, error otherwise
     function _addHeadersWithRetarget(
-        bytes memory _oldPeriodStartHeader,
-        bytes memory _oldPeriodEndHeader,
-        bytes memory _headers
+        bytes29 _oldStart,
+        bytes29 _oldEnd,
+        bytes29 _headers
     ) internal returns (bool) {
+
         /* NB: requires that both blocks are known */
-        uint256 _startHeight = _findHeight(_oldPeriodStartHeader.hash256());
-        uint256 _endHeight = _findHeight(_oldPeriodEndHeader.hash256());
+        uint256 _startHeight = _findHeight(_oldStart.hash256());
+        uint256 _endHeight = _findHeight(_oldEnd.hash256());
 
         /* NB: retargets should happen at 2016 block intervals */
         require(
@@ -236,16 +263,16 @@ contract Relay is IRelay {
             _endHeight == _startHeight.add(2015),
             "Must provide exactly 1 difficulty period");
         require(
-            _oldPeriodStartHeader.extractDifficulty() == _oldPeriodEndHeader.extractDifficulty(),
+            _oldStart.diff() == _oldEnd.diff(),
             "Period header difficulties do not match");
 
         /* NB: This comparison looks weird because header nBits encoding truncates targets */
-        bytes memory _newPeriodStart = _headers.slice(0, 80);
-        uint256 _actualTarget = _newPeriodStart.extractTarget();
-        uint256 _expectedTarget = BTCUtils.retargetAlgorithm(
-            _oldPeriodStartHeader.extractTarget(),
-            _oldPeriodStartHeader.extractTimestamp(),
-            _oldPeriodEndHeader.extractTimestamp()
+        bytes29 _newStart = _headers.indexHeaderArray(0);
+        uint256 _actualTarget = _newStart.target();
+        uint256 _expectedTarget = ViewBTC.retargetAlgorithm(
+            _oldStart.target(),
+            _oldStart.time(),
+            _oldEnd.time()
         );
         require(
             (_actualTarget & _expectedTarget) == _actualTarget,
@@ -254,13 +281,13 @@ contract Relay is IRelay {
         // If the current known prevEpochDiff doesn't match, and this old period is near the chaintip/
         // update the stored prevEpochDiff
         // Don't update if this is a deep past epoch
-        uint256 _oldDiff = _oldPeriodStartHeader.extractDifficulty();
+        uint256 _oldDiff = _oldStart.diff();
         if (prevEpochDiff != _oldDiff && _endHeight > _findHeight(bestKnownDigest).sub(2016)) {
             prevEpochDiff = _oldDiff;
         }
 
         // Pass all but the first through to be added
-        return _addHeaders(_oldPeriodEndHeader, _headers, true);
+        return _addHeaders(_oldEnd, _headers, true);
     }
 
     /// @notice         Finds the height of a header by its digest
@@ -314,19 +341,20 @@ contract Relay is IRelay {
 
     /// @notice                   Marks the new best-known chain tip
     /// @param  _ancestor         The digest of the most recent common ancestor
-    /// @param  _currentBest      The 80-byte header referenced by bestKnownDigest
-    /// @param  _newBest          The 80-byte header to mark as the new best
+    /// @param  _current          The 80-byte header referenced by bestKnownDigest
+    /// @param  _new              The 80-byte header to mark as the new best
     /// @param  _limit            Limit the amount of traversal of the chain
     /// @return                   True if successfully updates bestKnownDigest, error otherwise
     function _markNewHeaviest(
         bytes32 _ancestor,
-        bytes memory _currentBest,
-        bytes memory _newBest,
+        bytes29 _current,  // Header
+        bytes29 _new,      // Header
         uint256 _limit
     ) internal returns (bool) {
         require(_limit <= 2016, "Requested limit is greater than 1 difficulty period");
-        bytes32 _newBestDigest = _newBest.hash256();
-        bytes32 _currentBestDigest = _currentBest.hash256();
+
+        bytes32 _newBestDigest = _new.hash256();
+        bytes32 _currentBestDigest = _current.hash256();
         require(_currentBestDigest == bestKnownDigest, "Passed in best is not best known");
         require(
             previousBlock[_newBestDigest] != bytes32(0),
@@ -335,13 +363,13 @@ contract Relay is IRelay {
             _isMostRecentAncestor(_ancestor, bestKnownDigest, _newBestDigest, _limit),
             "Ancestor must be heaviest common ancestor");
         require(
-            _heaviestFromAncestor(_ancestor, _currentBest, _newBest) == _newBestDigest,
+            _heaviestFromAncestor(_ancestor, _current, _new) == _newBestDigest,
             "New best hash does not have more work than previous");
 
         bestKnownDigest = _newBestDigest;
         lastReorgCommonAncestor = _ancestor;
 
-        uint256 _newDiff = _newBest.extractDifficulty();
+        uint256 _newDiff = _new.diff();
         if (_newDiff != currentEpochDiff) {
             currentEpochDiff = _newDiff;
         }
@@ -399,8 +427,8 @@ contract Relay is IRelay {
     /// @return             true if it is the most recent common ancestor within _limit, false otherwise
     function _heaviestFromAncestor(
         bytes32 _ancestor,
-        bytes memory _left,
-        bytes memory _right
+        bytes29 _left,
+        bytes29 _right
     ) internal view returns (bytes32) {
         uint256 _ancestorHeight = _findHeight(_ancestor);
         uint256 _leftHeight = _findHeight(_left.hash256());
@@ -427,8 +455,8 @@ contract Relay is IRelay {
         if (_leftInPeriod && _rightInPeriod) {
             return _leftHeight >= _rightHeight ? _left.hash256() : _right.hash256();
         } else {  // if (!_leftInPeriod && !_rightInPeriod) {
-            if (((_leftHeight % 2016).mul(_left.extractDifficulty())) <
-                (_rightHeight % 2016).mul(_right.extractDifficulty())) {
+            if (((_leftHeight % 2016).mul(_left.diff())) <
+                (_rightHeight % 2016).mul(_right.diff())) {
                 return _right.hash256();
             } else {
                 return _left.hash256();
@@ -454,7 +482,11 @@ contract TestRelay is Relay {
         bytes calldata _left,
         bytes calldata _right
     ) external view returns (bytes32) {
-        return _heaviestFromAncestor(_ancestor, _left, _right);
+        return _heaviestFromAncestor(
+            _ancestor,
+            _left.ref(0).tryAsHeader(),
+            _right.ref(0).tryAsHeader()
+        );
     }
 
     function isMostRecentAncestor(
