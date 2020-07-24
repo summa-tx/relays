@@ -31,6 +31,12 @@ pub enum RelayError {
     /// Failed to update to new heaviest header because a later ancestor was found
     #[error("NotLatestAncestor")]
     NotLatestAncestor,
+    /// Confirming header of an SPV Proof is not confirmed by the chain tip
+    #[error("NotInBestChain")]
+    NotInBestChain,
+    /// Confirming header of an SPV Proof is too deep to read
+    #[error("TooDeep")]
+    TooDeep,
 
     // Below copied from bitcoin-spv
     /// Overran a checked read on a slice
@@ -150,6 +156,8 @@ impl PrintProgramError for RelayError {
             RelayError::IncorrectDifficultyChange => info!("RelayError: IncorrectDifficultyChange"),
             RelayError::NotHeavier => info!("RelayError: NotHeavier"),
             RelayError::NotLatestAncestor => info!("RelayError: NotLatestAncestor"),
+            RelayError::NotInBestChain => info!("RelayError: NotInBestChain"),
+            RelayError::TooDeep => info!("RelayError: TooDeep"),
             RelayError::ReadOverrun => info!("RelayError: ReadOverrun"),
             RelayError::BadCompactInt => info!("RelayError: BadCompactInt"),
             RelayError::MalformattedOpReturnOutput => {

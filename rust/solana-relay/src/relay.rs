@@ -1,5 +1,6 @@
 use bitcoin_spv::{
     btcspv::retarget_algorithm,
+    std_types::SPVProof,
     types::{Hash256Digest, HeaderArray, RawHeader},
 };
 
@@ -58,8 +59,25 @@ pub struct Relay {
 }
 
 impl Relay {
-    fn read_info_store(&self, index: u32) -> &HeaderInfo {
+    /// Read the info store at a specified index
+    pub fn read_info_store(&self, index: u32) -> &HeaderInfo {
         &self.header_store[index as usize]
+    }
+
+    /// Read the parent of a header
+    pub fn parent_of(&self, info: &HeaderInfo) -> &HeaderInfo {
+        let parent = self.read_info_store(info.parent_index);
+        assert!(parent.height == info.height - 1);
+        parent
+    }
+
+    /// Read the nth ancestor of a header
+    pub fn ancestor_of<'a>(&'a self, info: &'a HeaderInfo, depth: u32) -> &'a HeaderInfo {
+        let mut current = info;
+        for _ in 0..depth {
+            current = self.parent_of(info);
+        }
+        current
     }
 
     fn attach_metadata(&self, index: u32, raw: RawHeader) -> Result<RawWithInfo, RelayError> {
@@ -70,8 +88,8 @@ impl Relay {
         Ok(RawWithInfo { raw, info })
     }
 
-    // Load a header using its index and 80-bytes form
-    fn load_header(&self, index: u32, raw: [u8; 80]) -> Result<RawWithInfo, RelayError> {
+    /// Load a header using its index and 80-bytes raw form
+    pub fn load_header(&self, index: u32, raw: [u8; 80]) -> Result<RawWithInfo, RelayError> {
         let header = raw.into();
         self.attach_metadata(index, header)
     }
@@ -105,6 +123,26 @@ impl Relay {
                 epoch_start_index = parent_index;
             }
         }
+    }
+
+    /// Validate an SPV Proof
+    pub fn validate_proof(&self, confirming_header_index: u32, proof: &SPVProof) -> Result<u32, RelayError> {
+        proof.validate()?;
+        let header_info = self.read_info_store(confirming_header_index);
+        let chaintip = self.read_info_store(self.current_best_index);
+
+        if chaintip.height - header_info.height > 2016 {
+            return Err(RelayError::TooDeep);
+        }
+
+        let ancestor = self.ancestor_of(chaintip, chaintip.height - header_info.height);
+        if header_info.digest != proof.confirming_header.hash {
+            return Err(RelayError::WrongDigest);
+        }
+        if ancestor.digest != header_info.digest {
+            return Err(RelayError::NotInBestChain)
+        }
+        Ok(chaintip.height - header_info.height + 1)
     }
 }
 
