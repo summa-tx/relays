@@ -23,6 +23,8 @@ pub enum RelayInstruction {
     AddHeaders {
         /// The index of the anchor in the state vector
         anchor_index: u64,
+        /// The raw anchor header
+        anchor_bytes: Vec<u8>, // always 80 bytes
         /// The tightly-packed raw headers
         headers: Vec<u8>, // should be a vec of [u8; 80]
     },

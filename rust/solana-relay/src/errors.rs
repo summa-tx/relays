@@ -17,10 +17,13 @@ use thiserror::Error;
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
 pub enum RelayError {
     // TODO: more here
-
     /// Relay is already init
     #[error("AlreadyInit")]
     AlreadyInit,
+
+    /// State account has insufficient space to update the state
+    #[error("InsufficientStateSpace")]
+    InsufficientStateSpace,
 
     // Below copied from bitcoin-spv
     /// Overran a checked read on a slice
@@ -47,6 +50,9 @@ pub enum RelayError {
     /// Header not exactly 80 bytes.
     #[error("WrongLengthHeader")]
     WrongLengthHeader,
+    /// Header chain changed difficulties unexpectedly
+    #[error("UnexpectedDifficultyChange")]
+    UnexpectedDifficultyChange,
     /// Header does not meet its own difficulty target.
     #[error("InsufficientWork")]
     InsufficientWork,
@@ -57,26 +63,14 @@ pub enum RelayError {
     /// of the raw header.
     #[error("WrongDigest")]
     WrongDigest,
-    /// When validating a `BitcoinHeader`, the `hash` and `hash_le` fields
-    /// do not match.
-    #[error("NonMatchingDigests")]
-    NonMatchingDigests,
     /// When validating a `BitcoinHeader`, the `merkle_root` field does not
     /// match the root found in the raw header.
     #[error("WrongMerkleRoot")]
     WrongMerkleRoot,
-    /// When validating a `BitcoinHeader`, the `merkle_root` and
-    /// `merkle_root_le` fields do not match.
-    #[error("NonMatchingMerkleRoots")]
-    NonMatchingMerkleRoots,
     /// When validating a `BitcoinHeader`, the `prevhash` field does not
     /// match the parent hash found in the raw header.
     #[error("WrongPrevHash")]
     WrongPrevHash,
-    /// When validating a `BitcoinHeader`, the `prevhash` and
-    /// `prevhash_le` fields do not match.
-    #[error("NonMatchingPrevhashes")]
-    NonMatchingPrevhashes,
     /// A `vin` (transaction input vector) is malformatted.
     #[error("InvalidVin")]
     InvalidVin,
@@ -110,14 +104,12 @@ impl From<SPVError> for RelayError {
             SPVError::MalformattedWitnessOutput => RelayError::MalformattedWitnessOutput,
             SPVError::MalformattedOutput => RelayError::MalformattedOutput,
             SPVError::WrongLengthHeader => RelayError::WrongLengthHeader,
+            SPVError::UnexpectedDifficultyChange => RelayError::UnexpectedDifficultyChange,
             SPVError::InsufficientWork => RelayError::InsufficientWork,
             SPVError::InvalidChain => RelayError::InvalidChain,
             SPVError::WrongDigest => RelayError::WrongDigest,
-            SPVError::NonMatchingDigests => RelayError::NonMatchingDigests,
             SPVError::WrongMerkleRoot => RelayError::WrongMerkleRoot,
-            SPVError::NonMatchingMerkleRoots => RelayError::NonMatchingMerkleRoots,
             SPVError::WrongPrevHash => RelayError::WrongPrevHash,
-            SPVError::NonMatchingPrevhashes => RelayError::NonMatchingPrevhashes,
             SPVError::InvalidVin => RelayError::InvalidVin,
             SPVError::InvalidVout => RelayError::InvalidVout,
             SPVError::WrongTxID => RelayError::WrongTxID,
@@ -147,6 +139,7 @@ impl PrintProgramError for RelayError {
     {
         match self {
             RelayError::AlreadyInit => info!("RelayError: AlreadyInit"),
+            RelayError::InsufficientStateSpace => info!("RelayError: InsufficientStateSpace"),
             RelayError::ReadOverrun => info!("RelayError: ReadOverrun"),
             RelayError::BadCompactInt => info!("RelayError: BadCompactInt"),
             RelayError::MalformattedOpReturnOutput => {
@@ -157,14 +150,14 @@ impl PrintProgramError for RelayError {
             RelayError::MalformattedWitnessOutput => info!("RelayError: MalformattedWitnessOutput"),
             RelayError::MalformattedOutput => info!("RelayError: MalformattedOutput"),
             RelayError::WrongLengthHeader => info!("RelayError: WrongLengthHeader"),
+            RelayError::UnexpectedDifficultyChange => {
+                info!("RelayError: UnexpectedDifficultyChange")
+            }
             RelayError::InsufficientWork => info!("RelayError: InsufficientWork"),
             RelayError::InvalidChain => info!("RelayError: InvalidChain"),
             RelayError::WrongDigest => info!("RelayError: WrongDigest"),
-            RelayError::NonMatchingDigests => info!("RelayError: NonMatchingDigests"),
             RelayError::WrongMerkleRoot => info!("RelayError: WrongMerkleRoot"),
-            RelayError::NonMatchingMerkleRoots => info!("RelayError: NonMatchingMerkleRoots"),
             RelayError::WrongPrevHash => info!("RelayError: WrongPrevHash"),
-            RelayError::NonMatchingPrevhashes => info!("RelayError: NonMatchingPrevhashes"),
             RelayError::InvalidVin => info!("RelayError: InvalidVin"),
             RelayError::InvalidVout => info!("RelayError: InvalidVout"),
             RelayError::WrongTxID => info!("RelayError: WrongTxID"),
