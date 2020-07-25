@@ -344,8 +344,6 @@ version = "0.1.0"
 dependencies = [
  "bitcoin-spv",
  "generic-array 0.14.3",
- "num-derive 0.2.5",
- "num-traits",
  "serde",
  "thiserror",
 ]
@@ -506,9 +504,9 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk-macro"
-version = "1.2.12"
+version = "1.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81ce1a528901871a60147fd1747fb875638fd02af7dc8c7b233b353a65d9bc48"
+checksum = "8924af69f2685287988a530014c3268d78d6ce3fe4a1a61f87537c545afa8427"
 dependencies = [
  "bs58",
  "proc-macro2 1.0.19",

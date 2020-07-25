@@ -1,21 +1,14 @@
 use bitcoin_spv::types::SPVError;
-
-use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
-
-use solana_sdk::{
-    decode_error::DecodeError,
-    info,
-    program_error::{PrintProgramError, ProgramError},
-};
-
 use thiserror::Error;
 
 /// Errors that may be returned by the TokenSwap program.
 ///
 /// Most of these are copied directly from bitcoin spv
-#[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
+#[derive(Clone, Debug, Eq, Error, PartialEq)]
 pub enum RelayError {
+    /// Relay is not yet init
+    #[error("NotYetInit")]
+    NotYetInit,
     /// Relay is already init
     #[error("AlreadyInit")]
     AlreadyInit,
@@ -129,59 +122,6 @@ impl From<SPVError> for RelayError {
             SPVError::BadMerkleProof => RelayError::BadMerkleProof,
             SPVError::OutputLengthMismatch => RelayError::OutputLengthMismatch,
             SPVError::UnknownError => RelayError::UnknownError,
-        }
-    }
-}
-
-impl From<RelayError> for ProgramError {
-    fn from(e: RelayError) -> Self {
-        ProgramError::Custom(e as u32)
-    }
-}
-
-impl<T> DecodeError<T> for RelayError {
-    fn type_of() -> &'static str {
-        "Relay Error"
-    }
-}
-
-impl PrintProgramError for RelayError {
-    fn print<E>(&self)
-    where
-        E: 'static + std::error::Error + DecodeError<E> + PrintProgramError + FromPrimitive,
-    {
-        match self {
-            RelayError::AlreadyInit => info!("RelayError: AlreadyInit"),
-            RelayError::InsufficientStateSpace => info!("RelayError: InsufficientStateSpace"),
-            RelayError::IncorrectDifficultyChange => info!("RelayError: IncorrectDifficultyChange"),
-            RelayError::NotHeavier => info!("RelayError: NotHeavier"),
-            RelayError::NotLatestAncestor => info!("RelayError: NotLatestAncestor"),
-            RelayError::NotInBestChain => info!("RelayError: NotInBestChain"),
-            RelayError::TooDeep => info!("RelayError: TooDeep"),
-            RelayError::ReadOverrun => info!("RelayError: ReadOverrun"),
-            RelayError::BadCompactInt => info!("RelayError: BadCompactInt"),
-            RelayError::MalformattedOpReturnOutput => {
-                info!("RelayError: MalformattedOpReturnOutput")
-            }
-            RelayError::MalformattedP2SHOutput => info!("RelayError: MalformattedP2SHOutput"),
-            RelayError::MalformattedP2PKHOutput => info!("RelayError: MalformattedP2PKHOutput"),
-            RelayError::MalformattedWitnessOutput => info!("RelayError: MalformattedWitnessOutput"),
-            RelayError::MalformattedOutput => info!("RelayError: MalformattedOutput"),
-            RelayError::WrongLengthHeader => info!("RelayError: WrongLengthHeader"),
-            RelayError::UnexpectedDifficultyChange => {
-                info!("RelayError: UnexpectedDifficultyChange")
-            }
-            RelayError::InsufficientWork => info!("RelayError: InsufficientWork"),
-            RelayError::InvalidChain => info!("RelayError: InvalidChain"),
-            RelayError::WrongDigest => info!("RelayError: WrongDigest"),
-            RelayError::WrongMerkleRoot => info!("RelayError: WrongMerkleRoot"),
-            RelayError::WrongPrevHash => info!("RelayError: WrongPrevHash"),
-            RelayError::InvalidVin => info!("RelayError: InvalidVin"),
-            RelayError::InvalidVout => info!("RelayError: InvalidVout"),
-            RelayError::WrongTxID => info!("RelayError: WrongTxID"),
-            RelayError::BadMerkleProof => info!("RelayError: BadMerkleProof"),
-            RelayError::OutputLengthMismatch => info!("RelayError: OutputLengthMismatch"),
-            RelayError::UnknownError => info!("RelayError: UnknownError"),
         }
     }
 }

@@ -12,10 +12,7 @@ pub mod utils;
 pub mod instructions;
 
 /// Errors
-pub mod errors;
+pub mod error;
 
 /// Entrypoint
 pub mod entry;
-
-/// A fake vector
-pub mod fake_vec;

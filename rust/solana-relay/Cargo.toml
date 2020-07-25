@@ -8,14 +8,16 @@ edition = "2018"
 
 [dependencies]
 solana-sdk = { version = "=1.2.12", default-features = false, features=["program"] }
+
+# error
 thiserror = "1.0"
 num-derive = "0.2"
 num-traits = "0.2"
-generic-array = {version = "0.14.3", default-features = false, features = ["serde"] }
-
-# TODO change to 4.0
-bitcoin-spv = { path = "../../../bitcoin-spv/rust"}
 
 # TODO: get rid of this?
 serde = { version = "1.0.99", features = ["derive"] }
 serde_cbor = "0.11.1"
+
+# TODO change to 4.0
+bitcoin-spv = { path = "../../../bitcoin-spv/rust"}
+relay-core = { path = "../relay-core" }

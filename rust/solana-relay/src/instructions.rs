@@ -68,38 +68,38 @@ mod bad_header_ser {
     use std::fmt;
 
     use serde::{
-        de::{SeqAccess, Visitor},
-        Deserializer,
         de::Error,
+        de::{SeqAccess, Visitor},
         ser::SerializeTuple,
-        Serializer,
+        Deserializer, Serializer,
     };
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<[u8; 80], D::Error>
     where
         D: Deserializer<'de>,
     {
-        struct ArrayVisitor{}
+        struct ArrayVisitor {}
 
-        impl<'de> Visitor<'de> for ArrayVisitor
-        {
-           type Value = [u8; 80];
+        impl<'de> Visitor<'de> for ArrayVisitor {
+            type Value = [u8; 80];
 
-           fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-               formatter.write_str(concat!("an array of length 80"))
-           }
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str(concat!("an array of length 80"))
+            }
 
-           fn visit_seq<A>(self, mut seq: A) -> Result<[u8; 80], A::Error>
-               where A: SeqAccess<'de>
-           {
-               let mut arr = [0u8; 80];
-               #[allow(clippy::needless_range_loop)]
-               for i in 0..80 {
-                   arr[i] = seq.next_element()?
-                       .ok_or_else(|| Error::invalid_length(i, &self))?;
-               }
-               Ok(arr)
-           }
+            fn visit_seq<A>(self, mut seq: A) -> Result<[u8; 80], A::Error>
+            where
+                A: SeqAccess<'de>,
+            {
+                let mut arr = [0u8; 80];
+                #[allow(clippy::needless_range_loop)]
+                for i in 0..80 {
+                    arr[i] = seq
+                        .next_element()?
+                        .ok_or_else(|| Error::invalid_length(i, &self))?;
+                }
+                Ok(arr)
+            }
         }
 
         let visitor = ArrayVisitor {};

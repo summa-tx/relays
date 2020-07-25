@@ -1,4 +1,4 @@
-use crate::{errors::RelayError, relay::State};
+use crate::{error::SolanaRelayError, relay::State};
 use solana_sdk::{
     account_info::AccountInfo, entrypoint, entrypoint::ProgramResult,
     program_error::PrintProgramError, pubkey::Pubkey,
@@ -15,7 +15,7 @@ fn process_instruction<'a>(
     match State::process(program_id, accounts, instruction_data) {
         Err(error) => {
             // catch the error so we can print it
-            error.print::<RelayError>();
+            error.print::<SolanaRelayError>();
             Err(error)
         }
         Ok(_) => Ok(()),
