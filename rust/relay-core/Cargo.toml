@@ -15,3 +15,8 @@ bitcoin-spv = { path = "../../../bitcoin-spv/rust" }
 
 # TODO: move to feature
 serde = { version = "1.0.99", features = ["derive"] }
+
+[dev-dependencies]
+hex = "0.4.2"
+serde_json = { version = "1.0" }
+serde = { version = "1.0.99", features = ["derive"] }

@@ -104,13 +104,13 @@ impl Relay {
     }
 
     /// Read the info store at a specified index
-    pub fn read_info_store(&self, index: u32) -> &HeaderInfo {
+    pub fn read_metadata_store(&self, index: u32) -> &HeaderInfo {
         self.header_store.get(index as usize).unwrap() // panic if not found
     }
 
     /// Read the parent of a header
     pub fn parent_of(&self, info: &HeaderInfo) -> &HeaderInfo {
-        let parent = self.read_info_store(info.parent_index);
+        let parent = self.read_metadata_store(info.parent_index);
         assert!(parent.height == info.height - 1);
         parent
     }
@@ -125,7 +125,7 @@ impl Relay {
     }
 
     fn attach_metadata(&self, index: u32, raw: RawHeader) -> Result<RawWithInfo, RelayError> {
-        let info = self.read_info_store(index);
+        let info = self.read_metadata_store(index);
         if info.digest != raw.digest() {
             return Err(RelayError::WrongDigest);
         }
@@ -140,7 +140,7 @@ impl Relay {
 
     // Call only after validating the chain
     fn attach_to_store(&mut self, anchor_index: u32, headers: &HeaderArray) {
-        let anchor = self.read_info_store(anchor_index);
+        let anchor = self.read_metadata_store(anchor_index);
         // sanity check
         assert!(
             anchor.digest == headers.index(0).parent(),
@@ -176,8 +176,8 @@ impl Relay {
         proof: &SPVProof,
     ) -> Result<u32, RelayError> {
         proof.validate()?;
-        let header_info = self.read_info_store(confirming_header_index);
-        let chaintip = self.read_info_store(self.current_best_index);
+        let header_info = self.read_metadata_store(confirming_header_index);
+        let chaintip = self.read_metadata_store(self.current_best_index);
 
         if chaintip.height - header_info.height > 2016 {
             return Err(RelayError::TooDeep);
@@ -291,11 +291,11 @@ impl Relay {
             for _ in 0..200 {
                 if left_prev != ancestor {
                     left_current = left_prev;
-                    left_prev = self.read_info_store(left_prev.parent_index);
+                    left_prev = self.read_metadata_store(left_prev.parent_index);
                 }
                 if right_prev != ancestor {
                     right_current = right_prev;
-                    right_prev = self.read_info_store(right_prev.parent_index);
+                    right_prev = self.read_metadata_store(right_prev.parent_index);
                 }
             }
             if left_current == right_current {
@@ -351,7 +351,7 @@ impl Relay {
         let (new_best, ancestor) = {
             let new_best = self.load_header(new_best_index, new_best)?;
             let current_best = self.load_header(self.current_best_index, current_best)?;
-            let ancestor = self.read_info_store(lca_index);
+            let ancestor = self.read_metadata_store(lca_index);
             Self::verify_better_descendant(&self, &ancestor, &current_best, &new_best)?;
             (new_best.info.digest, ancestor.digest)
         };
@@ -360,5 +360,17 @@ impl Relay {
         self.best_known_digest = new_best;
         self.current_best_index = new_best_index;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod test_utils;
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn it_instantiates() {
+
     }
 }
