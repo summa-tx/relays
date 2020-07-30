@@ -40,7 +40,6 @@ pub struct RawWithInfo<'a> {
     pub info: &'a HeaderInfo,
 }
 
-
 #[repr(C)]
 #[derive(Clone, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 /// A Bitcoin relay
