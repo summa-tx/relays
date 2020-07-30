@@ -64,19 +64,33 @@ where
         }
     }
 
-    /// Find the index of the first item in the array that is equal to the value.
+    /// Find the index of the first item in the array that matches the filter.
+    ///
+    /// # Notes
+    ///
+    /// - This iterates over the internal array of size N. So may be expensive
+    /// - This always returns a valid index. However, that index may become invalid as new things
+    ///   are pushed to the array
+    pub fn position<F>(&self, func: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> bool
+    {
+        self.internal
+            .iter()
+            .position(func)
+            .map(|v| self.to_external_index(v))
+    }
+
+    /// Find the index of the first item in the array that is equal to the value passed in.
     ///
     /// # Note
     ///
     /// This iterates over the internal array of size N. So may be expensive
-    pub fn find(&self, value: &T) -> Option<usize>
+    pub fn find<A: AsRef<T>>(&self, value: &A) -> Option<usize>
     where
         T: PartialEq,
     {
-        self.internal
-            .iter()
-            .position(|v| v == value)
-            .map(|v| self.to_external_index(v))
+        self.position(|v| v == value.as_ref())
     }
 }
 
