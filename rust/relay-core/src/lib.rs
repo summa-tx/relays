@@ -14,6 +14,7 @@ use bitcoin_spv::{
     std_types::SPVProof,
     types::{Hash256Digest, HeaderArray, RawHeader},
 };
+use generic_array::typenum::U4096;
 
 #[repr(C)]
 #[derive(Clone, Copy, Default, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -53,25 +54,20 @@ pub struct Relay {
     /// The LCA of the most recent reorg or extension
     pub last_reorg_lca: Hash256Digest,
     // TODO: generalize
-    header_store: FakeVec<HeaderInfo, generic_array::typenum::U4096>,
+    header_store: FakeVec<HeaderInfo, U4096>,
 }
 
 impl Relay {
     /// Instantiate a new relay
-    pub fn new(
-        genesis_header: [u8; 80],
+    pub fn new<H: Into<RawHeader>, D: Into<Hash256Digest> + Copy>(
+        genesis_header: H,
         genesis_height: u32,
-        epoch_start_digest: [u8; 32],
+        epoch_start_digest: D,
     ) -> Result<Self, RelayError> {
-        let mut genesis = RawHeader::default();
+        let genesis: RawHeader = genesis_header.into();
 
-        if genesis_header.len() != 80 {
-            return Err(RelayError::WrongLengthHeader);
-        }
-
-        genesis.as_mut().copy_from_slice(&genesis_header[..80]);
         let genesis_digest = genesis.digest();
-
+        // Sanity check
         if genesis_digest.as_ref()[28..32] != [0, 0, 0, 0] {
             return Err(RelayError::InsufficientWork);
         }
@@ -83,11 +79,22 @@ impl Relay {
             height: genesis_height - (genesis_height % 2016),
         };
 
+
         let genesis_info = HeaderInfo {
             digest: genesis_digest,
             parent_index: u32::MAX, // will panic when indexing the vec
             epoch_start_index: 0,
             height: genesis_height,
+        };
+
+        // Thanks, I hate it
+        let header_store: FakeVec<HeaderInfo, U4096> = unsafe {
+            let hs = [HeaderInfo::default(); 4096];
+            let store = std::mem::transmute::<[HeaderInfo; 4096], generic_array::GenericArray::<HeaderInfo, U4096>>(hs);
+            FakeVec {
+                latest:0,
+                internal: store,
+            }
         };
 
         let mut relay = Self {
@@ -96,7 +103,7 @@ impl Relay {
             current_best_index: 1,
             best_known_digest: genesis_digest,
             last_reorg_lca: genesis_digest,
-            ..Default::default()
+            header_store,
         };
         relay.header_store.push(epoch_start); // index 0
         relay.header_store.push(genesis_info); // index 1
@@ -133,9 +140,8 @@ impl Relay {
     }
 
     /// Load a header using its index and 80-bytes raw form
-    pub fn load_header(&self, index: u32, raw: [u8; 80]) -> Result<RawWithInfo, RelayError> {
-        let header = raw.into();
-        self.attach_metadata(index, header)
+    pub fn load_header<R: Into<RawHeader>>(&self, index: u32, raw: R) -> Result<RawWithInfo, RelayError> {
+        self.attach_metadata(index, raw.into())
     }
 
     // Call only after validating the chain
@@ -194,10 +200,10 @@ impl Relay {
     }
 
     /// Add headers to the relay
-    pub fn add_headers(
+    pub fn add_headers<R: Into<RawHeader>>(
         &mut self,
         anchor_index: u32,
-        anchor_bytes: [u8; 80],
+        anchor_bytes: R,
         header_bytes: Vec<u8>,
         internal: bool,
     ) -> Result<(), RelayError> {
@@ -361,6 +367,26 @@ impl Relay {
         self.current_best_index = new_best_index;
         Ok(())
     }
+
+    /// Find the index of the first header_info that is equal to the value passed in.
+    ///
+    /// # Note
+    ///
+    /// This iterates over the internal array of size N. So may be expensive
+    pub fn find<A: AsRef<HeaderInfo>>(&self, value: &A) -> Option<usize>
+    {
+        self.header_store.find(value)
+    }
+
+    /// Find the index of the first header_info that has the digest
+    ///
+    /// # Note
+    ///
+    /// This iterates over the internal array of size N. So may be expensive
+    pub fn find_digest(&self, value: Hash256Digest) -> Option<usize>
+    {
+        self.header_store.position(|v| v.digest == value)
+    }
 }
 
 #[cfg(test)]
@@ -371,8 +397,17 @@ mod test {
     use super::*;
     use crate::test_utils;
     #[test]
-    fn it_instantiates() {
-        let json = test_utils::setup();
-        dbg!(json);
+    fn it_ingests_headers() {
+        let cases = &test_utils::TEST_VECTORS.header.header_chain_cases;
+        for case in cases.iter() {
+            let anchor = case.anchor;
+            let mut relay = Relay::new(anchor.raw, anchor.height, anchor.hash).unwrap();
+            relay.add_headers(
+                relay.find_digest(anchor.hash).unwrap() as u32,
+                anchor.raw,
+                case.flat_raw_headers(),
+                case.internal,
+            );
+        }
     }
 }

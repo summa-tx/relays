@@ -1,4 +1,3 @@
-use hex;
 use bitcoin_spv::types::*;
 
 use std::{
@@ -6,96 +5,53 @@ use std::{
     io::Read,
 };
 
-/// Changes the endianness of a byte array.
-/// Returns a new, backwards, byte array.
-///
-/// # Arguments
-///
-/// * `b` - The bytes to reverse
-pub fn reverse_endianness(b: &[u8]) -> Vec<u8> {
-    b.iter().rev().copied().collect()
+use lazy_static::lazy_static;
+
+lazy_static! {
+    pub static ref TEST_VECTORS: TestJson = setup();
 }
 
-/// Strips the '0x' prefix off of hex string so it can be deserialized.
-///
-/// # Arguments
-///
-/// * `s` - The hex str
-pub fn strip_0x_prefix(s: &str) -> &str {
-    if &s[..2] == "0x" {
-        &s[2..]
-    } else {
-        s
-    }
-}
-
-/// Deserializes a hex string into a u8 array.
-///
-/// # Arguments
-///
-/// * `s` - The hex string
-pub fn deserialize_hex(s: &str) -> Result<Vec<u8>, hex::FromHexError> {
-    hex::decode(&strip_0x_prefix(s))
-}
-
-/// Serializes a u8 array into a hex string.
-///
-/// # Arguments
-///
-/// * `buf` - The value as a u8 array
-pub fn serialize_hex(buf: &[u8]) -> String {
-    format!("0x{}", hex::encode(buf))
-}
-
-/// Deserialize a hex string into bytes.
-/// Panics if the string is malformatted.
-///
-/// # Arguments
-///
-/// * `s` - The hex string
-///
-/// # Panics
-///
-/// When the string is not validly formatted hex.
-pub fn force_deserialize_hex(s: &str) -> Vec<u8> {
-    deserialize_hex(s).unwrap()
-}
-
-#[derive(serde::Deserialize, Debug, Clone)]
+#[derive(serde::Deserialize, Debug, Clone, Copy)]
 pub struct TestHeaderDetails {
-    height: usize,
-    hash: Hash256Digest,
-    prevhash: Hash256Digest,
-    merkle_root: Hash256Digest,
-    raw: RawHeader,
+    pub height: u32,
+    pub hash: Hash256Digest,
+    pub prevhash: Hash256Digest,
+    pub merkle_root: Hash256Digest,
+    pub raw: RawHeader,
 }
 
 #[derive(serde::Deserialize, Debug, Clone)]
 pub struct AddHeadersCase {
-    comment: String,
-    headers: Vec<TestHeaderDetails>,
-    anchor: TestHeaderDetails,
-    internal: bool,
+    pub comment: String,
+    pub headers: Vec<TestHeaderDetails>,
+    pub anchor: TestHeaderDetails,
+    pub internal: bool,
     #[serde(rename = "isMainnet")]
-    mainnet: bool,
-    output: usize,
+    pub mainnet: bool,
+    pub output: usize,
+}
+
+impl AddHeadersCase {
+    pub fn flat_raw_headers(&self) -> Vec<u8> {
+        self.headers.iter().map(|v| v.raw.as_ref().to_vec().into_iter()).flatten().collect::<Vec<u8>>()
+    }
 }
 
 #[derive(serde::Deserialize, Debug, Clone)]
 pub struct HeaderBlock {
     #[serde(rename = "validateHeaderChain")]
-    header_chain_cases: Vec<AddHeadersCase>,
+    pub header_chain_cases: Vec<AddHeadersCase>,
     // incomplete
 }
 
 #[derive(serde::Deserialize, Debug, Clone)]
 pub struct TestJson {
-    header: HeaderBlock,
+    pub header: HeaderBlock,
     // incomplete
 }
 
 pub fn setup() -> TestJson {
-    let mut file = std::fs::File::open("../../testVectors.json").unwrap();
+    let mut file = File::open("../../testVectors.json").unwrap();
     let mut data = String::new();
     file.read_to_string(&mut data).unwrap();
 

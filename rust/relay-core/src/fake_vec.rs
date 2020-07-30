@@ -5,20 +5,20 @@ use generic_array::{ArrayLength, GenericArray};
 ///
 /// It can be used at most `usize::MAX` times. It panics after that. This shouldn't be an issue.
 #[repr(C)]
-#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(bound = "N: ArrayLength<T>")]
 pub struct FakeVec<T, N>
 where
-    T: serde::Serialize + for<'d> serde::Deserialize<'d> + Default,
+    T: serde::Serialize + for<'d> serde::Deserialize<'d> + Default + Clone,
     N: ArrayLength<T>,
 {
-    latest: usize,
-    internal: GenericArray<T, N>,
+    pub(crate) latest: usize,
+    pub(crate) internal: GenericArray<T, N>,
 }
 
 impl<T, N> FakeVec<T, N>
 where
-    T: serde::Serialize + for<'d> serde::Deserialize<'d> + Default,
+    T: serde::Serialize + for<'d> serde::Deserialize<'d> + Default + Clone,
     N: ArrayLength<T>,
 {
     // Get the capacity of the underlying array
@@ -43,7 +43,7 @@ where
 
     // Check if we have the item referenced by an index
     fn valid(&self, index: usize) -> bool {
-        index <= self.latest && index > self.latest - self.capacity()
+        index <= self.latest && (self.latest < self.capacity() || index > self.latest - self.capacity())
     }
 
     /// Push an item to the Buffer
@@ -97,9 +97,26 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
+    use generic_array::typenum::*;
+
+    // #[test]
+    // fn it_defaults() {
+    //     dbg!(std::mem::size_of::<GenericArray<[u64; 32], U816>>());
+    //     dbg!(std::mem::size_of::<GenericArray<[u64; 32], U817>>());
+    //
+    //     // Works
+    //     GenericArray::<[u64; 32], U816>::default();
+    //
+    //     // Stack Overflow
+    //     GenericArray::<[u64; 32], U817>::default();
+    // }
+
     #[test]
     fn it_generates_external_indices() {
-        let mut store = FakeVec::<u8, generic_array::typenum::U8>::default();
+        let mut store = FakeVec::<u8, generic_array::typenum::U8> {
+            latest: 0,
+            internal: Default::default(),
+        };
         store.latest = 501;
 
         assert_eq!(store.to_external_index(5), store.latest);
