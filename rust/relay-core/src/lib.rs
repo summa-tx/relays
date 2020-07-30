@@ -369,8 +369,10 @@ mod test_utils;
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::test_utils;
     #[test]
     fn it_instantiates() {
-
+        let json = test_utils::setup();
+        dbg!(json);
     }
 }

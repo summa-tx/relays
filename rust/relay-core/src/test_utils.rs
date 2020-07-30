@@ -1,4 +1,10 @@
 use hex;
+use bitcoin_spv::types::*;
+
+use std::{
+    fs::File,
+    io::Read,
+};
 
 /// Changes the endianness of a byte array.
 /// Returns a new, backwards, byte array.
@@ -53,4 +59,45 @@ pub fn serialize_hex(buf: &[u8]) -> String {
 /// When the string is not validly formatted hex.
 pub fn force_deserialize_hex(s: &str) -> Vec<u8> {
     deserialize_hex(s).unwrap()
+}
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct TestHeaderDetails {
+    height: usize,
+    hash: Hash256Digest,
+    prevhash: Hash256Digest,
+    merkle_root: Hash256Digest,
+    raw: RawHeader,
+}
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct AddHeadersCase {
+    comment: String,
+    headers: Vec<TestHeaderDetails>,
+    anchor: TestHeaderDetails,
+    internal: bool,
+    #[serde(rename = "isMainnet")]
+    mainnet: bool,
+    output: usize,
+}
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct HeaderBlock {
+    #[serde(rename = "validateHeaderChain")]
+    header_chain_cases: Vec<AddHeadersCase>,
+    // incomplete
+}
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct TestJson {
+    header: HeaderBlock,
+    // incomplete
+}
+
+pub fn setup() -> TestJson {
+    let mut file = std::fs::File::open("../../testVectors.json").unwrap();
+    let mut data = String::new();
+    file.read_to_string(&mut data).unwrap();
+
+    serde_json::from_str(&data).unwrap()
 }
