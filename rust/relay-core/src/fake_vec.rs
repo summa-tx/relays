@@ -12,7 +12,7 @@ where
     T: serde::Serialize + for<'d> serde::Deserialize<'d> + Default + Clone,
     N: ArrayLength<T>,
 {
-    pub(crate) latest: usize,
+    pub(crate) next: usize,
     pub(crate) internal: GenericArray<T, N>,
 }
 
@@ -21,6 +21,11 @@ where
     T: serde::Serialize + for<'d> serde::Deserialize<'d> + Default + Clone,
     N: ArrayLength<T>,
 {
+    // Panics if called when empty. TODO maybe fix that
+    fn latest(&self) -> usize {
+        self.next - 1
+    }
+
     // Get the capacity of the underlying array
     fn capacity(&self) -> usize {
         self.internal.len()
@@ -36,22 +41,25 @@ where
         assert!(index < self.capacity());
 
         // lazy algo. there's probably a better way
-        let mut internal_latest = self.to_internal_index(self.latest);
-        if index > internal_latest { internal_latest += self.capacity(); }
-        self.latest - (internal_latest - index)
+        let mut internal_latest = self.to_internal_index(self.latest());
+        if index > internal_latest {
+            internal_latest += self.capacity();
+        }
+        self.latest() - (internal_latest - index)
     }
 
     // Check if we have the item referenced by an index
     fn valid(&self, index: usize) -> bool {
-        index <= self.latest && (self.latest < self.capacity() || index > self.latest - self.capacity())
+        index <= self.latest()
+            && (self.latest() < self.capacity() || index > self.latest() - self.capacity())
     }
 
     /// Push an item to the Buffer
     pub fn push(&mut self, item: T) -> usize {
-        self.latest += 1;
-        let index = self.to_internal_index(self.latest);
+        let index = self.to_internal_index(self.next);
         self.internal[index] = item;
-        self.latest
+        self.next += 1;
+        index
     }
 
     /// Get an item at an index, if we still have it
@@ -73,7 +81,7 @@ where
     ///   are pushed to the array
     pub fn position<F>(&self, func: F) -> Option<usize>
     where
-        F: FnMut(&T) -> bool
+        F: FnMut(&T) -> bool,
     {
         self.internal
             .iter()
@@ -113,18 +121,18 @@ mod test {
     #[test]
     fn it_generates_external_indices() {
         let mut store = FakeVec::<u8, generic_array::typenum::U8> {
-            latest: 0,
+            next: 0,
             internal: Default::default(),
         };
-        store.latest = 501;
+        store.next = 502;
 
-        assert_eq!(store.to_external_index(5), store.latest);
-        assert_eq!(store.to_external_index(6), store.latest - 7);
-        assert_eq!(store.to_external_index(7), store.latest - 6);
-        assert_eq!(store.to_external_index(0), store.latest - 5);
-        assert_eq!(store.to_external_index(1), store.latest - 4);
-        assert_eq!(store.to_external_index(2), store.latest - 3);
-        assert_eq!(store.to_external_index(3), store.latest - 2);
-        assert_eq!(store.to_external_index(4), store.latest - 1);
+        assert_eq!(store.to_external_index(5), store.latest());
+        assert_eq!(store.to_external_index(6), store.latest() - 7);
+        assert_eq!(store.to_external_index(7), store.latest() - 6);
+        assert_eq!(store.to_external_index(0), store.latest() - 5);
+        assert_eq!(store.to_external_index(1), store.latest() - 4);
+        assert_eq!(store.to_external_index(2), store.latest() - 3);
+        assert_eq!(store.to_external_index(3), store.latest() - 2);
+        assert_eq!(store.to_external_index(4), store.latest() - 1);
     }
 }

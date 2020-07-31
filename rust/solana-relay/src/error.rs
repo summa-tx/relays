@@ -42,6 +42,9 @@ pub enum SolanaRelayError {
     /// Confirming header of an SPV Proof is too deep to read
     #[error("TooDeep")]
     TooDeep,
+    /// WrongEnd means the end block of the diff period is at the wrong height
+    #[error("WrongEnd")]
+    WrongEnd,
 
     // Below copied from bitcoin-spv
     /// Overran a checked read on a slice
@@ -137,6 +140,7 @@ impl From<RelayError> for SolanaRelayError {
             RelayError::NotLatestAncestor => SolanaRelayError::NotLatestAncestor,
             RelayError::NotInBestChain => SolanaRelayError::NotInBestChain,
             RelayError::TooDeep => SolanaRelayError::TooDeep,
+            RelayError::WrongEnd => SolanaRelayError::WrongEnd,
             RelayError::ReadOverrun => SolanaRelayError::ReadOverrun,
             RelayError::BadCompactInt => SolanaRelayError::BadCompactInt,
             RelayError::MalformattedOpReturnOutput => SolanaRelayError::MalformattedOpReturnOutput,
@@ -179,6 +183,7 @@ impl PrintProgramError for SolanaRelayError {
             SolanaRelayError::NotLatestAncestor => info!("SolanaRelayError: NotLatestAncestor"),
             SolanaRelayError::NotInBestChain => info!("SolanaRelayError: NotInBestChain"),
             SolanaRelayError::TooDeep => info!("SolanaRelayError: TooDeep"),
+            SolanaRelayError::WrongEnd => info!("SolanaRelayError: WrongEnd"),
             SolanaRelayError::ReadOverrun => info!("SolanaRelayError: ReadOverrun"),
             SolanaRelayError::BadCompactInt => info!("SolanaRelayError: BadCompactInt"),
             SolanaRelayError::MalformattedOpReturnOutput => {

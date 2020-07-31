@@ -141,7 +141,13 @@ impl State {
                 epoch_start,
             } => {
                 info!("Instruction: Initialize");
-                Self::process_initialize(mainnet, genesis_header, genesis_height, epoch_start, accounts)
+                Self::process_initialize(
+                    mainnet,
+                    genesis_header,
+                    genesis_height,
+                    epoch_start,
+                    accounts,
+                )
             }
             RelayInstruction::AddHeaders {
                 anchor_index,

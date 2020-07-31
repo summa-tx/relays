@@ -90,9 +90,12 @@ impl Relay {
         // Thanks, I hate it
         let header_store: FakeVec<HeaderInfo, U4096> = unsafe {
             let hs = [HeaderInfo::default(); 4096];
-            let store = std::mem::transmute::<[HeaderInfo; 4096], generic_array::GenericArray::<HeaderInfo, U4096>>(hs);
+            let store = std::mem::transmute::<
+                [HeaderInfo; 4096],
+                generic_array::GenericArray<HeaderInfo, U4096>,
+            >(hs);
             FakeVec {
-                latest:0,
+                next: 0,
                 internal: store,
             }
         };
@@ -106,8 +109,8 @@ impl Relay {
             last_reorg_lca: genesis_digest,
             header_store,
         };
-        relay.header_store.push(epoch_start); // index 0
-        relay.header_store.push(genesis_info); // index 1
+        assert_eq!(relay.header_store.push(epoch_start), 0);
+        assert_eq!(relay.header_store.push(genesis_info), 1);
         Ok(relay)
     }
 
@@ -135,13 +138,20 @@ impl Relay {
     fn attach_metadata(&self, index: u32, raw: RawHeader) -> Result<RawWithInfo, RelayError> {
         let info = self.read_metadata_store(index);
         if info.digest != raw.digest() {
+            dbg!(info);
+            dbg!(raw);
+            dbg!(index);
             return Err(RelayError::WrongDigest);
         }
         Ok(RawWithInfo { raw, info })
     }
 
     /// Load a header using its index and 80-bytes raw form
-    pub fn load_header<R: Into<RawHeader>>(&self, index: u32, raw: R) -> Result<RawWithInfo, RelayError> {
+    pub fn load_header<R: Into<RawHeader>>(
+        &self,
+        index: u32,
+        raw: R,
+    ) -> Result<RawWithInfo, RelayError> {
         self.attach_metadata(index, raw.into())
     }
 
@@ -226,13 +236,20 @@ impl Relay {
     }
 
     /// Add a difficulty change to the relay
-    pub fn add_difficulty_change(
+    pub fn add_difficulty_change<R1, R2>(
         &mut self,
-        old_period_start_bytes: [u8; 80],
+        old_period_start_bytes: R1,
         old_period_end_index: u32,
-        old_period_end_bytes: [u8; 80],
+        old_period_end_bytes: R2,
         header_bytes: Vec<u8>, // should be a vec of [u8; 80]
-    ) -> Result<(), RelayError> {
+    ) -> Result<(), RelayError>
+    where
+        R1: Into<RawHeader>,
+        R2: Into<RawHeader>,
+    {
+        let old_period_start_bytes: RawHeader = old_period_start_bytes.into();
+        let old_period_end_bytes: RawHeader = old_period_end_bytes.into();
+
         let headers = HeaderArray::new(&header_bytes)?;
         let old_period_end = self.load_header(old_period_end_index, old_period_end_bytes)?;
         let old_period_start = self.load_header(
@@ -242,7 +259,7 @@ impl Relay {
 
         // Ensure a change is allowed
         if old_period_end.info.height % 2016 != 2015 {
-            return Err(RelayError::UnexpectedDifficultyChange);
+            return Err(RelayError::WrongEnd);
         }
 
         // sanity checks. These should only fail if the store is corrupted
@@ -262,7 +279,7 @@ impl Relay {
         // The target is encoded as a 3-byte LE significand with a 1-byte mantissa in base 256.
         // It is expanded into a u256 for PoW checks.
         // But the new target is generated as a full-precision u256.
-        if (new_target & expected_target) != *expected_target {
+        if (&new_target & expected_target) != new_target {
             return Err(RelayError::IncorrectDifficultyChange);
         }
 
@@ -374,8 +391,7 @@ impl Relay {
     /// # Note
     ///
     /// This iterates over the internal array of size N. So may be expensive
-    pub fn find<A: AsRef<HeaderInfo>>(&self, value: &A) -> Option<usize>
-    {
+    pub fn find<A: AsRef<HeaderInfo>>(&self, value: &A) -> Option<usize> {
         self.header_store.find(value)
     }
 
@@ -384,8 +400,7 @@ impl Relay {
     /// # Note
     ///
     /// This iterates over the internal array of size N. So may be expensive
-    pub fn find_digest(&self, value: Hash256Digest) -> Option<usize>
-    {
+    pub fn find_digest(&self, value: Hash256Digest) -> Option<usize> {
         self.header_store.position(|v| v.digest == value)
     }
 }
@@ -402,12 +417,18 @@ mod test {
         ($err:expr, $case:expr) => {
             if $err.is_err() {
                 let err = $err.unwrap_err();
-                // dbg!($case);
-                // dbg!(&err);
-                assert_eq!(test_utils::error_to_code(err), $case.output, "Error code mismatch");
+                let actual_code = test_utils::error_to_code(err);
+                if actual_code != $case.output {
+                    dbg!($case);
+                    assert!(
+                        false,
+                        "\nExpected error {:?}. \nGot {:?}\n{:?}\n",
+                        $case.output, actual_code, err
+                    );
+                }
                 continue;
             }
-        }
+        };
     }
 
     #[test]
@@ -416,7 +437,8 @@ mod test {
         for case in cases.iter() {
             let anchor = case.anchor;
 
-            let instantiation_res = Relay::new(case.mainnet, anchor.raw, anchor.height, anchor.hash);
+            let instantiation_res =
+                Relay::new(case.mainnet, anchor.raw, anchor.height, anchor.hash);
             check_err!(instantiation_res, case);
 
             let mut relay = instantiation_res.unwrap();
@@ -425,6 +447,29 @@ mod test {
                 anchor.raw,
                 case.flat_raw_headers(),
                 case.internal,
+            );
+            check_err!(add_res, case);
+        }
+    }
+
+    #[test]
+    fn it_ingests_diff_changes() {
+        let cases = &test_utils::TEST_VECTORS.header.diff_change_cases;
+        for case in cases.iter() {
+            if case.rust_skip { continue; }
+            
+            let anchor = case.anchor;
+            let prev_epoch_start = case.prev_epoch_start;
+            let instantiation_res =
+                Relay::new(true, anchor.raw, anchor.height, prev_epoch_start.hash);
+            check_err!(instantiation_res, case);
+
+            let mut relay = instantiation_res.unwrap();
+            let add_res = relay.add_difficulty_change(
+                prev_epoch_start.raw,
+                relay.find_digest(anchor.hash).unwrap() as u32,
+                anchor.raw,
+                case.flat_raw_headers(),
             );
             check_err!(add_res, case);
         }

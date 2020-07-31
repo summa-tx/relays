@@ -4,7 +4,7 @@ use thiserror::Error;
 /// Errors that may be returned by the TokenSwap program.
 ///
 /// Most of these are copied directly from bitcoin spv
-#[derive(Clone, Debug, Eq, Error, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Error, PartialEq)]
 pub enum RelayError {
     /// A difficulty change mismatch occured while adding headers
     #[error("IncorrectDifficultyChange")]
@@ -21,6 +21,9 @@ pub enum RelayError {
     /// Confirming header of an SPV Proof is too deep to read
     #[error("TooDeep")]
     TooDeep,
+    /// WrongEnd means the end block of the diff period is at the wrong height
+    #[error("WrongEnd")]
+    WrongEnd,
 
     // Below copied from bitcoin-spv
     /// Overran a checked read on a slice
