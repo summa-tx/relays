@@ -45,6 +45,7 @@ pub struct RawWithInfo<'a> {
 #[derive(Clone, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 /// A Bitcoin relay
 pub struct Relay {
+    mainnet: bool,
     relay_genesis: HeaderInfo,
     pre_genesis_epoch_start: Hash256Digest,
     /// The index of the current best-known header in the store
@@ -59,13 +60,14 @@ pub struct Relay {
 
 impl Relay {
     /// Instantiate a new relay
-    pub fn new<H: Into<RawHeader>, D: Into<Hash256Digest> + Copy>(
+    pub fn new<H: Into<RawHeader>, D: Into<Hash256Digest>>(
+        mainnet: bool,
         genesis_header: H,
         genesis_height: u32,
         epoch_start_digest: D,
     ) -> Result<Self, RelayError> {
+        let epoch_start_digest: Hash256Digest = epoch_start_digest.into();
         let genesis: RawHeader = genesis_header.into();
-
         let genesis_digest = genesis.digest();
         // Sanity check
         if genesis_digest.as_ref()[28..32] != [0, 0, 0, 0] {
@@ -73,12 +75,11 @@ impl Relay {
         }
 
         let epoch_start = HeaderInfo {
-            digest: epoch_start_digest.into(),
+            digest: epoch_start_digest,
             parent_index: u32::MAX, // will panic when indexing the vec
             epoch_start_index: 0,
             height: genesis_height - (genesis_height % 2016),
         };
-
 
         let genesis_info = HeaderInfo {
             digest: genesis_digest,
@@ -86,7 +87,6 @@ impl Relay {
             epoch_start_index: 0,
             height: genesis_height,
         };
-
         // Thanks, I hate it
         let header_store: FakeVec<HeaderInfo, U4096> = unsafe {
             let hs = [HeaderInfo::default(); 4096];
@@ -98,8 +98,9 @@ impl Relay {
         };
 
         let mut relay = Self {
+            mainnet,
             relay_genesis: genesis_info,
-            pre_genesis_epoch_start: epoch_start_digest.into(),
+            pre_genesis_epoch_start: epoch_start_digest,
             current_best_index: 1,
             best_known_digest: genesis_digest,
             last_reorg_lca: genesis_digest,
@@ -211,7 +212,7 @@ impl Relay {
         let headers = HeaderArray::new(&header_bytes).map_err(Into::<RelayError>::into)?;
 
         let first_new = headers.index(0);
-        if !internal && first_new.target() != anchor.raw.target() {
+        if !internal && self.mainnet && first_new.target() != anchor.raw.target() {
             return Err(RelayError::UnexpectedDifficultyChange);
         }
 
@@ -396,18 +397,36 @@ mod test_utils;
 mod test {
     use super::*;
     use crate::test_utils;
+
+    macro_rules! check_err {
+        ($err:expr, $case:expr) => {
+            if $err.is_err() {
+                let err = $err.unwrap_err();
+                // dbg!($case);
+                // dbg!(&err);
+                assert_eq!(test_utils::error_to_code(err), $case.output, "Error code mismatch");
+                continue;
+            }
+        }
+    }
+
     #[test]
     fn it_ingests_headers() {
         let cases = &test_utils::TEST_VECTORS.header.header_chain_cases;
         for case in cases.iter() {
             let anchor = case.anchor;
-            let mut relay = Relay::new(anchor.raw, anchor.height, anchor.hash).unwrap();
-            relay.add_headers(
+
+            let instantiation_res = Relay::new(case.mainnet, anchor.raw, anchor.height, anchor.hash);
+            check_err!(instantiation_res, case);
+
+            let mut relay = instantiation_res.unwrap();
+            let add_res = relay.add_headers(
                 relay.find_digest(anchor.hash).unwrap() as u32,
                 anchor.raw,
                 case.flat_raw_headers(),
                 case.internal,
             );
+            check_err!(add_res, case);
         }
     }
 }

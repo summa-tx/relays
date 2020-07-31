@@ -45,6 +45,7 @@ impl State {
 
     /// Process the `Initialize` instruction
     pub fn process_initialize(
+        mainnet: bool,
         genesis_header: [u8; 80],
         genesis_height: u32,
         epoch_start_digest: [u8; 32],
@@ -57,7 +58,7 @@ impl State {
             return Err(SolanaRelayError::AlreadyInit.into());
         }
 
-        let relay = Relay::new(genesis_header, genesis_height, epoch_start_digest)
+        let relay = Relay::new(mainnet, genesis_header, genesis_height, epoch_start_digest)
             .map_err(Into::<SolanaRelayError>::into)?;
 
         Self::commit_relay(relay, relay_state)?;
@@ -134,12 +135,13 @@ impl State {
         let instruction = serde_cbor::from_slice(input).expect("Invalid instruction");
         match instruction {
             RelayInstruction::Initialize {
+                mainnet,
                 genesis_header,
                 genesis_height,
                 epoch_start,
             } => {
                 info!("Instruction: Initialize");
-                Self::process_initialize(genesis_header, genesis_height, epoch_start, accounts)
+                Self::process_initialize(mainnet, genesis_header, genesis_height, epoch_start, accounts)
             }
             RelayInstruction::AddHeaders {
                 anchor_index,

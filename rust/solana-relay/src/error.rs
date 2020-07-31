@@ -132,9 +132,6 @@ impl<T> DecodeError<T> for SolanaRelayError {
 impl From<RelayError> for SolanaRelayError {
     fn from(e: RelayError) -> Self {
         match e {
-            RelayError::NotYetInit => SolanaRelayError::NotYetInit,
-            RelayError::AlreadyInit => SolanaRelayError::AlreadyInit,
-            RelayError::InsufficientStateSpace => SolanaRelayError::InsufficientStateSpace,
             RelayError::IncorrectDifficultyChange => SolanaRelayError::IncorrectDifficultyChange,
             RelayError::NotHeavier => SolanaRelayError::NotHeavier,
             RelayError::NotLatestAncestor => SolanaRelayError::NotLatestAncestor,

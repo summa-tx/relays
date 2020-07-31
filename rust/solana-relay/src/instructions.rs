@@ -10,6 +10,12 @@ pub enum RelayInstruction {
     /// Initialize the relay
     ///   0. `[writable, signer]` New Relay to create.
     Initialize {
+        /// True for Bitcoin mainnet. False for Bitcoin testnet.
+        ///
+        /// When false, difficulty adjustment checks in addHeaders will be disabled.
+        /// Setting to false renders the relay FUNDAMENTALLY INSECURE AND LIABLE TO BREAK AT ANY
+        /// TIME.
+        mainnet: bool,
         /// The genesis header with which to initialize the relay
         #[serde(with = "bad_header_ser")]
         genesis_header: [u8; 80],

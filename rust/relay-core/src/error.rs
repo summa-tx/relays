@@ -6,15 +6,6 @@ use thiserror::Error;
 /// Most of these are copied directly from bitcoin spv
 #[derive(Clone, Debug, Eq, Error, PartialEq)]
 pub enum RelayError {
-    /// Relay is not yet init
-    #[error("NotYetInit")]
-    NotYetInit,
-    /// Relay is already init
-    #[error("AlreadyInit")]
-    AlreadyInit,
-    /// State account has insufficient space to update the state
-    #[error("InsufficientStateSpace")]
-    InsufficientStateSpace,
     /// A difficulty change mismatch occured while adding headers
     #[error("IncorrectDifficultyChange")]
     IncorrectDifficultyChange,

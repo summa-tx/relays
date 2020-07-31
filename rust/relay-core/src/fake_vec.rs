@@ -97,7 +97,6 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use generic_array::typenum::*;
 
     // #[test]
     // fn it_defaults() {

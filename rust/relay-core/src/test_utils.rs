@@ -7,6 +7,8 @@ use std::{
 
 use lazy_static::lazy_static;
 
+use crate::error::RelayError;
+
 lazy_static! {
     pub static ref TEST_VECTORS: TestJson = setup();
 }
@@ -56,4 +58,36 @@ pub fn setup() -> TestJson {
     file.read_to_string(&mut data).unwrap();
 
     serde_json::from_str(&data).unwrap()
+}
+
+// Thanks I hate it
+// TODO: make this not suck so bad
+pub fn error_to_code(err : RelayError) -> usize {
+    match err {
+        RelayError::IncorrectDifficultyChange => 304,  // BadRetarget
+        RelayError::NotHeavier => 405,  // NotHeavier
+        RelayError::NotLatestAncestor => 404, // NotHeaviestAncestor
+        RelayError::NotInBestChain => 701,
+        RelayError::TooDeep => 701,
+        RelayError::ReadOverrun => 701,
+        RelayError::BadCompactInt => 701,
+        RelayError::MalformattedOpReturnOutput => 108,
+        RelayError::MalformattedP2SHOutput => 108,
+        RelayError::MalformattedP2PKHOutput => 108,
+        RelayError::MalformattedWitnessOutput => 108,
+        RelayError::MalformattedOutput => 108,
+        RelayError::WrongLengthHeader => 101,  // BadHeaderLength
+        RelayError::UnexpectedDifficultyChange => 201, // UnexpectedRetarget
+        RelayError::InsufficientWork => 108,
+        RelayError::InvalidChain => 108,
+        RelayError::WrongDigest => 108,
+        RelayError::WrongMerkleRoot => 108,
+        RelayError::WrongPrevHash => 108,
+        RelayError::InvalidVin => 604,
+        RelayError::InvalidVout => 605,
+        RelayError::WrongTxID => 108,
+        RelayError::BadMerkleProof => 108,
+        RelayError::OutputLengthMismatch => 108,
+        RelayError::UnknownError => 701,
+    }
 }
