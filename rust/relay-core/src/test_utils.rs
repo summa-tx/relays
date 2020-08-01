@@ -10,6 +10,20 @@ lazy_static! {
     pub static ref TEST_VECTORS: TestJson = setup();
 }
 
+macro_rules! impl_has_header_chain {
+    ($name:ty, $prop:ident) => {
+        impl $name {
+            pub fn flat_raw_headers(&self) -> Vec<u8> {
+                self.$prop
+                    .iter()
+                    .map(|v| v.raw.as_ref().to_vec().into_iter())
+                    .flatten()
+                    .collect::<Vec<u8>>()
+            }
+        }
+    }
+}
+
 #[derive(serde::Deserialize, Debug, Clone, Copy)]
 pub struct TestHeaderDetails {
     pub height: u32,
@@ -32,15 +46,7 @@ pub struct AddHeadersCase {
     pub output: usize,
 }
 
-impl AddHeadersCase {
-    pub fn flat_raw_headers(&self) -> Vec<u8> {
-        self.headers
-            .iter()
-            .map(|v| v.raw.as_ref().to_vec().into_iter())
-            .flatten()
-            .collect::<Vec<u8>>()
-    }
-}
+impl_has_header_chain!(AddHeadersCase, headers);
 
 #[derive(serde::Deserialize, Debug, Clone)]
 pub struct AddDiffChangeCase {
@@ -54,15 +60,7 @@ pub struct AddDiffChangeCase {
     pub output: usize,
 }
 
-impl AddDiffChangeCase {
-    pub fn flat_raw_headers(&self) -> Vec<u8> {
-        self.headers
-            .iter()
-            .map(|v| v.raw.as_ref().to_vec().into_iter())
-            .flatten()
-            .collect::<Vec<u8>>()
-    }
-}
+impl_has_header_chain!(AddDiffChangeCase, headers);
 
 #[derive(serde::Deserialize, Debug, Clone)]
 pub struct HeaderBlock {
@@ -74,8 +72,64 @@ pub struct HeaderBlock {
 }
 
 #[derive(serde::Deserialize, Debug, Clone)]
+pub struct LCABlock {
+    pub orphan: TestHeaderDetails,
+    #[serde(rename = "oldPeriodStart")]
+    pub prev_epoch_start: TestHeaderDetails,
+    pub genesis: TestHeaderDetails,
+    #[serde(rename = "preRetargetChain")]
+    pub pre_retarget_chain: Vec<TestHeaderDetails>,
+    #[serde(rename = "postRetargetChain")]
+    pub post_retarget_chain: Vec<TestHeaderDetails>,
+    // incomplete
+    // testCases
+}
+
+impl LCABlock {
+    pub fn flat_raw_pre(&self) -> Vec<u8> {
+        self.pre_retarget_chain
+            .iter()
+            .map(|v| v.raw.as_ref().to_vec().into_iter())
+            .flatten()
+            .collect::<Vec<u8>>()
+    }
+
+    pub fn flat_raw_post(&self) -> Vec<u8> {
+        self.post_retarget_chain
+            .iter()
+            .map(|v| v.raw.as_ref().to_vec().into_iter())
+            .flatten()
+            .collect::<Vec<u8>>()
+    }
+}
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct NewHeaviestBlockCase {
+    #[serde(rename = "bestKnownDigest")]
+    pub best_known_digest: Hash256Digest,
+    pub ancestor: Hash256Digest,
+    #[serde(rename = "currentBest")]
+    pub current_best: RawHeader,
+    #[serde(rename = "newBest")]
+    pub new_best: RawHeader,
+    pub limit: usize,
+    pub error: usize,
+    pub output: String,
+}
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct ChainBlock {
+    #[serde(rename = "isMostRecentCommonAncestor")]
+    pub is_most_recent_common_ancestor: LCABlock,
+    #[serde(rename = "markNewHeaviest")]
+    pub mark_new_heaviest_cases: Vec<NewHeaviestBlockCase>,
+    // incomplete
+}
+
+#[derive(serde::Deserialize, Debug, Clone)]
 pub struct TestJson {
     pub header: HeaderBlock,
+    pub chain: ChainBlock,
     // incomplete
 }
 

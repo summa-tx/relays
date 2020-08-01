@@ -138,9 +138,6 @@ impl Relay {
     fn attach_metadata(&self, index: u32, raw: RawHeader) -> Result<RawWithInfo, RelayError> {
         let info = self.read_metadata_store(index);
         if info.digest != raw.digest() {
-            dbg!(info);
-            dbg!(raw);
-            dbg!(index);
             return Err(RelayError::WrongDigest);
         }
         Ok(RawWithInfo { raw, info })
@@ -166,7 +163,7 @@ impl Relay {
 
         // We'll update each of these for each header
         let mut parent_index = anchor_index;
-        let mut height = anchor.height;
+        let mut height = anchor.height + 1;
         let mut epoch_start_index = anchor.epoch_start_index;
 
         for header in headers.iter() {
@@ -364,13 +361,17 @@ impl Relay {
     }
 
     /// Mark a new heaviest digest
-    pub fn mark_new_heaviest(
+    pub fn mark_new_heaviest<R1, R2>(
         &mut self,
         lca_index: u32,
-        current_best: [u8; 80],
+        current_best: R1,
         new_best_index: u32,
-        new_best: [u8; 80],
-    ) -> Result<(), RelayError> {
+        new_best: R2,
+    ) -> Result<(), RelayError>
+    where
+        R1: Into<RawHeader>,
+        R2: Into<RawHeader>,
+    {
         // Isolate all the borrows
         let (new_best, ancestor) = {
             let new_best = self.load_header(new_best_index, new_best)?;
@@ -414,16 +415,16 @@ mod test {
     use crate::test_utils;
 
     macro_rules! check_err {
-        ($err:expr, $case:expr) => {
+        ($err:expr, $expected:expr) => {
             if $err.is_err() {
                 let err = $err.unwrap_err();
                 let actual_code = test_utils::error_to_code(err);
-                if actual_code != $case.output {
-                    dbg!($case);
+                if actual_code != $expected {
+                    dbg!($expected);
                     assert!(
                         false,
                         "\nExpected error {:?}. \nGot {:?}\n{:?}\n",
-                        $case.output, actual_code, err
+                        $expected, actual_code, err
                     );
                 }
                 continue;
@@ -439,7 +440,7 @@ mod test {
 
             let instantiation_res =
                 Relay::new(case.mainnet, anchor.raw, anchor.height, anchor.hash);
-            check_err!(instantiation_res, case);
+            check_err!(instantiation_res, case.output);
 
             let mut relay = instantiation_res.unwrap();
             let add_res = relay.add_headers(
@@ -448,7 +449,7 @@ mod test {
                 case.flat_raw_headers(),
                 case.internal,
             );
-            check_err!(add_res, case);
+            check_err!(add_res, case.output);
         }
     }
 
@@ -457,12 +458,12 @@ mod test {
         let cases = &test_utils::TEST_VECTORS.header.diff_change_cases;
         for case in cases.iter() {
             if case.rust_skip { continue; }
-            
+
             let anchor = case.anchor;
             let prev_epoch_start = case.prev_epoch_start;
             let instantiation_res =
                 Relay::new(true, anchor.raw, anchor.height, prev_epoch_start.hash);
-            check_err!(instantiation_res, case);
+            check_err!(instantiation_res, case.output);
 
             let mut relay = instantiation_res.unwrap();
             let add_res = relay.add_difficulty_change(
@@ -471,7 +472,89 @@ mod test {
                 anchor.raw,
                 case.flat_raw_headers(),
             );
-            check_err!(add_res, case);
+            check_err!(add_res, case.output);
+        }
+    }
+
+    #[test]
+    fn it_marks_new_heaviest_digests() {
+        let chain_block = &test_utils::TEST_VECTORS.chain;
+        let setup_info = &chain_block.is_most_recent_common_ancestor;
+        let cases = &chain_block.mark_new_heaviest_cases;
+        let genesis = &setup_info.genesis;
+        let prev_epoch_start = &setup_info.prev_epoch_start;
+
+        let old_epoch_end = setup_info.pre_retarget_chain.last().unwrap();
+
+        let pre_retarget_chain = setup_info.flat_raw_pre();
+        let post_retarget_chain = setup_info.flat_raw_post();
+
+        // Creating a chain with an orphan we reorg away from
+        let mut post_with_orphan = post_retarget_chain[..post_retarget_chain.len() - 160].to_vec();
+        post_with_orphan.extend(&setup_info.orphan.raw[..]);
+
+        let instantiation_res =
+            Relay::new(true, genesis.raw, genesis.height, prev_epoch_start.hash);
+        let mut relay = instantiation_res.unwrap();
+
+        relay.add_headers(
+            relay.find_digest(genesis.hash).unwrap() as u32,
+            genesis.raw,
+            pre_retarget_chain,
+            false,
+        ).unwrap();
+        relay.add_difficulty_change(
+            prev_epoch_start.raw,
+            relay.find_digest(old_epoch_end.hash).unwrap() as u32,
+            old_epoch_end.raw,
+            post_with_orphan,
+        ).unwrap();
+        relay.add_difficulty_change(
+            prev_epoch_start.raw,
+            relay.find_digest(old_epoch_end.hash).unwrap() as u32,
+            old_epoch_end.raw,
+            post_retarget_chain,
+        ).unwrap();
+
+        // Update heaviest to the first block we ingested
+        let new_heaviest = setup_info.pre_retarget_chain[0];
+        relay.mark_new_heaviest(
+            relay.find_digest(genesis.hash).unwrap() as u32,
+            genesis.raw,
+            relay.find_digest(new_heaviest.hash).unwrap() as u32,
+            new_heaviest.raw,
+        ).unwrap();
+
+        let old_heaviest = new_heaviest;
+        let new_heaviest = setup_info.pre_retarget_chain[1];
+        // NotHeaviestAncestor
+        assert!(relay.mark_new_heaviest(
+            relay.find_digest(genesis.hash).unwrap() as u32,
+            old_heaviest.raw,
+            relay.find_digest(new_heaviest.hash).unwrap() as u32,
+            new_heaviest.raw,
+        ).is_err());
+
+        for case in cases.iter() {
+            dbg!(case);
+
+            let idx_opt = relay.find_digest(case.best_known_digest);
+            if idx_opt.is_none() { continue; }
+
+            relay.current_best_index = idx_opt.unwrap() as u32;
+            relay.best_known_digest = case.best_known_digest;
+
+            let new_best_idx_opt = relay.find_digest(case.new_best.digest());
+            if new_best_idx_opt.is_none() { continue; }
+            let new_best_idx = new_best_idx_opt.unwrap() as u32;
+
+            let result = relay.mark_new_heaviest(
+                relay.find_digest(case.ancestor).unwrap() as u32,
+                case.current_best,
+                new_best_idx,
+                case.new_best,
+            );
+            check_err!(result, case.error);
         }
     }
 }
