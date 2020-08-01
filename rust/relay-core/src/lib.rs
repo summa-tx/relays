@@ -43,7 +43,14 @@ pub struct RawWithInfo<'a> {
 
 #[repr(C)]
 #[derive(Clone, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
-/// A Bitcoin relay
+/// A Bitcoin relay.
+///
+/// This struct tracks the state of the bitcoin mainnet and stores the most information about the
+/// most recent 4096 headers. It is designed to be run on-chain.
+///
+/// Rather than querying the blockchain, this relay passively accepts proofs of chain updates.
+/// These proofs are validated and then added to the state. See this repo's README for more
+/// information.
 pub struct Relay {
     mainnet: bool,
     relay_genesis: HeaderInfo,
@@ -54,12 +61,21 @@ pub struct Relay {
     pub best_known_digest: Hash256Digest,
     /// The LCA of the most recent reorg or extension
     pub last_reorg_lca: Hash256Digest,
-    // TODO: generalize
+    // TODO: generalize?
     header_store: FakeVec<HeaderInfo, U4096>,
 }
 
 impl Relay {
-    /// Instantiate a new relay
+    /// Instantiate a new relay by inserting a trusted state.
+    ///
+    /// # Arguments
+    ///
+    /// - mainnet - True for Bitcoin mainnet, false for Bitcoin testnet. Setting to false
+    ///    disables difficulty checks and RENDERS THE RELAY INSECURE.
+    /// - genesis_header - an 80-byte bitcoin header that serves as the anchor of the relay.
+    /// - genesis_height - the height of the genesis header in the Bitcoin chain
+    /// - epoch_start_digest - the 32-byte LE hash of the header that began the difficulty epoch
+    ///    containing the genesis header. its height will always be `0 % 2016`
     pub fn new<H: Into<RawHeader>, D: Into<Hash256Digest>>(
         mainnet: bool,
         genesis_header: H,
@@ -114,19 +130,23 @@ impl Relay {
         Ok(relay)
     }
 
-    /// Read the info store at a specified index
+    /// Read the info store at a specified index.
     pub fn read_metadata_store(&self, index: u32) -> &HeaderInfo {
         self.header_store.get(index as usize).unwrap() // panic if not found
     }
 
-    /// Read the parent of a header
+    /// Read the stored metadata about the parent of a header.
     pub fn parent_of(&self, info: &HeaderInfo) -> &HeaderInfo {
         let parent = self.read_metadata_store(info.parent_index);
         assert!(parent.height == info.height - 1);
         parent
     }
 
-    /// Read the nth ancestor of a header. Linear look ups in the distance between them.
+    /// Read the stored metadata about the nth ancestor of a header.
+    ///
+    /// # Note
+    ///
+    /// This function makes linear state look ups in the distance between them.
     pub fn ancestor_of<'a>(&'a self, info: &'a HeaderInfo, depth: u32) -> &'a HeaderInfo {
         let mut current = info;
         for _ in 0..depth {
@@ -135,6 +155,7 @@ impl Relay {
         current
     }
 
+    // Convenience function for associateing a header with its metadata
     fn attach_metadata(&self, index: u32, raw: RawHeader) -> Result<RawWithInfo, RelayError> {
         let info = self.read_metadata_store(index);
         if info.digest != raw.digest() {
@@ -143,7 +164,8 @@ impl Relay {
         Ok(RawWithInfo { raw, info })
     }
 
-    /// Load a header using its index and 80-bytes raw form
+    /// Load metadata about a header using its index and 80-bytes raw form. Returns a struct with
+    /// the header and a reference to its metadata in the relay store
     pub fn load_header<R: Into<RawHeader>>(
         &self,
         index: u32,
@@ -152,7 +174,7 @@ impl Relay {
         self.attach_metadata(index, raw.into())
     }
 
-    // Call only after validating the chain
+    // Attach a valid chain of headers to the store. Call only after validating the chain.
     fn attach_to_store(&mut self, anchor_index: u32, headers: &HeaderArray) {
         let anchor = self.read_metadata_store(anchor_index);
         // sanity check
@@ -183,7 +205,12 @@ impl Relay {
         }
     }
 
-    /// Validate an SPV Proof
+    /// Validate an SPV Proof against the relay.
+    ///
+    /// # Arguments
+    ///
+    /// - confirming_header_index - the index of the confirming header in the relay's store.
+    /// - proof - the SPVProof to be validated. See the `bitcoin-spv` crate for details.
     pub fn validate_proof(
         &self,
         confirming_header_index: u32,
@@ -207,8 +234,7 @@ impl Relay {
         Ok(chaintip.height - header_info.height + 1)
     }
 
-    /// Add headers to the relay
-    pub fn add_headers<R: Into<RawHeader>>(
+    fn internal_add_headers<R: Into<RawHeader>>(
         &mut self,
         anchor_index: u32,
         anchor_bytes: R,
@@ -232,7 +258,49 @@ impl Relay {
         Ok(())
     }
 
+    /// Add headers to the relay.
+    ///
+    /// This function validates a chain of header and its connection to some previously-known
+    /// header. It checks for adherence to Bitcoin consensus rules, under the SPV assumption.
+    /// Once the chain has been validated, it attaches the header info to the metadata store.
+    /// Chains are attached to an "anchor", which is an already-stored header. The anchor must
+    /// immediately precede the first header in the chain to be ingested.
+    ///
+    ///
+    /// # Arguments
+    ///
+    /// - anchor_index - the index of the anchor header metadata in the relay store
+    /// - anchor_bytes - the raw 80-byte anchor header
+    /// - header_bytes - an array of bytes containing any number of tightly-packed headers. Its
+    ///     length MUST always be a multiple of 80.
+    pub fn add_headers<R: Into<RawHeader>>(
+        &mut self,
+        anchor_index: u32,
+        anchor_bytes: R,
+        header_bytes: Vec<u8>,
+    ) -> Result<(), RelayError> {
+        self.internal_add_headers(anchor_index, anchor_bytes, header_bytes, false)
+    }
+
     /// Add a difficulty change to the relay
+    ///
+    /// This function validates a chain of header and its connection to some previously-known
+    /// header. It checks for adherence to Bitcoin consensus rules, under the SPV assumption.
+    /// Once the chain has been validated, it attaches the header info to the metadata store.
+    /// Chains are attached to an "anchor", which is an already-stored header. The anchor must
+    /// immediately precede the first header in the chain to be ingested.
+    ///
+    /// Particularly, this function checks application of the retarget algorithm, so it must
+    /// accept and validate information about the difficulty epoch that is closing. The anchor
+    /// MUST be the last header of the closing difficulty period (`old_period_end`).
+    ///
+    /// # Arguments
+    ///
+    /// - old_period_start_bytes - the raw 80-byte header that opened the difficulty epoch
+    /// - old_period_end_index - the index of the anchor header metadata in the relay store
+    /// - old_period_end_bytes - the raw 80-byte anchor header
+    /// - header_bytes - an array of bytes containing any number of tightly-packed headers. Its
+    ///     length MUST always be a multiple of 80.
     pub fn add_difficulty_change<R1, R2>(
         &mut self,
         old_period_start_bytes: R1,
@@ -281,7 +349,7 @@ impl Relay {
         }
 
         // Proceed to add the headers
-        self.add_headers(
+        self.internal_add_headers(
             old_period_end_index,
             old_period_end_bytes,
             header_bytes,
@@ -361,6 +429,22 @@ impl Relay {
     }
 
     /// Mark a new heaviest digest
+    ///
+    /// Rather than tracking chain tips as headers are ingested, the relay allows callers to mark
+    /// them retrospectively. To do this, we store the current best tip, and then prove that a new
+    /// candidate tip is better. The relay can verify this cheaply (arund `O(2n)` where n is the
+    /// distance between tip and LCA).
+    ///
+    /// This function takes the Latest Common Ancestor as an argument. This is the latest header
+    /// in the shared history of the new and old tips. Which is to say, the last header that both
+    /// tips consider an ancestor.
+    ///
+    /// # Arguments
+    ///
+    /// - lca_index - the index of the latest common ancestor in the header store.
+    /// - current_best - the 80-byte raw header corresponding to the relay's `best_known_digest`
+    /// - new_best_idx - the index of the best known header in the header store
+    /// - new_best - the 80-byte raw candidate chain tip
     pub fn mark_new_heaviest<R1, R2>(
         &mut self,
         lca_index: u32,
@@ -443,7 +527,7 @@ mod test {
             check_err!(instantiation_res, case.output);
 
             let mut relay = instantiation_res.unwrap();
-            let add_res = relay.add_headers(
+            let add_res = relay.internal_add_headers(
                 relay.find_digest(anchor.hash).unwrap() as u32,
                 anchor.raw,
                 case.flat_raw_headers(),
@@ -497,7 +581,7 @@ mod test {
             Relay::new(true, genesis.raw, genesis.height, prev_epoch_start.hash);
         let mut relay = instantiation_res.unwrap();
 
-        relay.add_headers(
+        relay.internal_add_headers(
             relay.find_digest(genesis.hash).unwrap() as u32,
             genesis.raw,
             pre_retarget_chain,

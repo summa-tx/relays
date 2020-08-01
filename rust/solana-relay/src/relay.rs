@@ -77,7 +77,7 @@ impl State {
         let mut relay = Self::get_relay(relay_state)?.ok_or(SolanaRelayError::NotYetInit)?;
 
         relay
-            .add_headers(anchor_index, anchor_bytes, header_bytes, false)
+            .add_headers(anchor_index, anchor_bytes, header_bytes)
             .map_err(Into::<SolanaRelayError>::into)?;
 
         // Commit and return
