@@ -21,7 +21,7 @@ macro_rules! impl_has_header_chain {
                     .collect::<Vec<u8>>()
             }
         }
-    }
+    };
 }
 
 #[derive(serde::Deserialize, Debug, Clone, Copy)]

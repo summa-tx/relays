@@ -541,7 +541,9 @@ mod test {
     fn it_ingests_diff_changes() {
         let cases = &test_utils::TEST_VECTORS.header.diff_change_cases;
         for case in cases.iter() {
-            if case.rust_skip { continue; }
+            if case.rust_skip {
+                continue;
+            }
 
             let anchor = case.anchor;
             let prev_epoch_start = case.prev_epoch_start;
@@ -581,55 +583,69 @@ mod test {
             Relay::new(true, genesis.raw, genesis.height, prev_epoch_start.hash);
         let mut relay = instantiation_res.unwrap();
 
-        relay.internal_add_headers(
-            relay.find_digest(genesis.hash).unwrap() as u32,
-            genesis.raw,
-            pre_retarget_chain,
-            false,
-        ).unwrap();
-        relay.add_difficulty_change(
-            prev_epoch_start.raw,
-            relay.find_digest(old_epoch_end.hash).unwrap() as u32,
-            old_epoch_end.raw,
-            post_with_orphan,
-        ).unwrap();
-        relay.add_difficulty_change(
-            prev_epoch_start.raw,
-            relay.find_digest(old_epoch_end.hash).unwrap() as u32,
-            old_epoch_end.raw,
-            post_retarget_chain,
-        ).unwrap();
+        relay
+            .internal_add_headers(
+                relay.find_digest(genesis.hash).unwrap() as u32,
+                genesis.raw,
+                pre_retarget_chain,
+                false,
+            )
+            .unwrap();
+        relay
+            .add_difficulty_change(
+                prev_epoch_start.raw,
+                relay.find_digest(old_epoch_end.hash).unwrap() as u32,
+                old_epoch_end.raw,
+                post_with_orphan,
+            )
+            .unwrap();
+        relay
+            .add_difficulty_change(
+                prev_epoch_start.raw,
+                relay.find_digest(old_epoch_end.hash).unwrap() as u32,
+                old_epoch_end.raw,
+                post_retarget_chain,
+            )
+            .unwrap();
 
         // Update heaviest to the first block we ingested
         let new_heaviest = setup_info.pre_retarget_chain[0];
-        relay.mark_new_heaviest(
-            relay.find_digest(genesis.hash).unwrap() as u32,
-            genesis.raw,
-            relay.find_digest(new_heaviest.hash).unwrap() as u32,
-            new_heaviest.raw,
-        ).unwrap();
+        relay
+            .mark_new_heaviest(
+                relay.find_digest(genesis.hash).unwrap() as u32,
+                genesis.raw,
+                relay.find_digest(new_heaviest.hash).unwrap() as u32,
+                new_heaviest.raw,
+            )
+            .unwrap();
 
         let old_heaviest = new_heaviest;
         let new_heaviest = setup_info.pre_retarget_chain[1];
         // NotHeaviestAncestor
-        assert!(relay.mark_new_heaviest(
-            relay.find_digest(genesis.hash).unwrap() as u32,
-            old_heaviest.raw,
-            relay.find_digest(new_heaviest.hash).unwrap() as u32,
-            new_heaviest.raw,
-        ).is_err());
+        assert!(relay
+            .mark_new_heaviest(
+                relay.find_digest(genesis.hash).unwrap() as u32,
+                old_heaviest.raw,
+                relay.find_digest(new_heaviest.hash).unwrap() as u32,
+                new_heaviest.raw,
+            )
+            .is_err());
 
         for case in cases.iter() {
             dbg!(case);
 
             let idx_opt = relay.find_digest(case.best_known_digest);
-            if idx_opt.is_none() { continue; }
+            if idx_opt.is_none() {
+                continue;
+            }
 
             relay.current_best_index = idx_opt.unwrap() as u32;
             relay.best_known_digest = case.best_known_digest;
 
             let new_best_idx_opt = relay.find_digest(case.new_best.digest());
-            if new_best_idx_opt.is_none() { continue; }
+            if new_best_idx_opt.is_none() {
+                continue;
+            }
             let new_best_idx = new_best_idx_opt.unwrap() as u32;
 
             let result = relay.mark_new_heaviest(
