@@ -369,30 +369,8 @@ impl Relay {
             return Err(RelayError::NotHeavier); // Everything is the same
         }
 
-        // First we have to check that the ancestor is the latest common ancestor
-        {
-            let mut left_current = left.info;
-            let mut right_current = right.info;
-            let mut left_prev = left.info;
-            let mut right_prev = right.info;
-
-            // TODO: limit this better
-            for _ in 0..200 {
-                if left_prev != ancestor {
-                    left_current = left_prev;
-                    left_prev = self.read_metadata_store(left_prev.parent_index);
-                }
-                if right_prev != ancestor {
-                    right_current = right_prev;
-                    right_prev = self.read_metadata_store(right_prev.parent_index);
-                }
-            }
-            if left_current == right_current {
-                return Err(RelayError::NotLatestAncestor);
-            } // newer ancestor exists.
-            if left_prev != right_prev {
-                return Err(RelayError::NotLatestAncestor);
-            } // Common ancestor not found
+        if Some(ancestor) != self.find_lca(left.info, right.info) {
+            return Err(RelayError::NotLatestAncestor);
         }
 
         // NB:
@@ -426,6 +404,44 @@ impl Relay {
         } else {
             Err(RelayError::NotHeavier)
         }
+    }
+
+    fn find_lca<'a>(&'a self, left: &'a HeaderInfo, right: &'a HeaderInfo) -> Option<&'a HeaderInfo> {
+        let mut left_info = left;
+        let mut right_info = right;
+        while left_info.height != right_info.height {
+            let higher = if left_info.height > right_info.height {
+                &mut left_info
+            } else {
+                &mut right_info
+            };
+            *higher = self.ancestor_of(*higher, 1);
+        }
+
+        // Then traverse backward til we find the same header
+        for _ in 0..5000 {
+            if left_info.digest == right_info.digest {
+                return Some(left_info);
+            }
+            left_info = self.ancestor_of(left_info, 1);
+            right_info = self.ancestor_of(right_info, 1);
+        }
+        None
+    }
+
+    /// Determine the LCA of left and right by making lookups in the store.
+    ///
+    pub fn lca_of(&self, left: Hash256Digest, right: Hash256Digest) -> Option<Hash256Digest> {
+        // Kinda hate this.
+        if let Some(left_index) = self.find_digest(left) {
+            let left_info = self.read_metadata_store(left_index as u32);
+            if let Some(right_index) = self.find_digest(right) {
+                let right_info = self.read_metadata_store(right_index as u32);
+                return self.find_lca(left_info, right_info).map(|info| info.digest);
+            }
+        }
+        // failure case
+        None
     }
 
     /// Mark a new heaviest digest
