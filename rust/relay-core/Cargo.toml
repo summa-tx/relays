@@ -10,8 +10,7 @@ edition = "2018"
 generic-array = {version = "0.14.3", default-features = false, features = ["serde"] }
 thiserror = "1.0"
 
-# TODO change to 4.0
-bitcoin-spv = { path = "../../../bitcoin-spv/rust" }
+bitcoin-spv = "4.0.1"
 
 # TODO: move to feature
 serde = { version = "1.0.99", features = ["derive"] }
