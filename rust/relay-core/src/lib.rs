@@ -131,13 +131,32 @@ impl Relay {
     }
 
     /// Read the info store at a specified index.
-    pub fn read_metadata_store(&self, index: u32) -> &HeaderInfo {
+    pub fn get_info(&self, index: u32) -> &HeaderInfo {
         self.header_store.get(index as usize).unwrap() // panic if not found
+    }
+
+    // Convenience function for associateing a header with its metadata
+    fn get_metadata(&self, index: u32, raw: RawHeader) -> Result<RawWithInfo, RelayError> {
+        let info = self.get_info(index);
+        if info.digest != raw.digest() {
+            return Err(RelayError::WrongDigest);
+        }
+        Ok(RawWithInfo { raw, info })
+    }
+
+    /// Load metadata about a header using its index and 80-bytes raw form. Returns a struct with
+    /// the header and a reference to its metadata in the relay store
+    pub fn load_header<R: Into<RawHeader>>(
+        &self,
+        index: u32,
+        raw: R,
+    ) -> Result<RawWithInfo, RelayError> {
+        self.get_metadata(index, raw.into())
     }
 
     /// Read the stored metadata about the parent of a header.
     pub fn parent_of(&self, info: &HeaderInfo) -> &HeaderInfo {
-        let parent = self.read_metadata_store(info.parent_index);
+        let parent = self.get_info(info.parent_index);
         assert!(parent.height == info.height - 1);
         parent
     }
@@ -155,28 +174,9 @@ impl Relay {
         current
     }
 
-    // Convenience function for associateing a header with its metadata
-    fn attach_metadata(&self, index: u32, raw: RawHeader) -> Result<RawWithInfo, RelayError> {
-        let info = self.read_metadata_store(index);
-        if info.digest != raw.digest() {
-            return Err(RelayError::WrongDigest);
-        }
-        Ok(RawWithInfo { raw, info })
-    }
-
-    /// Load metadata about a header using its index and 80-bytes raw form. Returns a struct with
-    /// the header and a reference to its metadata in the relay store
-    pub fn load_header<R: Into<RawHeader>>(
-        &self,
-        index: u32,
-        raw: R,
-    ) -> Result<RawWithInfo, RelayError> {
-        self.attach_metadata(index, raw.into())
-    }
-
     // Attach a valid chain of headers to the store. Call only after validating the chain.
-    fn attach_to_store(&mut self, anchor_index: u32, headers: &HeaderArray) {
-        let anchor = self.read_metadata_store(anchor_index);
+    fn attach(&mut self, anchor_index: u32, headers: &HeaderArray) {
+        let anchor = self.get_info(anchor_index);
         // sanity check
         assert!(
             anchor.digest == headers.index(0).parent(),
@@ -205,36 +205,7 @@ impl Relay {
         }
     }
 
-    /// Validate an SPV Proof against the relay.
-    ///
-    /// # Arguments
-    ///
-    /// - confirming_header_index - the index of the confirming header in the relay's store.
-    /// - proof - the SPVProof to be validated. See the `bitcoin-spv` crate for details.
-    pub fn validate_proof(
-        &self,
-        confirming_header_index: u32,
-        proof: &SPVProof,
-    ) -> Result<u32, RelayError> {
-        proof.validate()?;
-        let header_info = self.read_metadata_store(confirming_header_index);
-        let chaintip = self.read_metadata_store(self.current_best_index);
-
-        if chaintip.height - header_info.height > 2016 {
-            return Err(RelayError::TooDeep);
-        }
-
-        let ancestor = self.ancestor_of(chaintip, chaintip.height - header_info.height);
-        if header_info.digest != proof.confirming_header.hash {
-            return Err(RelayError::WrongDigest);
-        }
-        if ancestor.digest != header_info.digest {
-            return Err(RelayError::NotInBestChain);
-        }
-        Ok(chaintip.height - header_info.height + 1)
-    }
-
-    fn internal_add_headers<R: Into<RawHeader>>(
+    fn try_attach<R: Into<RawHeader>>(
         &mut self,
         anchor_index: u32,
         anchor_bytes: R,
@@ -254,7 +225,7 @@ impl Relay {
             .map_err(Into::<RelayError>::into)?;
 
         // If we haven't errored yet, they're good.
-        self.attach_to_store(anchor_index, &headers);
+        self.attach(anchor_index, &headers);
         Ok(())
     }
 
@@ -279,7 +250,7 @@ impl Relay {
         anchor_bytes: R,
         header_bytes: Vec<u8>,
     ) -> Result<(), RelayError> {
-        self.internal_add_headers(anchor_index, anchor_bytes, header_bytes, false)
+        self.try_attach(anchor_index, anchor_bytes, header_bytes, false)
     }
 
     /// Add a difficulty change to the relay
@@ -349,7 +320,7 @@ impl Relay {
         }
 
         // Proceed to add the headers
-        self.internal_add_headers(
+        self.try_attach(
             old_period_end_index,
             old_period_end_bytes,
             header_bytes,
@@ -359,7 +330,7 @@ impl Relay {
     }
 
     // true for right (should update), false for left
-    fn verify_better_descendant<'a>(
+    fn is_heavier<'a>(
         &self,
         ancestor: &'a HeaderInfo,
         left: &'a RawWithInfo,
@@ -406,7 +377,11 @@ impl Relay {
         }
     }
 
-    fn find_lca<'a>(&'a self, left: &'a HeaderInfo, right: &'a HeaderInfo) -> Option<&'a HeaderInfo> {
+    fn find_lca<'a>(
+        &'a self,
+        left: &'a HeaderInfo,
+        right: &'a HeaderInfo,
+    ) -> Option<&'a HeaderInfo> {
         let mut left_info = left;
         let mut right_info = right;
         while left_info.height != right_info.height {
@@ -426,21 +401,6 @@ impl Relay {
             left_info = self.ancestor_of(left_info, 1);
             right_info = self.ancestor_of(right_info, 1);
         }
-        None
-    }
-
-    /// Determine the LCA of left and right by making lookups in the store.
-    ///
-    pub fn lca_of(&self, left: Hash256Digest, right: Hash256Digest) -> Option<Hash256Digest> {
-        // Kinda hate this.
-        if let Some(left_index) = self.find_digest(left) {
-            let left_info = self.read_metadata_store(left_index as u32);
-            if let Some(right_index) = self.find_digest(right) {
-                let right_info = self.read_metadata_store(right_index as u32);
-                return self.find_lca(left_info, right_info).map(|info| info.digest);
-            }
-        }
-        // failure case
         None
     }
 
@@ -476,8 +436,8 @@ impl Relay {
         let (new_best, ancestor) = {
             let new_best = self.load_header(new_best_index, new_best)?;
             let current_best = self.load_header(self.current_best_index, current_best)?;
-            let ancestor = self.read_metadata_store(lca_index);
-            Self::verify_better_descendant(&self, &ancestor, &current_best, &new_best)?;
+            let ancestor = self.get_info(lca_index);
+            Self::is_heavier(&self, &ancestor, &current_best, &new_best)?;
             (new_best.info.digest, ancestor.digest)
         };
 
@@ -487,6 +447,38 @@ impl Relay {
         Ok(())
     }
 
+    /// Validate an SPV Proof against the relay.
+    ///
+    /// # Arguments
+    ///
+    /// - confirming_header_index - the index of the confirming header in the relay's store.
+    /// - proof - the SPVProof to be validated. See the `bitcoin-spv` crate for details.
+    pub fn validate_proof(
+        &self,
+        confirming_header_index: u32,
+        proof: &SPVProof,
+    ) -> Result<u32, RelayError> {
+        proof.validate()?;
+        let header_info = self.get_info(confirming_header_index);
+        let chaintip = self.get_info(self.current_best_index);
+
+        if chaintip.height - header_info.height > 2016 {
+            return Err(RelayError::TooDeep);
+        }
+
+        let ancestor = self.ancestor_of(chaintip, chaintip.height - header_info.height);
+        if header_info.digest != proof.confirming_header.hash {
+            return Err(RelayError::WrongDigest);
+        }
+        if ancestor.digest != header_info.digest {
+            return Err(RelayError::NotInBestChain);
+        }
+        Ok(chaintip.height - header_info.height + 1)
+    }
+}
+
+#[cfg(feature = "offchain")]
+impl Relay {
     /// Find the index of the first header_info that is equal to the value passed in.
     ///
     /// # Note
@@ -503,6 +495,25 @@ impl Relay {
     /// This iterates over the internal array of size N. So may be expensive
     pub fn find_digest(&self, value: Hash256Digest) -> Option<usize> {
         self.header_store.position(|v| v.digest == value)
+    }
+
+    /// Determine the LCA of left and right by making lookups in the store.
+    pub fn lca_of(&self, left: Hash256Digest, right: Hash256Digest) -> Option<Hash256Digest> {
+        // Kinda hate this.
+        if let Some(left_index) = self.find_digest(left) {
+            let left_info = self.get_info(left_index as u32);
+            if let Some(right_index) = self.find_digest(right) {
+                let right_info = self.get_info(right_index as u32);
+                return self.find_lca(left_info, right_info).map(|info| info.digest);
+            }
+        }
+        // failure case
+        None
+    }
+
+    /// Determine the LCA of the best known digest and the right by making lookups in the store.
+    pub fn lca_with_best(&self, right: Hash256Digest) -> Option<Hash256Digest> {
+        self.lca_of(self.best_known_digest, right)
     }
 }
 
@@ -543,7 +554,7 @@ mod test {
             check_err!(instantiation_res, case.output);
 
             let mut relay = instantiation_res.unwrap();
-            let add_res = relay.internal_add_headers(
+            let add_res = relay.try_attach(
                 relay.find_digest(anchor.hash).unwrap() as u32,
                 anchor.raw,
                 case.flat_raw_headers(),
@@ -600,7 +611,7 @@ mod test {
         let mut relay = instantiation_res.unwrap();
 
         relay
-            .internal_add_headers(
+            .try_attach(
                 relay.find_digest(genesis.hash).unwrap() as u32,
                 genesis.raw,
                 pre_retarget_chain,
