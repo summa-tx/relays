@@ -11,7 +11,7 @@
     "test": "truffle test"
   },
   "author": "James Prestwich",
-  "license": "UNLICENSED",
+  "license": "(MIT OR Apache-2.0)",
   "dependencies": {
     "@celo/contractkit": "^0.3.3",
     "@summa-tx/bitcoin-spv-sol": "^4.0.1",
