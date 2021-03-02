@@ -5,17 +5,19 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
+	"github.com/summa-tx/relays/golang/x/relay/keeper"
+	"github.com/summa-tx/relays/golang/x/relay/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 // GenesisState is the genesis state
 type GenesisState struct {
-	Headers     []BitcoinHeader `json:"headers"`
-	PeriodStart BitcoinHeader   `json:"periodStart"`
+	Headers     []types.BitcoinHeader `json:"headers"`
+	PeriodStart types.BitcoinHeader   `json:"periodStart"`
 }
 
 // NewGenesisState instantiates a genesis state
-func NewGenesisState(headers []BitcoinHeader, periodStart BitcoinHeader) GenesisState {
+func NewGenesisState(headers []types.BitcoinHeader, periodStart types.BitcoinHeader) GenesisState {
 	return GenesisState{Headers: headers, PeriodStart: periodStart}
 }
 
@@ -53,7 +55,7 @@ func DefaultGenesisState() GenesisState {
 }
 
 // InitGenesis inits the app state based on the genesis state
-func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) []abci.ValidatorUpdate {
+func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data GenesisState) []abci.ValidatorUpdate {
 	err := keeper.SetGenesisState(ctx, data.Headers[0], data.PeriodStart)
 	if err != nil {
 		panic("already init!")
@@ -70,6 +72,6 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) []abci.Valid
 // ExportGenesis exports the genesis state
 // TODO: export GenesisState
 //       May need special store keys for it
-func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
+func ExportGenesis(ctx sdk.Context, k keeper.Keeper) GenesisState {
 	panic("Not implemented")
 }
