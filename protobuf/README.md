@@ -12,28 +12,49 @@ repo's root directory.
 
 1. Install Go:
 
-    - <https://golang.org/doc/install>
-    - Add to path: `export PATH=$PATH:$(go env GOPATH)/bin`
+    - [link](https://golang.org/doc/install)
+    - Add to path:
 
-2. Install starport into /usr/local/bin:
+        ```sh
+        echo 'export GOPATH=$HOME/Go' >> $HOME/.zshrc
+        source $HOME/.zshrc
+        ```
+
+    - Check it installed properly: `go version`
+
+2. Install Protobuf:
+
+    - `brew install protobuf`
+    - Add to path:
+
+        ```sh
+        echo 'export PATH=$PATH:$GOPATH/bin' >> $HOME/.zshrc
+        source $HOME/.zshrc
+        ```
+
+    - Install the Go protocol buffers plugin:
+
+        ```sh
+        go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+        ```
+
+3. Install starport into /usr/local/bin:
 
     ```sh
     curl https://get.starport.network/starport@v0.13.1! | bash
     ```
 
-3. `brew install protobuf`
+## Building protobuf files
 
-4. `go get -u github.com/golang/protobuf/{proto,protoc-gen-go}`
+To compile the Go code, simply run this command with the relevant file paths:
 
-5. Add to zshrc
+```sh
+protoc -I=$SRC_DIR --go_out=$DST_DIR $SRC_DIR/$SRC_FILE.proto
+```
 
-    ```sh
-    echo 'export GOPATH=$HOME/Go' >> $HOME/.zshrc
-    source $HOME/.zshrc
-
-    echo 'export PATH=$PATH:$GOPATH/bin' >> $HOME/.zshrc
-    source $HOME/.zshrc
-    ```
+- `SRC_DIR`: the protobuf directory to compile
+- `DST_DIR`: the destination directory where the Go code will be deposited
+- `$SRC_FILE`: the specific file you wish to compile
 
 ## Building the daemon and cli
 
