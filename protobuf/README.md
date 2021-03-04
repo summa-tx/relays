@@ -56,6 +56,13 @@ protoc -I=$SRC_DIR --go_out=$DST_DIR $SRC_DIR/$SRC_FILE.proto
 - `DST_DIR`: the destination directory where the Go code will be deposited
 - `$SRC_FILE`: the specific file you wish to compile
 
+For example, this command will take `example/addressbook.proto` and generate
+`addressbook.pb.go` inside `/example_output`:
+
+```sh
+protoc -I=example --go_out=example_output example/addressbook.proto
+```
+
 ## Building the daemon and cli
 
 ```sh
