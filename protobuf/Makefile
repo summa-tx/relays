@@ -13,7 +13,7 @@ HTTPS_GIT := https://github.com/cosmos/cosmos-sdk.git
 DOCKER := $(shell which docker)
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
-export GO111MODULE = on
+export GO111MODULE = auto
 
 # process build tags
 
@@ -94,7 +94,7 @@ endif
 all: tools build lint test
 
 # The below include contains the tools and runsim targets.
-include contrib/devtools/Makefile
+include devtools/Makefile
 
 ###############################################################################
 ###                                  Build                                  ###
