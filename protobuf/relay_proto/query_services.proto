@@ -1,0 +1,22 @@
+syntax = "proto3";
+package relay;
+
+option go_package = "github.com/summa-tx/protobuf/relay";
+
+import "relay_proto/queries.proto";
+
+message EmptyParams {}
+
+service Query {
+    rpc IsAncestor(QueryParamsIsAncestor) returns (QueryResIsAncestor) {}
+    rpc GetRelayGenesis(EmptyParams) returns (QueryResGetRelayGenesis) {}
+    rpc GetLastReorgLCA(EmptyParams) returns (QueryResGetLastReorgLCA) {}
+    rpc GetBestDigest(EmptyParams) returns (QueryResGetBestDigest) {}
+    rpc FindAncestor(QueryParamsFindAncestor) returns (QueryResFindAncestor) {}
+    rpc HeaviestFromAncestor(QueryParamsHeaviestFromAncestor) returns (QueryResHeaviestFromAncestor) {}
+    rpc IsMostRecentCommonAncestor(QueryParamsIsMostRecentCommonAncestor) returns (QueryResIsMostRecentCommonAncestor) {}
+    rpc GetRequest(QueryParamsGetRequest) returns (QueryResGetRequest) {}
+    rpc CheckRequests(QueryParamsCheckRequests) returns (QueryResCheckRequests) {}
+    rpc CheckProof(QueryParamsCheckProof) returns (QueryResCheckProof) {}
+
+}

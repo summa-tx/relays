@@ -8,252 +8,252 @@ import (
   sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// message Test {
-//   uint32 test = 1;
+message Test {
+  uint32 test = 1;
+}
+
+// // TODO: import def from key.proto?
+// // RouterKey is a name for the router
+// const RouterKey = ModuleName; // this was defined in your key.go file
+
+// /***** IngestHeaderChain *****/
+
+// // MsgIngestHeaderChain defines a IngestHeaderChain message
+// message MsgIngestHeaderChain {
+// 	sdk.AccAddress Signer = 1;
+// 	[]BitcoinHeader Headers = 2;
 // }
 
-// TODO: import def from key.proto?
-// RouterKey is a name for the router
-const RouterKey = ModuleName; // this was defined in your key.go file
+// // NewMsgIngestHeaderChain instantiates a MsgIngestHeaderChain
+// func NewMsgIngestHeaderChain(address sdk.AccAddress, headers []BitcoinHeader) MsgIngestHeaderChain {
+// 	return MsgIngestHeaderChain{
+// 		address,
+// 		headers,
+// 	}
+// }
 
-/***** IngestHeaderChain *****/
+// // GetSigners gets signers
+// func (msg MsgIngestHeaderChain) GetSigners() []sdk.AccAddress {
+// 	return []sdk.AccAddress{msg.Signer}
+// }
 
-// MsgIngestHeaderChain defines a IngestHeaderChain message
-message MsgIngestHeaderChain {
-	sdk.AccAddress Signer = 1;
-	[]BitcoinHeader Headers = 2;
-}
+// // Type returns an identifier
+// func (msg MsgIngestHeaderChain) Type() string { return "ingest_header_chain" }
 
-// NewMsgIngestHeaderChain instantiates a MsgIngestHeaderChain
-func NewMsgIngestHeaderChain(address sdk.AccAddress, headers []BitcoinHeader) MsgIngestHeaderChain {
-	return MsgIngestHeaderChain{
-		address,
-		headers,
-	}
-}
+// // ValidateBasic runs stateless validation
+// func (msg MsgIngestHeaderChain) ValidateBasic() sdk.Error {
+// 	for i := range msg.Headers {
+// 		valid, err := msg.Headers[i].Validate()
+// 		if !valid || err != nil {
+// 			return FromBTCSPVError(DefaultCodespace, err)
+// 		}
+// 	}
+// 	return nil
+// }
 
-// GetSigners gets signers
-func (msg MsgIngestHeaderChain) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
-}
+// // GetSignBytes returns the sighash for the message
+// func (msg MsgIngestHeaderChain) GetSignBytes() []byte {
+// 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+// }
 
-// Type returns an identifier
-func (msg MsgIngestHeaderChain) Type() string { return "ingest_header_chain" }
+// // Route returns the route key
+// func (msg MsgIngestHeaderChain) Route() string { return RouterKey }
 
-// ValidateBasic runs stateless validation
-func (msg MsgIngestHeaderChain) ValidateBasic() sdk.Error {
-	for i := range msg.Headers {
-		valid, err := msg.Headers[i].Validate()
-		if !valid || err != nil {
-			return FromBTCSPVError(DefaultCodespace, err)
-		}
-	}
-	return nil
-}
+// /***** IngestDifficultyChange *****/
 
-// GetSignBytes returns the sighash for the message
-func (msg MsgIngestHeaderChain) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
+// // MsgIngestDifficultyChange defines a IngestDifficultyChange message
+// message MsgIngestDifficultyChange {
+//     sdk.AccAddress Signer = 1;
+//     Hash256Digest Start = 2;
+//     []BitcoinHeader Headers = 3;
+// }
 
-// Route returns the route key
-func (msg MsgIngestHeaderChain) Route() string { return RouterKey }
+// // NewMsgIngestDifficultyChange instantiates a MsgIngestDifficultyChange
+// func NewMsgIngestDifficultyChange(address sdk.AccAddress, start Hash256Digest, headers []BitcoinHeader) MsgIngestDifficultyChange {
+// 	return MsgIngestDifficultyChange{
+// 		address,
+// 		start,
+// 		headers,
+// 	}
+// }
 
-/***** IngestDifficultyChange *****/
+// // GetSigners gets signers
+// func (msg MsgIngestDifficultyChange) GetSigners() []sdk.AccAddress {
+// 	return []sdk.AccAddress{msg.Signer}
+// }
 
-// MsgIngestDifficultyChange defines a IngestDifficultyChange message
-message MsgIngestDifficultyChange {
-    sdk.AccAddress Signer = 1;
-    Hash256Digest Start = 2;
-    []BitcoinHeader Headers = 3;
-}
+// // Type returns an identifier
+// func (msg MsgIngestDifficultyChange) Type() string { return "ingest_difficulty_change" }
 
-// NewMsgIngestDifficultyChange instantiates a MsgIngestDifficultyChange
-func NewMsgIngestDifficultyChange(address sdk.AccAddress, start Hash256Digest, headers []BitcoinHeader) MsgIngestDifficultyChange {
-	return MsgIngestDifficultyChange{
-		address,
-		start,
-		headers,
-	}
-}
+// // ValidateBasic runs stateless validation
+// func (msg MsgIngestDifficultyChange) ValidateBasic() sdk.Error {
+// 	for i := range msg.Headers {
+// 		valid, err := msg.Headers[i].Validate()
+// 		if !valid || err != nil {
+// 			return FromBTCSPVError(DefaultCodespace, err)
+// 		}
+// 	}
+// 	return nil
+// }
 
-// GetSigners gets signers
-func (msg MsgIngestDifficultyChange) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
-}
+// // GetSignBytes returns the sighash for the message
+// func (msg MsgIngestDifficultyChange) GetSignBytes() []byte {
+// 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+// }
 
-// Type returns an identifier
-func (msg MsgIngestDifficultyChange) Type() string { return "ingest_difficulty_change" }
+// // Route returns the route key
+// func (msg MsgIngestDifficultyChange) Route() string { return RouterKey }
 
-// ValidateBasic runs stateless validation
-func (msg MsgIngestDifficultyChange) ValidateBasic() sdk.Error {
-	for i := range msg.Headers {
-		valid, err := msg.Headers[i].Validate()
-		if !valid || err != nil {
-			return FromBTCSPVError(DefaultCodespace, err)
-		}
-	}
-	return nil
-}
+// /***** MarkNewHeaviest *****/
 
-// GetSignBytes returns the sighash for the message
-func (msg MsgIngestDifficultyChange) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
+// // MsgMarkNewHeaviest defines a MarkNewHeaviest message
+// message MsgMarkNewHeavies {
+//     sdk.AccAddress Signer = 1;
+//     Hash256Digest Ancestor = 2;
+//     RawHeader CurrentBest = 3;
+//     RawHeader NewBest = 4;
+//     uint32 Limit = 5;
+// }
 
-// Route returns the route key
-func (msg MsgIngestDifficultyChange) Route() string { return RouterKey }
+// // NewMsgMarkNewHeaviest instantiates a MsgMarkNewHeaviest
+// func NewMsgMarkNewHeaviest(address sdk.AccAddress, ancestor Hash256Digest, currentBest RawHeader, newBest RawHeader, limit uint32) MsgMarkNewHeaviest {
+// 	if limit == 0 {
+// 		limit = DefaultLookupLimit
+// 	}
 
-/***** MarkNewHeaviest *****/
+// 	return MsgMarkNewHeaviest{
+// 		address,
+// 		ancestor,
+// 		currentBest,
+// 		newBest,
+// 		limit,
+// 	}
+// }
 
-// MsgMarkNewHeaviest defines a MarkNewHeaviest message
-message MsgMarkNewHeavies {
-    sdk.AccAddress Signer = 1;
-    Hash256Digest Ancestor = 2;
-    RawHeader CurrentBest = 3;
-    RawHeader NewBest = 4;
-    uint32 Limit = 5;
-}
+// // GetSigners gets signers
+// func (msg MsgMarkNewHeaviest) GetSigners() []sdk.AccAddress {
+// 	return []sdk.AccAddress{msg.Signer}
+// }
 
-// NewMsgMarkNewHeaviest instantiates a MsgMarkNewHeaviest
-func NewMsgMarkNewHeaviest(address sdk.AccAddress, ancestor Hash256Digest, currentBest RawHeader, newBest RawHeader, limit uint32) MsgMarkNewHeaviest {
-	if limit == 0 {
-		limit = DefaultLookupLimit
-	}
+// // Type returns an identifier
+// func (msg MsgMarkNewHeaviest) Type() string { return "mark_new_heaviest" }
 
-	return MsgMarkNewHeaviest{
-		address,
-		ancestor,
-		currentBest,
-		newBest,
-		limit,
-	}
-}
+// // ValidateBasic runs stateless validation
+// func (msg MsgMarkNewHeaviest) ValidateBasic() sdk.Error {
+// 	if len(msg.CurrentBest) != 80 {
+// 		return ErrBadHeaderLength(DefaultCodespace, "currentBest", msg.CurrentBest, len(msg.CurrentBest))
+// 	}
 
-// GetSigners gets signers
-func (msg MsgMarkNewHeaviest) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
-}
+// 	if len(msg.NewBest) != 80 {
+// 		return ErrBadHeaderLength(DefaultCodespace, "newBest", msg.NewBest, len(msg.NewBest))
+// 	}
 
-// Type returns an identifier
-func (msg MsgMarkNewHeaviest) Type() string { return "mark_new_heaviest" }
+// 	return nil
+// }
 
-// ValidateBasic runs stateless validation
-func (msg MsgMarkNewHeaviest) ValidateBasic() sdk.Error {
-	if len(msg.CurrentBest) != 80 {
-		return ErrBadHeaderLength(DefaultCodespace, "currentBest", msg.CurrentBest, len(msg.CurrentBest))
-	}
+// // GetSignBytes returns the sighash for the message
+// func (msg MsgMarkNewHeaviest) GetSignBytes() []byte {
+// 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+// }
 
-	if len(msg.NewBest) != 80 {
-		return ErrBadHeaderLength(DefaultCodespace, "newBest", msg.NewBest, len(msg.NewBest))
-	}
+// // Route returns the route key
+// func (msg MsgMarkNewHeaviest) Route() string { return RouterKey }
 
-	return nil
-}
+// /***** NewRequest *****/
 
-// GetSignBytes returns the sighash for the message
-func (msg MsgMarkNewHeaviest) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
+// // MsgNewRequest defines a NewRequest message
+// message MsgNewRequest {
+//     sdk.AccAddress Signer = 1;
+//     HexBytes Spends = 2;
+//     HexBytes Pays = 3;
+//     uint64 PaysValue = 4;
+//     uint8 NumConfs = 5;
+//     Origin Origin = 6;
+//     HexBytes Action = 7;
+// }
 
-// Route returns the route key
-func (msg MsgMarkNewHeaviest) Route() string { return RouterKey }
+// // NewMsgNewRequest instantiates a MsgNewRequest
+// func NewMsgNewRequest(address sdk.AccAddress, spends, pays []byte, paysValue uint64, numConfs uint8, origin Origin, action HexBytes) MsgNewRequest {
+// 	return MsgNewRequest{
+// 		address,
+// 		spends,
+// 		pays,
+// 		paysValue,
+// 		numConfs,
+// 		origin,
+// 		action,
+// 	}
+// }
 
-/***** NewRequest *****/
+// // GetSigners gets signers
+// func (msg MsgNewRequest) GetSigners() []sdk.AccAddress {
+// 	return []sdk.AccAddress{msg.Signer}
+// }
 
-// MsgNewRequest defines a NewRequest message
-message MsgNewRequest {
-    sdk.AccAddress Signer = 1;
-    HexBytes Spends = 2;
-    HexBytes Pays = 3;
-    uint64 PaysValue = 4;
-    uint8 NumConfs = 5;
-    Origin Origin = 6;
-    HexBytes Action = 7;
-}
+// // Type returns an identifier
+// func (msg MsgNewRequest) Type() string { return "new_request" }
 
-// NewMsgNewRequest instantiates a MsgNewRequest
-func NewMsgNewRequest(address sdk.AccAddress, spends, pays []byte, paysValue uint64, numConfs uint8, origin Origin, action HexBytes) MsgNewRequest {
-	return MsgNewRequest{
-		address,
-		spends,
-		pays,
-		paysValue,
-		numConfs,
-		origin,
-		action,
-	}
-}
+// // ValidateBasic runs stateless validation
+// func (msg MsgNewRequest) ValidateBasic() sdk.Error {
+// 	// TODO: validate output types
+// 	if len(msg.Spends) != 36 && len(msg.Spends) != 0 {
+// 		return ErrSpendsLength(DefaultCodespace)
+// 	}
+// 	if len(msg.Pays) > 50 {
+// 		return ErrPaysLength(DefaultCodespace)
+// 	}
+// 	if len(msg.Action) > 500 {
+// 		return ErrActionLength(DefaultCodespace)
+// 	}
+// 	return nil
+// }
 
-// GetSigners gets signers
-func (msg MsgNewRequest) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
-}
+// // GetSignBytes returns the sighash for the message
+// func (msg MsgNewRequest) GetSignBytes() []byte {
+// 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+// }
 
-// Type returns an identifier
-func (msg MsgNewRequest) Type() string { return "new_request" }
+// // Route returns the route key
+// func (msg MsgNewRequest) Route() string { return RouterKey }
 
-// ValidateBasic runs stateless validation
-func (msg MsgNewRequest) ValidateBasic() sdk.Error {
-	// TODO: validate output types
-	if len(msg.Spends) != 36 && len(msg.Spends) != 0 {
-		return ErrSpendsLength(DefaultCodespace)
-	}
-	if len(msg.Pays) > 50 {
-		return ErrPaysLength(DefaultCodespace)
-	}
-	if len(msg.Action) > 500 {
-		return ErrActionLength(DefaultCodespace)
-	}
-	return nil
-}
+// /***** ProvideProof *****/
 
-// GetSignBytes returns the sighash for the message
-func (msg MsgNewRequest) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
+// // MsgProvideProof defines a NewRequest message
+// message MsgProvideProof {
+//     sdk.AccAddress Signer = 1;
+//     FilledRequests Filled = 2;
+// }
 
-// Route returns the route key
-func (msg MsgNewRequest) Route() string { return RouterKey }
+// // NewMsgProvideProof instantiates a MsgProvideProof
+// func NewMsgProvideProof(address sdk.AccAddress, filledRequests FilledRequests) MsgProvideProof {
+// 	return MsgProvideProof{
+// 		address,
+// 		filledRequests,
+// 	}
+// }
 
-/***** ProvideProof *****/
+// // GetSigners gets signers
+// func (msg MsgProvideProof) GetSigners() []sdk.AccAddress {
+// 	return []sdk.AccAddress{msg.Signer}
+// }
 
-// MsgProvideProof defines a NewRequest message
-message MsgProvideProof {
-    sdk.AccAddress Signer = 1;
-    FilledRequests Filled = 2;
-}
+// // ValidateBasic runs stateless validation
+// func (msg MsgProvideProof) ValidateBasic() sdk.Error {
+// 	valid, err := msg.Filled.Proof.Validate()
+// 	if !valid || err != nil {
+// 		return FromBTCSPVError(DefaultCodespace, err)
+// 	}
 
-// NewMsgProvideProof instantiates a MsgProvideProof
-func NewMsgProvideProof(address sdk.AccAddress, filledRequests FilledRequests) MsgProvideProof {
-	return MsgProvideProof{
-		address,
-		filledRequests,
-	}
-}
+// 	return nil
+// }
 
-// GetSigners gets signers
-func (msg MsgProvideProof) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
-}
+// // Type returns an identifier
+// func (msg MsgProvideProof) Type() string { return "provide_proof" }
 
-// ValidateBasic runs stateless validation
-func (msg MsgProvideProof) ValidateBasic() sdk.Error {
-	valid, err := msg.Filled.Proof.Validate()
-	if !valid || err != nil {
-		return FromBTCSPVError(DefaultCodespace, err)
-	}
+// // GetSignBytes returns the sighash for the message
+// func (msg MsgProvideProof) GetSignBytes() []byte {
+// 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+// }
 
-	return nil
-}
-
-// Type returns an identifier
-func (msg MsgProvideProof) Type() string { return "provide_proof" }
-
-// GetSignBytes returns the sighash for the message
-func (msg MsgProvideProof) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
-
-// Route returns the route key
-func (msg MsgProvideProof) Route() string { return RouterKey }
+// // Route returns the route key
+// func (msg MsgProvideProof) Route() string { return RouterKey }
