@@ -1,9 +1,9 @@
 syntax = "proto3";
 package relay;
 
-option go_package = "github.com/summa-tx/protobuf/relay";
+option go_package = "x/relay/types";
 
-import "relay_proto/shared.proto";
+import "relay_proto/x/relay/types/shared.proto";
 
 message QueryParamsIsAncestor {
     bytes digest_l_e = 1;
