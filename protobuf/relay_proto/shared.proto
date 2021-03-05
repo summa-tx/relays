@@ -1,0 +1,49 @@
+syntax = "proto3";
+package relay;
+
+option go_package = "github.com/summa-tx/protobuf/relay";
+
+enum Origin {
+    LOCAL = 0;
+    REMOTE = 1;
+}
+
+message BitcoinHeader {
+    bytes raw = 1;
+    bytes hash = 2;
+    uint32 height = 3;
+    bytes prev_hash = 4;
+    bytes merkle_root = 5;
+}
+
+message SPVProof {
+    bytes version = 1;
+    bytes vin = 2;
+    bytes vout = 3;
+    bytes locktime = 4;
+    bytes tx_i_d = 5;
+    uint32 index = 6;
+    BitcoinHeader confirming_header = 7;
+    bytes intermediate_nodes = 8;
+}
+
+message FilledRequestInfo {
+    uint32 input_index = 1;
+    uint32 output_index = 2;
+    bytes i_d = 3;
+}
+
+message ProofRequest {
+    bytes spends = 1;
+    bytes pays = 2;
+    uint64 pays_value = 3;
+    bool acive_state = 4;
+    uint32 num_confs = 5;
+    Origin origin = 6;
+    bytes action = 7;
+}
+
+message FilledRequests {
+    SPVProof proof = 1;
+    repeated FilledRequestInfo filled = 2;
+}

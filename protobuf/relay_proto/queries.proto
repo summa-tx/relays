@@ -1,29 +1,18 @@
-
 syntax = "proto3";
 package relay;
 
 option go_package = "github.com/summa-tx/protobuf/relay";
 
-message ProofRequest {
-    // TODO
-}
+import "relay_proto/shared.proto";
 
-message FilledRequests {
-    // TODO
-}
-
-message SPVProof {
-    // TODO
-}
-
-message QueryIsAncestor {
+message QueryParamsIsAncestor {
     bytes digest_l_e = 1;
     bytes prospective_ancestor = 2;
     uint32 limit = 3;
 }
 
 message QueryResIsAncestor {
-    QueryIsAncestor params = 1;
+    QueryParamsIsAncestor params = 1;
     bool res = 2;
 }
 
