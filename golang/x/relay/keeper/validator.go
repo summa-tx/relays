@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
@@ -17,7 +18,7 @@ func (k Keeper) emitProofProvided(
 }
 
 // getConfs returns the number of confirmations of any given header
-func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, sdk.Error) {
+func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, *sdkerrors.Error) {
 	bestKnown, err := k.GetBestKnownDigest(ctx)
 	if err != nil {
 		return 0, err
@@ -30,7 +31,7 @@ func (k Keeper) getConfs(ctx sdk.Context, header types.BitcoinHeader) (uint32, s
 }
 
 // validateProof validates an SPV Proof and checks that it is stored correctly
-func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof) sdk.Error {
+func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof) *sdkerrors.Error {
 	// If it is not valid, it will return an error
 	_, err := proof.Validate()
 	if err != nil {
@@ -49,7 +50,7 @@ func (k Keeper) validateProof(ctx sdk.Context, proof types.SPVProof) sdk.Error {
 	return nil
 }
 
-func (k Keeper) checkRequestsFilled(ctx sdk.Context, filledRequests types.FilledRequests) ([]types.ProofRequest, sdk.Error) {
+func (k Keeper) checkRequestsFilled(ctx sdk.Context, filledRequests types.FilledRequests) ([]types.ProofRequest, *sdkerrors.Error) {
 	// Validate Proof once
 	err := k.validateProof(ctx, filledRequests.Proof)
 	if err != nil {

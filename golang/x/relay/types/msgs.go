@@ -2,6 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // RouterKey is a name for the router
@@ -32,7 +33,7 @@ func (msg MsgIngestHeaderChain) GetSigners() []sdk.AccAddress {
 func (msg MsgIngestHeaderChain) Type() string { return "ingest_header_chain" }
 
 // ValidateBasic runs stateless validation
-func (msg MsgIngestHeaderChain) ValidateBasic() sdk.Error {
+func (msg MsgIngestHeaderChain) ValidateBasic() *sdkerrors.Error {
 	for i := range msg.Headers {
 		valid, err := msg.Headers[i].Validate()
 		if !valid || err != nil {
@@ -77,7 +78,7 @@ func (msg MsgIngestDifficultyChange) GetSigners() []sdk.AccAddress {
 func (msg MsgIngestDifficultyChange) Type() string { return "ingest_difficulty_change" }
 
 // ValidateBasic runs stateless validation
-func (msg MsgIngestDifficultyChange) ValidateBasic() sdk.Error {
+func (msg MsgIngestDifficultyChange) ValidateBasic() *sdkerrors.Error {
 	for i := range msg.Headers {
 		valid, err := msg.Headers[i].Validate()
 		if !valid || err != nil {
@@ -130,7 +131,7 @@ func (msg MsgMarkNewHeaviest) GetSigners() []sdk.AccAddress {
 func (msg MsgMarkNewHeaviest) Type() string { return "mark_new_heaviest" }
 
 // ValidateBasic runs stateless validation
-func (msg MsgMarkNewHeaviest) ValidateBasic() sdk.Error {
+func (msg MsgMarkNewHeaviest) ValidateBasic() *sdkerrors.Error {
 	if len(msg.CurrentBest) != 80 {
 		return ErrBadHeaderLength(DefaultCodespace, "currentBest", msg.CurrentBest, len(msg.CurrentBest))
 	}
@@ -185,7 +186,7 @@ func (msg MsgNewRequest) GetSigners() []sdk.AccAddress {
 func (msg MsgNewRequest) Type() string { return "new_request" }
 
 // ValidateBasic runs stateless validation
-func (msg MsgNewRequest) ValidateBasic() sdk.Error {
+func (msg MsgNewRequest) ValidateBasic() *sdkerrors.Error {
 	// TODO: validate output types
 	if len(msg.Spends) != 36 && len(msg.Spends) != 0 {
 		return ErrSpendsLength(DefaultCodespace)
@@ -229,7 +230,7 @@ func (msg MsgProvideProof) GetSigners() []sdk.AccAddress {
 }
 
 // ValidateBasic runs stateless validation
-func (msg MsgProvideProof) ValidateBasic() sdk.Error {
+func (msg MsgProvideProof) ValidateBasic() *sdkerrors.Error {
 	valid, err := msg.Filled.Proof.Validate()
 	if !valid || err != nil {
 		return FromBTCSPVError(DefaultCodespace, err)

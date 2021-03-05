@@ -6,11 +6,12 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-func decodeUint32FromPath(path []string, idx int, defaultLimit uint32) (uint32, sdk.Error) {
+func decodeUint32FromPath(path []string, idx int, defaultLimit uint32) (uint32, *sdkerrors.Error) {
 	if idx+1 > len(path) {
 		return defaultLimit, nil
 	}
@@ -24,7 +25,7 @@ func decodeUint32FromPath(path []string, idx int, defaultLimit uint32) (uint32, 
 
 // NewQuerier makes a query routing function
 func NewQuerier(keeper Keeper) sdk.Querier {
-	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
+	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err *sdkerrors.Error) {
 		switch path[0] {
 		case types.QueryIsAncestor:
 			return queryIsAncestor(ctx, req, keeper)
@@ -52,7 +53,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 	}
 }
 
-func queryIsAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+func queryIsAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	var params types.QueryParamsIsAncestor
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
@@ -82,7 +83,7 @@ func queryIsAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res
 	return res, nil
 }
 
-func queryGetRelayGenesis(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+func queryGetRelayGenesis(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	// This calls the keeper and gets an answer
 	result, err := keeper.GetRelayGenesis(ctx)
 	if err != nil {
@@ -102,7 +103,7 @@ func queryGetRelayGenesis(ctx sdk.Context, req abci.RequestQuery, keeper Keeper)
 	return res, nil
 }
 
-func queryGetLastReorgLCA(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+func queryGetLastReorgLCA(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	// This calls the keeper and gets an answer
 	result, err := keeper.GetLastReorgLCA(ctx)
 	if err != nil {
@@ -122,7 +123,7 @@ func queryGetLastReorgLCA(ctx sdk.Context, req abci.RequestQuery, keeper Keeper)
 	return res, nil
 }
 
-func queryGetBestDigest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+func queryGetBestDigest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	// This calls the keeper and gets an answer
 	result, err := keeper.GetBestKnownDigest(ctx)
 	if err != nil {
@@ -142,7 +143,7 @@ func queryGetBestDigest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (
 	return res, nil
 }
 
-func queryFindAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+func queryFindAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	var params types.QueryParamsFindAncestor
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
@@ -170,7 +171,7 @@ func queryFindAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (r
 	return res, nil
 }
 
-func queryHeaviestFromAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+func queryHeaviestFromAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	var params types.QueryParamsHeaviestFromAncestor
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
@@ -203,7 +204,7 @@ func queryHeaviestFromAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Ke
 	return res, nil
 }
 
-func queryIsMostRecentCommonAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+func queryIsMostRecentCommonAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	var params types.QueryParamsIsMostRecentCommonAncestor
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
@@ -233,7 +234,7 @@ func queryIsMostRecentCommonAncestor(ctx sdk.Context, req abci.RequestQuery, kee
 	return res, nil
 }
 
-func queryGetRequest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+func queryGetRequest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	var params types.QueryParamsGetRequest
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
@@ -261,7 +262,7 @@ func queryGetRequest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res
 	return res, nil
 }
 
-func queryCheckRequests(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+func queryCheckRequests(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	var params types.QueryParamsCheckRequests
 	var errMsg string
 	valid := true
@@ -293,7 +294,7 @@ func queryCheckRequests(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (
 	return res, nil
 }
 
-func queryCheckProof(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err sdk.Error) {
+func queryCheckProof(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	var params types.QueryParamsCheckProof
 	var errMsg string
 	valid := true
