@@ -11,13 +11,13 @@ clean:
 	rm -f protoc_go
 	mkdir -p relay
 
-relay: relay/shared.pb.go relay/queries.pb.go relay/query_services.pb.go
+# relay_proto: relay_proto/shared.pb.go relay_proto/x/relay/types/queries.pb.go relay_proto/x/relay/types/query_services.pb.go
 
-relay/shared.pb.go: relay_proto/shared.proto
-	protoc $$PROTO_PATH --go_out=relay relay_proto/shared.proto
+types/shared: relay_proto/x/relay/types/shared.proto
+	protoc $$PROTO_PATH --go_out=relay_proto relay_proto/x/relay/types/shared.proto
 
-relay/queries.pb.go: relay/shared.pb.go relay_proto/queries.proto
-	protoc $$PROTO_PATH --go_out=relay relay_proto/queries.proto
+types/queries: relay_proto/x/relay/types/shared.pb.go relay_proto/x/relay/types/queries.proto
+	protoc $$PROTO_PATH --go_out=relay_proto relay_proto/x/relay/types/queries.proto
 
-relay/query_services.pb.go: relay/queries.pb.go relay_proto/queries.proto
-	protoc $$PROTO_PATH --go_out=relay relay_proto/query_services.proto
+types/query_services: relay_proto/x/relay/types/queries.pb.go relay_proto/x/relay/types/queries.proto
+	protoc $$PROTO_PATH --go_out=relay_proto relay_proto/x/relay/types/query_services.proto
