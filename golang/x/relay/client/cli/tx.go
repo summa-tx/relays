@@ -8,11 +8,10 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 
 	"github.com/summa-tx/relays/golang/x/relay/types"
 
@@ -50,8 +49,7 @@ func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
 Use flag --inputfile to submit a json filename as input from scripts/seed_data directory`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx, err := client.GetClientTxContext(cmd)
 
 			var headers = make([]types.BitcoinHeader, 0)
 
@@ -71,16 +69,14 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				}
 			}
 
-			msg := types.NewMsgIngestHeaderChain(
-				cliCtx.GetFromAddress(),
-				headers,
-			)
+			msgs := []sdk.Msg{types.NewMsgWithdrawDelegatorReward(cliCtx.GetFromAddress(), headers)}
+
 			err := msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msgs...)
 
 		},
 	}
@@ -99,9 +95,7 @@ func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
 		Args:    cobra.ExactArgs(2),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx, err := client.GetClientTxContext(cmd)
 
 			prevEpochStart, err := btcspv.NewHash256Digest(btcspv.DecodeIfHex(args[0]))
 			if err != nil {
@@ -125,17 +119,17 @@ func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
 				}
 			}
 
-			msg := types.NewMsgIngestDifficultyChange(
+			msgs := []sdk.Msg{types.NewMsgIngestDifficultyChange(
 				cliCtx.GetFromAddress(),
 				prevEpochStart,
 				headers,
-			)
+			)}
 			err = msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msgs...)
 
 		},
 	}
@@ -153,9 +147,7 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 		Long:    "Stores a new proof request",
 		Args:    cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx, err := client.GetClientTxContext(cmd)
 
 			spends := btcspv.DecodeIfHex(args[0])
 			pays := btcspv.DecodeIfHex(args[1])
@@ -168,7 +160,7 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 				return confsErr
 			}
 
-			msg := types.NewMsgNewRequest(
+			msgs := []sdk.Msg{types.NewMsgNewRequest(
 				cliCtx.GetFromAddress(),
 				spends,
 				pays,
@@ -176,13 +168,13 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 				uint8(numConfs),
 				types.Local,
 				nil,
-			)
+			)}
 			err := msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msgs...)
 
 		},
 	}
@@ -198,8 +190,7 @@ func GetCmdProvideProof(cdc *codec.Codec) *cobra.Command {
 Use flag --inputfile to submit a json filename as input from scripts/seed_data directory`,
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx, err := client.GetClientTxContext(cmd)
 
 			var proof types.SPVProof
 			var requests []types.FilledRequestInfo
@@ -236,17 +227,17 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				requests,
 			)
 
-			msg := types.NewMsgProvideProof(
+			msgs := []sdk.Msg{types.NewMsgProvideProof(
 				cliCtx.GetFromAddress(),
 				filledRequests,
-			)
+			)}
 
 			err := msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msgs...)
 
 		},
 	}
@@ -264,9 +255,8 @@ func GetCmdMarkNewHeaviest(cdc *codec.Codec) *cobra.Command {
 		Long:    "Updates best known digest and LCA.\nAncestor, current best, and new best are hex.\nLimit is an integer.",
 		Args:    cobra.RangeArgs(3, 4),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtx, err := client.GetClientTxContext(cmd)
 
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			// TODO: Set default limit if limit is not provided?
 
@@ -290,19 +280,19 @@ func GetCmdMarkNewHeaviest(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			msg := types.NewMsgMarkNewHeaviest(
+			msgs := []sdk.Msg{types.NewMsgMarkNewHeaviest(
 				cliCtx.GetFromAddress(),
 				ancestor,
 				currentBest,
 				newBest,
 				uint32(limit),
-			)
+			)}
 			err = msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msgs...)
 		},
 	}
 }
