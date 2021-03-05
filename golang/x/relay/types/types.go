@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
@@ -42,7 +43,7 @@ const (
 )
 
 // Hash256DigestFromHex converts a hex into a Hash256Digest
-func Hash256DigestFromHex(hexStr string) (Hash256Digest, sdk.Error) {
+func Hash256DigestFromHex(hexStr string) (Hash256Digest, *sdkerrors.Error) {
 	data := hexStr
 	if data[:2] == "0x" {
 		data = data[2:]
