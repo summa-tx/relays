@@ -4,46 +4,85 @@ package relay;
 option go_package = "x/relay/types";
 
 enum Origin {
-    LOCAL = 0;
-    REMOTE = 1;
+  LOCAL = 0;
+  REMOTE = 1;
 }
 
 message BitcoinHeader {
-    bytes raw = 1;
-    bytes hash = 2;
-    uint32 height = 3;
-    bytes prev_hash = 4;
-    bytes merkle_root = 5;
+  bytes raw = 1;
+  bytes hash = 2;
+  uint32 height = 3;
+  bytes prev_hash = 4;
+  bytes merkle_root = 5;
 }
 
 message SPVProof {
-    bytes version = 1;
-    bytes vin = 2;
-    bytes vout = 3;
-    bytes locktime = 4;
-    bytes tx_i_d = 5;
-    uint32 index = 6;
-    BitcoinHeader confirming_header = 7;
-    bytes intermediate_nodes = 8;
+  bytes version = 1;
+  bytes vin = 2;
+  bytes vout = 3;
+  bytes locktime = 4;
+  bytes tx_i_d = 5;
+  uint32 index = 6;
+  BitcoinHeader confirming_header = 7;
+  bytes intermediate_nodes = 8;
 }
 
 message FilledRequestInfo {
-    uint32 input_index = 1;
-    uint32 output_index = 2;
-    bytes i_d = 3;
+  uint32 input_index = 1;
+  uint32 output_index = 2;
+  bytes i_d = 3;
 }
 
 message ProofRequest {
-    bytes spends = 1;
-    bytes pays = 2;
-    uint64 pays_value = 3;
-    bool acive_state = 4;
-    uint32 num_confs = 5;
-    Origin origin = 6;
-    bytes action = 7;
+  bytes spends = 1;
+  bytes pays = 2;
+  uint64 pays_value = 3;
+  bool acive_state = 4;
+  uint32 num_confs = 5;
+  Origin origin = 6;
+  bytes action = 7;
 }
 
 message FilledRequests {
-    SPVProof proof = 1;
-    repeated FilledRequestInfo filled = 2;
+  SPVProof proof = 1;
+  repeated FilledRequestInfo filled = 2;
 }
+
+/***** SDK *****/
+
+// Utils for working with cosmos sdk types:
+
+// Error represents a root error.
+//
+// Weave framework is using root error to categorize issues. Each instance
+// created during the runtime should wrap one of the declared root errors. This
+// allows error tests and returning all errors to the client in a safe manner.
+//
+// All popular root errors are declared in this package. If an extension has to
+// declare a custom root error, always use Register function to ensure
+// error code uniqueness.
+message Error {
+	string codespace = 1;
+	uint32 code = 2;
+	string desc = 3;
+}
+
+// func New(codespace string, code uint32, desc string) *Error {
+// 	return &Error{codespace: codespace, code: code, desc: desc}
+// }
+
+// // TODO: move to errors.proto
+// // FromBTCSPVError converts a btcutils error into an sdk error
+// func FromBTCSPVError(codespace string, err error) sdk.Error {
+// 	return New(codespace, BitcoinSPV, err.Error())
+// }
+
+// // MustSortJSON is like SortJSON but panic if an error occurs, e.g., if
+// // the passed JSON isn't valid.
+// func MustSortJSON(toSortJSON []byte) []byte {
+// 	js, err := SortJSON(toSortJSON)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	return js
+// }

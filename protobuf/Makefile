@@ -1,14 +1,14 @@
 
 
-all: clean relay
+all: relay
 
-.Phony: clean relay
+.Phony: relay
 
 clean:
 	rm -rf relay_proto
 	mkdir -p relay_proto
 
-relay: types/shared_go types/queries_go types/query_services_go
+relay: types/shared_go types/queries_go types/query_services_go types/msgs_go
 
 types/shared_go: relay_proto/x/relay/types/shared.proto
 	protoc $$PROTO_PATH --go_out=relay_proto relay_proto/x/relay/types/shared.proto

@@ -3,7 +3,7 @@ package types;
 
 option go_package = "x/relay/types";
 
-import "relay_proto/x/relay/types/sdk.proto";
+import "relay_proto/x/relay/types/shared.proto";
 
 // message Test {
 //   uint32 test = 1;
