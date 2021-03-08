@@ -3,10 +3,7 @@ package types;
 
 option go_package = "x/relay/types";
 
-// TODO: How to handle imports?
-import (
-  sdk "github.com/cosmos/cosmos-sdk/types"
-)
+import "relay_proto/x/relay/types/sdk.proto";
 
 // message Test {
 //   uint32 test = 1;
@@ -14,18 +11,19 @@ import (
 
 // TODO: import def from key.proto?
 // RouterKey is a name for the router
-const RouterKey = ModuleName; // this was defined in your key.go file
+// const RouterKey = ModuleName; // this was defined in your key.go file
+const RouterKey = "placeholder";
 
 /***** IngestHeaderChain *****/
 
 // MsgIngestHeaderChain defines a IngestHeaderChain message
 message MsgIngestHeaderChain {
-	sdk.AccAddress Signer = 1;
+	string Signer = 1;
 	[]BitcoinHeader Headers = 2;
 }
 
 // NewMsgIngestHeaderChain instantiates a MsgIngestHeaderChain
-func NewMsgIngestHeaderChain(address sdk.AccAddress, headers []BitcoinHeader) MsgIngestHeaderChain {
+func NewMsgIngestHeaderChain(address string, headers []BitcoinHeader) MsgIngestHeaderChain {
 	return MsgIngestHeaderChain{
 		address,
 		headers,
@@ -33,15 +31,15 @@ func NewMsgIngestHeaderChain(address sdk.AccAddress, headers []BitcoinHeader) Ms
 }
 
 // GetSigners gets signers
-func (msg MsgIngestHeaderChain) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
+func (msg MsgIngestHeaderChain) GetSigners() []string {
+	return []string{msg.Signer}
 }
 
 // Type returns an identifier
 func (msg MsgIngestHeaderChain) Type() string { return "ingest_header_chain" }
 
 // ValidateBasic runs stateless validation
-func (msg MsgIngestHeaderChain) ValidateBasic() sdk.Error {
+func (msg MsgIngestHeaderChain) ValidateBasic() Error {
 	for i := range msg.Headers {
 		valid, err := msg.Headers[i].Validate()
 		if !valid || err != nil {
@@ -53,7 +51,7 @@ func (msg MsgIngestHeaderChain) ValidateBasic() sdk.Error {
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgIngestHeaderChain) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // Route returns the route key
@@ -63,13 +61,13 @@ func (msg MsgIngestHeaderChain) Route() string { return RouterKey }
 
 // MsgIngestDifficultyChange defines a IngestDifficultyChange message
 message MsgIngestDifficultyChange {
-    sdk.AccAddress Signer = 1;
+    string Signer = 1;
     Hash256Digest Start = 2;
     []BitcoinHeader Headers = 3;
 }
 
 // NewMsgIngestDifficultyChange instantiates a MsgIngestDifficultyChange
-func NewMsgIngestDifficultyChange(address sdk.AccAddress, start Hash256Digest, headers []BitcoinHeader) MsgIngestDifficultyChange {
+func NewMsgIngestDifficultyChange(address string, start Hash256Digest, headers []BitcoinHeader) MsgIngestDifficultyChange {
 	return MsgIngestDifficultyChange{
 		address,
 		start,
@@ -78,15 +76,15 @@ func NewMsgIngestDifficultyChange(address sdk.AccAddress, start Hash256Digest, h
 }
 
 // GetSigners gets signers
-func (msg MsgIngestDifficultyChange) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
+func (msg MsgIngestDifficultyChange) GetSigners() []string {
+	return []string{msg.Signer}
 }
 
 // Type returns an identifier
 func (msg MsgIngestDifficultyChange) Type() string { return "ingest_difficulty_change" }
 
 // ValidateBasic runs stateless validation
-func (msg MsgIngestDifficultyChange) ValidateBasic() sdk.Error {
+func (msg MsgIngestDifficultyChange) ValidateBasic() Error {
 	for i := range msg.Headers {
 		valid, err := msg.Headers[i].Validate()
 		if !valid || err != nil {
@@ -98,7 +96,7 @@ func (msg MsgIngestDifficultyChange) ValidateBasic() sdk.Error {
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgIngestDifficultyChange) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // Route returns the route key
@@ -108,7 +106,7 @@ func (msg MsgIngestDifficultyChange) Route() string { return RouterKey }
 
 // MsgMarkNewHeaviest defines a MarkNewHeaviest message
 message MsgMarkNewHeavies {
-    sdk.AccAddress Signer = 1;
+    string Signer = 1;
     Hash256Digest Ancestor = 2;
     RawHeader CurrentBest = 3;
     RawHeader NewBest = 4;
@@ -116,7 +114,7 @@ message MsgMarkNewHeavies {
 }
 
 // NewMsgMarkNewHeaviest instantiates a MsgMarkNewHeaviest
-func NewMsgMarkNewHeaviest(address sdk.AccAddress, ancestor Hash256Digest, currentBest RawHeader, newBest RawHeader, limit uint32) MsgMarkNewHeaviest {
+func NewMsgMarkNewHeaviest(address string, ancestor Hash256Digest, currentBest RawHeader, newBest RawHeader, limit uint32) MsgMarkNewHeaviest {
 	if limit == 0 {
 		limit = DefaultLookupLimit
 	}
@@ -131,15 +129,15 @@ func NewMsgMarkNewHeaviest(address sdk.AccAddress, ancestor Hash256Digest, curre
 }
 
 // GetSigners gets signers
-func (msg MsgMarkNewHeaviest) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
+func (msg MsgMarkNewHeaviest) GetSigners() []string {
+	return []string{msg.Signer}
 }
 
 // Type returns an identifier
 func (msg MsgMarkNewHeaviest) Type() string { return "mark_new_heaviest" }
 
 // ValidateBasic runs stateless validation
-func (msg MsgMarkNewHeaviest) ValidateBasic() sdk.Error {
+func (msg MsgMarkNewHeaviest) ValidateBasic() Error {
 	if len(msg.CurrentBest) != 80 {
 		return ErrBadHeaderLength(DefaultCodespace, "currentBest", msg.CurrentBest, len(msg.CurrentBest))
 	}
@@ -153,7 +151,7 @@ func (msg MsgMarkNewHeaviest) ValidateBasic() sdk.Error {
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgMarkNewHeaviest) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // Route returns the route key
@@ -163,7 +161,7 @@ func (msg MsgMarkNewHeaviest) Route() string { return RouterKey }
 
 // MsgNewRequest defines a NewRequest message
 message MsgNewRequest {
-    sdk.AccAddress Signer = 1;
+    string Signer = 1;
     HexBytes Spends = 2;
     HexBytes Pays = 3;
     uint64 PaysValue = 4;
@@ -173,7 +171,7 @@ message MsgNewRequest {
 }
 
 // NewMsgNewRequest instantiates a MsgNewRequest
-func NewMsgNewRequest(address sdk.AccAddress, spends, pays []byte, paysValue uint64, numConfs uint8, origin Origin, action HexBytes) MsgNewRequest {
+func NewMsgNewRequest(address string, spends, pays []byte, paysValue uint64, numConfs uint8, origin Origin, action HexBytes) MsgNewRequest {
 	return MsgNewRequest{
 		address,
 		spends,
@@ -186,15 +184,15 @@ func NewMsgNewRequest(address sdk.AccAddress, spends, pays []byte, paysValue uin
 }
 
 // GetSigners gets signers
-func (msg MsgNewRequest) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
+func (msg MsgNewRequest) GetSigners() []string {
+	return []string{msg.Signer}
 }
 
 // Type returns an identifier
 func (msg MsgNewRequest) Type() string { return "new_request" }
 
 // ValidateBasic runs stateless validation
-func (msg MsgNewRequest) ValidateBasic() sdk.Error {
+func (msg MsgNewRequest) ValidateBasic() Error {
 	// TODO: validate output types
 	if len(msg.Spends) != 36 && len(msg.Spends) != 0 {
 		return ErrSpendsLength(DefaultCodespace)
@@ -210,7 +208,7 @@ func (msg MsgNewRequest) ValidateBasic() sdk.Error {
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgNewRequest) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // Route returns the route key
@@ -220,12 +218,12 @@ func (msg MsgNewRequest) Route() string { return RouterKey }
 
 // MsgProvideProof defines a NewRequest message
 message MsgProvideProof {
-    sdk.AccAddress Signer = 1;
+    string Signer = 1;
     FilledRequests Filled = 2;
 }
 
 // NewMsgProvideProof instantiates a MsgProvideProof
-func NewMsgProvideProof(address sdk.AccAddress, filledRequests FilledRequests) MsgProvideProof {
+func NewMsgProvideProof(address string, filledRequests FilledRequests) MsgProvideProof {
 	return MsgProvideProof{
 		address,
 		filledRequests,
@@ -233,12 +231,12 @@ func NewMsgProvideProof(address sdk.AccAddress, filledRequests FilledRequests) M
 }
 
 // GetSigners gets signers
-func (msg MsgProvideProof) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
+func (msg MsgProvideProof) GetSigners() []string {
+	return []string{msg.Signer}
 }
 
 // ValidateBasic runs stateless validation
-func (msg MsgProvideProof) ValidateBasic() sdk.Error {
+func (msg MsgProvideProof) ValidateBasic() Error {
 	valid, err := msg.Filled.Proof.Validate()
 	if !valid || err != nil {
 		return FromBTCSPVError(DefaultCodespace, err)
@@ -252,7 +250,7 @@ func (msg MsgProvideProof) Type() string { return "provide_proof" }
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgProvideProof) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // Route returns the route key

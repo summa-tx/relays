@@ -1,0 +1,28 @@
+// Error represents a root error.
+//
+// Weave framework is using root error to categorize issues. Each instance
+// created during the runtime should wrap one of the declared root errors. This
+// allows error tests and returning all errors to the client in a safe manner.
+//
+// All popular root errors are declared in this package. If an extension has to
+// declare a custom root error, always use Register function to ensure
+// error code uniqueness.
+type Error struct {
+	codespace string
+	code      uint32
+	desc      string
+}
+
+func New(codespace string, code uint32, desc string) *Error {
+	return &Error{codespace: codespace, code: code, desc: desc}
+}
+
+// MustSortJSON is like SortJSON but panic if an error occurs, e.g., if
+// the passed JSON isn't valid.
+func MustSortJSON(toSortJSON []byte) []byte {
+	js, err := SortJSON(toSortJSON)
+	if err != nil {
+		panic(err)
+	}
+	return js
+}
