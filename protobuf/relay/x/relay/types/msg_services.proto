@@ -3,19 +3,12 @@ package relay;
 
 option go_package = "relay/types";
 
-// import "x/relay/types/msgs.proto";
+import "x/relay/types/msgs.proto";
 
-// message EmptyParams {}
-
-// service Query {
-//   rpc IsAncestor(QueryParamsIsAncestor) returns (QueryResIsAncestor) {}
-//   rpc GetRelayGenesis(EmptyParams) returns (QueryResGetRelayGenesis) {}
-//   rpc GetLastReorgLCA(EmptyParams) returns (QueryResGetLastReorgLCA) {}
-//   rpc GetBestDigest(EmptyParams) returns (QueryResGetBestDigest) {}
-//   rpc FindAncestor(QueryParamsFindAncestor) returns (QueryResFindAncestor) {}
-//   rpc HeaviestFromAncestor(QueryParamsHeaviestFromAncestor) returns (QueryResHeaviestFromAncestor) {}
-//   rpc IsMostRecentCommonAncestor(QueryParamsIsMostRecentCommonAncestor) returns (QueryResIsMostRecentCommonAncestor) {}
-//   rpc GetRequest(QueryParamsGetRequest) returns (QueryResGetRequest) {}
-//   rpc CheckRequests(QueryParamsCheckRequests) returns (QueryResCheckRequests) {}
-//   rpc CheckProof(QueryParamsCheckProof) returns (QueryResCheckProof) {}
-// }
+service Msg {
+  rpc IngestHeaderChain(MsgIngestHeaderChain) returns (MsgIngestHeaderChainResponse) {}
+  rpc IngestDifficultyChange(MsgIngestDifficultyChange) returns (MsgIngestDifficultyChangeResponse) {}
+  rpc MarkNewHeaviest(MsgMarkNewHeaviest) returns (MsgMarkNewHeaviestResponse) {}
+  rpc NewRequest(MsgNewRequest) returns (MsgNewRequestResponse) {}
+  rpc ProvideProof(MsgProvideProof) returns (MsgProvideProofResponse) {}
+}
