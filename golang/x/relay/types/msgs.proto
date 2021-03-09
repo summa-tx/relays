@@ -1,0 +1,77 @@
+syntax = "proto3";
+package relay;
+
+option go_package = "relay/types";
+
+import "x/relay/types/shared.proto";
+
+// TODO: get sdk.Error?
+message Error {
+	string codespace = 1;
+	uint32 code = 2;
+	string desc = 3;
+}
+
+// MsgIngestHeaderChain defines a IngestHeaderChain message
+message MsgIngestHeaderChain {
+	string Signer = 1;
+	repeated BitcoinHeader Headers = 2;
+}
+
+// MsgIngestHeaderChain defines a IngestHeaderChain message response
+message MsgIngestHeaderChainResponse {
+	Error Error = 1;
+}
+
+// MsgIngestDifficultyChange defines a IngestDifficultyChange message
+message MsgIngestDifficultyChange {
+  string Signer = 1;
+  bytes Start = 2;
+  repeated BitcoinHeader Headers = 3;
+}
+
+// MsgIngestDifficultyChange defines a IngestDifficultyChange message response
+message MsgIngestDifficultyChangeResponse {
+  Error Error = 1;
+}
+
+// MsgMarkNewHeaviest defines a MarkNewHeaviest message
+message MsgMarkNewHeaviest {
+  string Signer = 1;
+  bytes Ancestor = 2;
+  bytes CurrentBest = 3;
+  bytes NewBest = 4;
+  uint32 Limit = 5;
+}
+
+// MsgMarkNewHeaviest defines a MarkNewHeaviest message response
+message MsgMarkNewHeaviestResponse {
+  Error Error = 1;
+}
+
+// MsgNewRequest defines a NewRequest message
+message MsgNewRequest {
+  string Signer = 1;
+  bytes Spends = 2;
+  bytes Pays = 3;
+  uint64 PaysValue = 4;
+  uint32 NumConfs = 5;
+  Origin Origin = 6;
+  bytes Action = 7;
+}
+
+// MsgNewRequest defines a NewRequest message response
+message MsgNewRequestResponse {
+  Error Error = 1;
+}
+
+// MsgProvideProof defines a NewRequest message
+message MsgProvideProof {
+  string Signer = 1;
+  FilledRequests Filled = 2;
+}
+
+// MsgProvideProof defines a NewRequest message response
+message MsgProvideProofResponse {
+  Error Error = 1;
+}

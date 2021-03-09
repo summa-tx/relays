@@ -1,0 +1,92 @@
+syntax = "proto3";
+package relay;
+
+option go_package = "relay/types";
+
+import "x/relay/types/shared.proto";
+
+message QueryParamsIsAncestor {
+  bytes digest_l_e = 1;
+  bytes prospective_ancestor = 2;
+  uint32 limit = 3;
+}
+
+message QueryResIsAncestor {
+  QueryParamsIsAncestor params = 1;
+  bool res = 2;
+}
+
+message QueryResGetRelayGenesis {
+  bytes res = 1;
+}
+
+message QueryResGetLastReorgLCA {
+  bytes res = 1;
+}
+
+message QueryResGetBestDigest {
+  bytes res = 1;
+}
+
+message QueryParamsFindAncestor {
+  bytes digest_l_e = 1;
+  uint32 offset = 2;
+}
+
+message QueryResFindAncestor {
+  QueryParamsFindAncestor params = 1;
+  bytes res = 2;
+}
+
+message QueryParamsHeaviestFromAncestor {
+  bytes ancestor = 1;
+  bytes current_best = 2;
+  bytes new_best = 3;
+  uint32 limit = 4;
+}
+
+message QueryResHeaviestFromAncestor {
+  QueryParamsHeaviestFromAncestor params = 1;
+  bytes res = 2;
+}
+
+message QueryParamsIsMostRecentCommonAncestor {
+  bytes ancestor = 1;
+  bytes left = 2;
+  bytes right = 3;
+  uint32 limit = 4;
+}
+
+message QueryResIsMostRecentCommonAncestor {
+  QueryParamsIsMostRecentCommonAncestor params = 1;
+  bool res = 2;
+}
+
+message QueryParamsGetRequest {
+  bytes i_d = 1;
+}
+
+message QueryResGetRequest {
+  QueryParamsGetRequest params = 1;
+  ProofRequest res = 2;
+}
+
+message QueryParamsCheckRequests {
+  FilledRequests filled = 1;
+}
+
+message QueryResCheckRequests {
+  QueryParamsCheckRequests params = 1;
+  bool valid = 2;
+  optional string error = 3;
+}
+
+message QueryParamsCheckProof {
+  SPVProof proof = 1;
+}
+
+message QueryResCheckProof {
+  QueryParamsCheckProof params = 1;
+  bool valid = 2;
+  optional string error = 3;
+}

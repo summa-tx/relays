@@ -11,7 +11,33 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=Relay \
 
 BUILD_FLAGS := -ldflags '$(ldflags)'
 
-all: lint install
+all: clean relay lint install
+
+.PHONY: clean relay
+
+clean:
+	rm x/relay/types/shared.pb.go
+	rm x/relay/types/querier.pb.go
+	rm x/relay/types/query_services.pb.go
+	rm x/relay/types/msgs.pb.go
+	rm x/relay/types/msg_services.pb.go
+
+relay: types/shared types/querier types/query_services types/msgs types/msg_services
+
+types/shared: x/relay/types/shared.proto
+	protoc $$PROTO_PATH --go_out=x x/relay/types/shared.proto
+
+types/querier: x/relay/types/shared.pb.go x/relay/types/querier.proto
+	protoc $$PROTO_PATH --go_out=x x/relay/types/querier.proto
+
+types/query_services: x/relay/types/querier.pb.go x/relay/types/querier.proto
+	protoc $$PROTO_PATH --go_out=x x/relay/types/query_services.proto
+
+types/msgs: x/relay/types/msgs.proto
+	protoc $$PROTO_PATH --go_out=x x/relay/types/msgs.proto
+
+types/msg_services: x/relay/types/msg_services.proto
+	protoc $$PROTO_PATH --go_out=x x/relay/types/msg_services.proto
 
 install: go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/relayd
