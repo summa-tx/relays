@@ -1,9 +1,9 @@
 syntax = "proto3";
 package relay;
 
-option go_package = "relay/types/services";
+option go_package = "relay/types";
 
-import "x/relay/types/querier/querier.proto";
+import "x/relay/types/querier.proto";
 
 message EmptyParams {}
 

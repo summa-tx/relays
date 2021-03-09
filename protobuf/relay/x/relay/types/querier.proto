@@ -1,9 +1,9 @@
 syntax = "proto3";
 package relay;
 
-option go_package = "relay/types/querier";
+option go_package = "relay/types";
 
-import "x/relay/types/shared/shared.proto";
+import "x/relay/types/shared.proto";
 
 message QueryParamsIsAncestor {
   bytes digest_l_e = 1;

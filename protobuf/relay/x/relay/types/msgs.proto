@@ -1,9 +1,9 @@
 syntax = "proto3";
 package relay;
 
-option go_package = "relay/types/msgs";
+option go_package = "relay/types";
 
-import "x/relay/types/shared/shared.proto";
+import "x/relay/types/shared.proto";
 
 // MsgIngestHeaderChain defines a IngestHeaderChain message
 message MsgIngestHeaderChain {

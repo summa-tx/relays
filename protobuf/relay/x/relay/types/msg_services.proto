@@ -1,9 +1,9 @@
 syntax = "proto3";
 package relay;
 
-option go_package = "relay/types/services";
+option go_package = "relay/types";
 
-// import "x/relay/types/msgs/msgs.proto";
+// import "x/relay/types/msgs.proto";
 
 // message EmptyParams {}
 
