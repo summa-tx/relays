@@ -9,12 +9,6 @@ const RouterKey = ModuleName // this was defined in your key.go file
 
 /***** IngestHeaderChain *****/
 
-// MsgIngestHeaderChain defines a IngestHeaderChain message
-type MsgIngestHeaderChain struct {
-	Signer  sdk.AccAddress  `json:"signer"`
-	Headers []BitcoinHeader `json:"headers"`
-}
-
 // NewMsgIngestHeaderChain instantiates a MsgIngestHeaderChain
 func NewMsgIngestHeaderChain(address sdk.AccAddress, headers []BitcoinHeader) MsgIngestHeaderChain {
 	return MsgIngestHeaderChain{
@@ -51,13 +45,6 @@ func (msg MsgIngestHeaderChain) GetSignBytes() []byte {
 func (msg MsgIngestHeaderChain) Route() string { return RouterKey }
 
 /***** IngestDifficultyChange *****/
-
-// MsgIngestDifficultyChange defines a IngestDifficultyChange message
-type MsgIngestDifficultyChange struct {
-	Signer  sdk.AccAddress  `json:"signer"`
-	Start   Hash256Digest   `json:"prevEpochStartLE"`
-	Headers []BitcoinHeader `json:"headers"`
-}
 
 // NewMsgIngestDifficultyChange instantiates a MsgIngestDifficultyChange
 func NewMsgIngestDifficultyChange(address sdk.AccAddress, start Hash256Digest, headers []BitcoinHeader) MsgIngestDifficultyChange {
@@ -96,15 +83,6 @@ func (msg MsgIngestDifficultyChange) GetSignBytes() []byte {
 func (msg MsgIngestDifficultyChange) Route() string { return RouterKey }
 
 /***** MarkNewHeaviest *****/
-
-// MsgMarkNewHeaviest defines a MarkNewHeaviest message
-type MsgMarkNewHeaviest struct {
-	Signer      sdk.AccAddress `json:"signer"`
-	Ancestor    Hash256Digest  `json:"ancestor"`
-	CurrentBest RawHeader      `json:"currentBest"`
-	NewBest     RawHeader      `json:"newBest"`
-	Limit       uint32         `json:"limit"`
-}
 
 // NewMsgMarkNewHeaviest instantiates a MsgMarkNewHeaviest
 func NewMsgMarkNewHeaviest(address sdk.AccAddress, ancestor Hash256Digest, currentBest RawHeader, newBest RawHeader, limit uint32) MsgMarkNewHeaviest {
@@ -152,17 +130,6 @@ func (msg MsgMarkNewHeaviest) Route() string { return RouterKey }
 
 /***** NewRequest *****/
 
-// MsgNewRequest defines a NewRequest message
-type MsgNewRequest struct {
-	Signer    sdk.AccAddress `json:"signer"`
-	Spends    HexBytes       `json:"spends"`
-	Pays      HexBytes       `json:"pays"`
-	PaysValue uint64         `json:"paysValue"`
-	NumConfs  uint8          `json:"numConfs"`
-	Origin    Origin         `json:"origin"`
-	Action    HexBytes       `json:"action"`
-}
-
 // NewMsgNewRequest instantiates a MsgNewRequest
 func NewMsgNewRequest(address sdk.AccAddress, spends, pays []byte, paysValue uint64, numConfs uint8, origin Origin, action HexBytes) MsgNewRequest {
 	return MsgNewRequest{
@@ -208,12 +175,6 @@ func (msg MsgNewRequest) GetSignBytes() []byte {
 func (msg MsgNewRequest) Route() string { return RouterKey }
 
 /***** ProvideProof *****/
-
-// MsgProvideProof defines a NewRequest message
-type MsgProvideProof struct {
-	Signer sdk.AccAddress `json:"signer"`
-	Filled FilledRequests `json:"filled"`
-}
 
 // NewMsgProvideProof instantiates a MsgProvideProof
 func NewMsgProvideProof(address sdk.AccAddress, filledRequests FilledRequests) MsgProvideProof {
