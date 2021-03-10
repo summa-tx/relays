@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
@@ -203,7 +204,7 @@ func logIfError(err error) {
 	}
 }
 
-func logIfTestCaseError(tc NamedCase, err sdk.Error) {
+func logIfTestCaseError(tc NamedCase, err *sdkerrors.Error) {
 	if err != nil {
 		log.Printf("Unexpected Error\nIn case: %s\n%s\n", tc.Name(), err.Error())
 	}
@@ -263,7 +264,7 @@ func TestKeeper(t *testing.T) {
 	suite.Run(t, keeperSuite)
 }
 
-func (s *KeeperSuite) SDKNil(e sdk.Error) {
+func (s *KeeperSuite) SDKNil(e *sdkerrors.Error) {
 	var msg string
 	if e != nil {
 		msg = e.Error()
@@ -271,7 +272,7 @@ func (s *KeeperSuite) SDKNil(e sdk.Error) {
 	s.Nil(e, msg)
 }
 
-func (s *KeeperSuite) EqualError(e sdk.Error, code int) {
+func (s *KeeperSuite) EqualError(e *sdkerrors.Error, code int) {
 	var msg string
 	if e.Code() != sdk.CodeType(code) {
 		msg = fmt.Sprintf("%sExpected: %d\n", e.Error(), code)

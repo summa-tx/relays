@@ -9,12 +9,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/summa-tx/relays/golang/x/relay/client/cli"
 	"github.com/summa-tx/relays/golang/x/relay/client/rest"
 	"github.com/summa-tx/relays/golang/x/relay/keeper"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -56,7 +56,7 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 }
 
 // RegisterRESTRoutes registers rest routes
-func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
+func (AppModuleBasic) RegisterRESTRoutes(ctx client.Context, rtr *mux.Router) {
 	rest.RegisterRoutes(ctx, rtr, types.StoreKey)
 }
 

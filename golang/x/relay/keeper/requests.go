@@ -9,6 +9,7 @@ import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (k Keeper) emitProofRequest(ctx sdk.Context, pays, spends []byte, paysValue uint64, id types.RequestID, origin types.Origin) {
@@ -24,7 +25,7 @@ func (k Keeper) hasRequest(ctx sdk.Context, id types.RequestID) bool {
 	return store.Has(id[:])
 }
 
-func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValue uint64, numConfs uint8, origin types.Origin, action types.HexBytes) sdk.Error {
+func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValue uint64, numConfs uint8, origin types.Origin, action types.HexBytes) *sdkerrors.Error {
 	store := k.getRequestStore(ctx)
 
 	var spendsDigest types.Hash256Digest
@@ -74,7 +75,7 @@ func (k Keeper) setRequest(ctx sdk.Context, spends []byte, pays []byte, paysValu
 	return nil
 }
 
-func (k Keeper) setRequestState(ctx sdk.Context, requestID types.RequestID, active bool) sdk.Error {
+func (k Keeper) setRequestState(ctx sdk.Context, requestID types.RequestID, active bool) *sdkerrors.Error {
 	store := k.getRequestStore(ctx)
 	request, err := k.getRequest(ctx, requestID)
 	if err != nil {
@@ -91,7 +92,7 @@ func (k Keeper) setRequestState(ctx sdk.Context, requestID types.RequestID, acti
 	return nil
 }
 
-func (k Keeper) getRequest(ctx sdk.Context, id types.RequestID) (types.ProofRequest, sdk.Error) {
+func (k Keeper) getRequest(ctx sdk.Context, id types.RequestID) (types.ProofRequest, *sdkerrors.Error) {
 	store := k.getRequestStore(ctx)
 
 	hasRequest := k.hasRequest(ctx, id)
@@ -111,7 +112,7 @@ func (k Keeper) getRequest(ctx sdk.Context, id types.RequestID) (types.ProofRequ
 
 // incrementID increments the id used to store a request,
 // ID must be in bytes
-func (k Keeper) incrementID(ctx sdk.Context) sdk.Error {
+func (k Keeper) incrementID(ctx sdk.Context) *sdkerrors.Error {
 	store := k.getRequestStore(ctx)
 	// get id
 	id, err := k.getNextID(ctx)
@@ -130,7 +131,7 @@ func (k Keeper) incrementID(ctx sdk.Context) sdk.Error {
 
 // getNextID retrieves the ID.  The ID is incremented after storing a request,
 // so this returns the next ID to be used.
-func (k Keeper) getNextID(ctx sdk.Context) (types.RequestID, sdk.Error) {
+func (k Keeper) getNextID(ctx sdk.Context) (types.RequestID, *sdkerrors.Error) {
 	store := k.getRequestStore(ctx)
 	idTag := []byte(types.RequestIDTag)
 	if !store.Has(idTag) {
@@ -145,7 +146,7 @@ func (k Keeper) getNextID(ctx sdk.Context) (types.RequestID, sdk.Error) {
 }
 
 // checkRequests validates a request
-func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint32, vin []byte, vout []byte, requestID types.RequestID) sdk.Error {
+func (k Keeper) checkRequests(ctx sdk.Context, inputIndex, outputIndex uint32, vin []byte, vout []byte, requestID types.RequestID) *sdkerrors.Error {
 	if !btcspv.ValidateVin(vin) {
 		return types.ErrInvalidVin(types.DefaultCodespace)
 	}

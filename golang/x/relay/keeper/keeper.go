@@ -4,6 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 
 	"github.com/summa-tx/relays/golang/x/relay/types"
@@ -42,12 +43,12 @@ func (k Keeper) setRelayGenesis(ctx sdk.Context, relayGenesis types.Hash256Diges
 }
 
 // GetRelayGenesis returns the first digest in the relay
-func (k Keeper) GetRelayGenesis(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
+func (k Keeper) GetRelayGenesis(ctx sdk.Context) (types.Hash256Digest, *sdkerrors.Error) {
 	return k.getDigestByStoreKey(ctx, types.RelayGenesisStorage)
 }
 
 // SetGenesisState sets the genesis state
-func (k Keeper) SetGenesisState(ctx sdk.Context, genesis, epochStart btcspv.BitcoinHeader) sdk.Error {
+func (k Keeper) SetGenesisState(ctx sdk.Context, genesis, epochStart btcspv.BitcoinHeader) *sdkerrors.Error {
 	if k.hasRelayGenesis(ctx) {
 		return types.ErrAlreadyInit(types.DefaultCodespace)
 	}
