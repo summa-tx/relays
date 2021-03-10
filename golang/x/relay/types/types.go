@@ -31,7 +31,7 @@ type BitcoinHeader = btcspv.BitcoinHeader
 // SPVProof is the base struct for an SPV proof
 type SPVProof = btcspv.SPVProof
 
-// Origin an enum of types denoting requests either from the local chain
+// Origin is an enum of types denoting requests either from the local chain
 // or a remote chain
 type Origin int
 
