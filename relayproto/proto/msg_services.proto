@@ -1,0 +1,14 @@
+syntax = "proto3";
+option go_package = "github.com/summa-tx/relays/relayproto";
+
+package relayproto;
+
+import "msgs.proto";
+
+service Msg {
+  rpc IngestHeaderChain(MsgIngestHeaderChain) returns (MsgIngestHeaderChainResponse) {}
+  rpc IngestDifficultyChange(MsgIngestDifficultyChange) returns (MsgIngestDifficultyChangeResponse) {}
+  rpc MarkNewHeaviest(MsgMarkNewHeaviest) returns (MsgMarkNewHeaviestResponse) {}
+  rpc NewRequest(MsgNewRequest) returns (MsgNewRequestResponse) {}
+  rpc ProvideProof(MsgProvideProof) returns (MsgProvideProofResponse) {}
+}
