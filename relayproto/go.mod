@@ -1,9 +1,10 @@
-module github.com/summa-tx/relays/protobuf
+module github.com/summa-tx/relays/relayproto
 
 go 1.16
 
 require (
 	github.com/golang/protobuf v1.4.3
+	github.com/summa-tx/bitcoin-spv/golang v1.4.0
 	github.com/summa-tx/relays/golang v0.0.0-20210302210416-a336d9f4df3c
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
 	golang.org/x/sys v0.0.0-20210309074719-68d13333faf2 // indirect
