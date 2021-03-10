@@ -1,11 +1,10 @@
 syntax = "proto3";
-package relay;
 
-option go_package = "x/relay/types";
+option go_package = "github.com/summa-tx/relays/relayproto";
 
-import "relay_proto/x/relay/types/queries.proto";
-
-message EmptyParams {}
+package relayproto;
+import "queries.proto";
+import "shared.proto";
 
 service Query {
     rpc IsAncestor(QueryParamsIsAncestor) returns (QueryResIsAncestor) {}
@@ -18,5 +17,4 @@ service Query {
     rpc GetRequest(QueryParamsGetRequest) returns (QueryResGetRequest) {}
     rpc CheckRequests(QueryParamsCheckRequests) returns (QueryResCheckRequests) {}
     rpc CheckProof(QueryParamsCheckProof) returns (QueryResCheckProof) {}
-
 }
