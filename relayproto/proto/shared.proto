@@ -1,7 +1,10 @@
 syntax = "proto3";
-package relay;
 
-option go_package = "x/relay/types";
+option go_package = "github.com/summa-tx/relays/relayproto";
+
+package relayproto;
+
+message EmptyParams {}
 
 enum Origin {
     LOCAL = 0;
