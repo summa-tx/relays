@@ -1,250 +1,141 @@
 package types
 
 import (
+	"fmt"
+
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/summa-tx/relays/golang/x/relay/types"
+
+	"github.com/summa-tx/realys/proto"
 )
 
-// RouterKey is a name for the router
-const RouterKey = ModuleName // this was defined in your key.go file
+var _ MsgServer;
 
-/***** IngestHeaderChain *****/
-
-// MsgIngestHeaderChain defines a IngestHeaderChain message
-type MsgIngestHeaderChain struct {
-	Signer  sdk.AccAddress  `json:"signer"`
-	Headers []BitcoinHeader `json:"headers"`
+func stringToError(str string) (sdk.Error) {
+	// TODO: How to handle CodeType?
+	return sdk.NewError(DefaultCodespace, ExternalError, str)
 }
 
-// NewMsgIngestHeaderChain instantiates a MsgIngestHeaderChain
-func NewMsgIngestHeaderChain(address sdk.AccAddress, headers []BitcoinHeader) MsgIngestHeaderChain {
-	return MsgIngestHeaderChain{
-		address,
-		headers,
-	}
-}
-
-// GetSigners gets signers
-func (msg MsgIngestHeaderChain) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
-}
-
-// Type returns an identifier
-func (msg MsgIngestHeaderChain) Type() string { return "ingest_header_chain" }
-
-// ValidateBasic runs stateless validation
-func (msg MsgIngestHeaderChain) ValidateBasic() sdk.Error {
-	for i := range msg.Headers {
-		valid, err := msg.Headers[i].Validate()
-		if !valid || err != nil {
-			return FromBTCSPVError(DefaultCodespace, err)
-		}
-	}
-	return nil
-}
-
-// GetSignBytes returns the sighash for the message
-func (msg MsgIngestHeaderChain) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
-
-// Route returns the route key
-func (msg MsgIngestHeaderChain) Route() string { return RouterKey }
-
-/***** IngestDifficultyChange *****/
-
-// MsgIngestDifficultyChange defines a IngestDifficultyChange message
-type MsgIngestDifficultyChange struct {
-	Signer  sdk.AccAddress  `json:"signer"`
-	Start   Hash256Digest   `json:"prevEpochStartLE"`
-	Headers []BitcoinHeader `json:"headers"`
-}
-
-// NewMsgIngestDifficultyChange instantiates a MsgIngestDifficultyChange
-func NewMsgIngestDifficultyChange(address sdk.AccAddress, start Hash256Digest, headers []BitcoinHeader) MsgIngestDifficultyChange {
-	return MsgIngestDifficultyChange{
-		address,
-		start,
-		headers,
-	}
-}
-
-// GetSigners gets signers
-func (msg MsgIngestDifficultyChange) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
-}
-
-// Type returns an identifier
-func (msg MsgIngestDifficultyChange) Type() string { return "ingest_difficulty_change" }
-
-// ValidateBasic runs stateless validation
-func (msg MsgIngestDifficultyChange) ValidateBasic() sdk.Error {
-	for i := range msg.Headers {
-		valid, err := msg.Headers[i].Validate()
-		if !valid || err != nil {
-			return FromBTCSPVError(DefaultCodespace, err)
-		}
-	}
-	return nil
-}
-
-// GetSignBytes returns the sighash for the message
-func (msg MsgIngestDifficultyChange) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
-
-// Route returns the route key
-func (msg MsgIngestDifficultyChange) Route() string { return RouterKey }
-
-/***** MarkNewHeaviest *****/
-
-// MsgMarkNewHeaviest defines a MarkNewHeaviest message
-type MsgMarkNewHeaviest struct {
-	Signer      sdk.AccAddress `json:"signer"`
-	Ancestor    Hash256Digest  `json:"ancestor"`
-	CurrentBest RawHeader      `json:"currentBest"`
-	NewBest     RawHeader      `json:"newBest"`
-	Limit       uint32         `json:"limit"`
-}
-
-// NewMsgMarkNewHeaviest instantiates a MsgMarkNewHeaviest
-func NewMsgMarkNewHeaviest(address sdk.AccAddress, ancestor Hash256Digest, currentBest RawHeader, newBest RawHeader, limit uint32) MsgMarkNewHeaviest {
-	if limit == 0 {
-		limit = DefaultLookupLimit
+func bufToH256(buf []byte) (btcspv.Hash256Digest, error) {
+	var h btcspv.Hash256Digest;
+	if len(buf) != 32 {
+		return h, fmt.Errorf("Expected 32 bytes, got %d bytes", len(buf))
 	}
 
-	return MsgMarkNewHeaviest{
-		address,
-		ancestor,
-		currentBest,
-		newBest,
-		limit,
-	}
+	copy(h[:], buf)
+
+	return h, nil
 }
 
-// GetSigners gets signers
-func (msg MsgMarkNewHeaviest) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
-}
-
-// Type returns an identifier
-func (msg MsgMarkNewHeaviest) Type() string { return "mark_new_heaviest" }
-
-// ValidateBasic runs stateless validation
-func (msg MsgMarkNewHeaviest) ValidateBasic() sdk.Error {
-	if len(msg.CurrentBest) != 80 {
-		return ErrBadHeaderLength(DefaultCodespace, "currentBest", msg.CurrentBest, len(msg.CurrentBest))
+func bufToRawHeader(buf []byte) (btcspv.RawHeader, error) {
+	var h btcspv.RawHeader;
+	if len(buf) != 80 {
+		return h, fmt.Errorf("Expected 80 bytes, got %d bytes", len(buf))
 	}
 
-	if len(msg.NewBest) != 80 {
-		return ErrBadHeaderLength(DefaultCodespace, "newBest", msg.NewBest, len(msg.NewBest))
+	copy(h[:], buf)
+
+	return h, nil
+}
+
+func (m *MsgIngestHeaderChain) translate() (types.MsgIngestHeaderChain, error) {
+	var msg types.MsgIngestHeaderChain;
+
+	// Do any parsing/translation work
+	address, err := sdk.AccAddressFromBech32(signer)
+	if err != nil {
+		return msg, err
 	}
 
-	return nil
+	msg.Signer = address
+	msg.Headers = m.Headers
+
+	return msg, nil
 }
 
-// GetSignBytes returns the sighash for the message
-func (msg MsgMarkNewHeaviest) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
+func (m *MsgIngestDifficultyChange) translate() (types.MsgIngestDifficultyChange, error) {
+	var msg types.MsgIngestDifficultyChange;
 
-// Route returns the route key
-func (msg MsgMarkNewHeaviest) Route() string { return RouterKey }
-
-/***** NewRequest *****/
-
-// MsgNewRequest defines a NewRequest message
-type MsgNewRequest struct {
-	Signer    sdk.AccAddress `json:"signer"`
-	Spends    HexBytes       `json:"spends"`
-	Pays      HexBytes       `json:"pays"`
-	PaysValue uint64         `json:"paysValue"`
-	NumConfs  uint8          `json:"numConfs"`
-	Origin    Origin         `json:"origin"`
-	Action    HexBytes       `json:"action"`
-}
-
-// NewMsgNewRequest instantiates a MsgNewRequest
-func NewMsgNewRequest(address sdk.AccAddress, spends, pays []byte, paysValue uint64, numConfs uint8, origin Origin, action HexBytes) MsgNewRequest {
-	return MsgNewRequest{
-		address,
-		spends,
-		pays,
-		paysValue,
-		numConfs,
-		origin,
-		action,
-	}
-}
-
-// GetSigners gets signers
-func (msg MsgNewRequest) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
-}
-
-// Type returns an identifier
-func (msg MsgNewRequest) Type() string { return "new_request" }
-
-// ValidateBasic runs stateless validation
-func (msg MsgNewRequest) ValidateBasic() sdk.Error {
-	// TODO: validate output types
-	if len(msg.Spends) != 36 && len(msg.Spends) != 0 {
-		return ErrSpendsLength(DefaultCodespace)
-	}
-	if len(msg.Pays) > 50 {
-		return ErrPaysLength(DefaultCodespace)
-	}
-	if len(msg.Action) > 500 {
-		return ErrActionLength(DefaultCodespace)
-	}
-	return nil
-}
-
-// GetSignBytes returns the sighash for the message
-func (msg MsgNewRequest) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
-
-// Route returns the route key
-func (msg MsgNewRequest) Route() string { return RouterKey }
-
-/***** ProvideProof *****/
-
-// MsgProvideProof defines a NewRequest message
-type MsgProvideProof struct {
-	Signer sdk.AccAddress `json:"signer"`
-	Filled FilledRequests `json:"filled"`
-}
-
-// NewMsgProvideProof instantiates a MsgProvideProof
-func NewMsgProvideProof(address sdk.AccAddress, filledRequests FilledRequests) MsgProvideProof {
-	return MsgProvideProof{
-		address,
-		filledRequests,
-	}
-}
-
-// GetSigners gets signers
-func (msg MsgProvideProof) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.Signer}
-}
-
-// ValidateBasic runs stateless validation
-func (msg MsgProvideProof) ValidateBasic() sdk.Error {
-	valid, err := msg.Filled.Proof.Validate()
-	if !valid || err != nil {
-		return FromBTCSPVError(DefaultCodespace, err)
+	address, err := sdk.AccAddressFromBech32(signer)
+	if err != nil {
+		return msg, err
 	}
 
-	return nil
+	start, err := bufToH256(q.Start)
+	if err != nil {
+		return msg, err
+	}
+
+	msg.Signer = address
+	msg.Start = start
+	msg.Headers = m.Headers
+
+	return msg, nil
 }
 
-// Type returns an identifier
-func (msg MsgProvideProof) Type() string { return "provide_proof" }
+func (m *MsgMarkNewHeaviest) translate() (types.MsgMarkNewHeaviest, error) {
+	var msg types.MsgMarkNewHeaviest;
 
-// GetSignBytes returns the sighash for the message
-func (msg MsgProvideProof) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	address, err := sdk.AccAddressFromBech32(signer)
+	if err != nil {
+		return msg, err
+	}
+
+	ancestor, err := bufToH256(q.Ancestor)
+	if err != nil {
+		return msg, err
+	}
+
+	currentBest, err := bufToRawHeader(q.CurrentBest)
+	if err != nil {
+		return msg, err
+	}
+
+	newBest, err := bufToRawHeader(q.NewBest)
+	if err != nil {
+		return msg, err
+	}
+
+	msg.Signer = address
+	msg.Ancestor = m.Ancestor
+	msg.CurrentBest = currentBest
+	msg.NewBest = newBest
+	msg.Limit = m.Limit
+
+	return msg, nil
 }
 
-// Route returns the route key
-func (msg MsgProvideProof) Route() string { return RouterKey }
+func (m *MsgNewRequest) translate() (types.MsgNewRequest, error) {
+	var msg types.MsgNewRequest;
+
+	address, err := sdk.AccAddressFromBech32(signer)
+	if err != nil {
+		return msg, err
+	}
+
+	msg.Signer = address
+	msg.Spends = btcspv.HexBytes(m.Spends)
+	msg.Pays = btcspv.HexBytes(m.Pays)
+	msg.PaysValue = m.PaysValue
+	msg.NumConfs = uint8(m.NumConfs)
+	msg.Origin = m.Origin
+	msg.Action = btcspv.HexBytes(m.Action)
+
+	return msg, nil
+}
+
+func (m *MsgProvideProof) translate() (types.MsgProvideProof, error) {
+	var msg types.MsgProvideProof;
+
+	address, err := sdk.AccAddressFromBech32(signer)
+	if err != nil {
+		return msg, err
+	}
+
+	msg.Signer = address
+	msg.FilledRequests = m.FilledRequests
+
+	return msg, nil
+}

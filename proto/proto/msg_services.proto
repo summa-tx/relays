@@ -6,9 +6,9 @@ package relayproto;
 import "msgs.proto";
 
 service MsgServer {
-  rpc IngestHeaderChain(MsgIngestHeaderChain) returns (MsgIngestHeaderChainResponse) {}
-  rpc IngestDifficultyChange(MsgIngestDifficultyChange) returns (MsgIngestDifficultyChangeResponse) {}
-  rpc MarkNewHeaviest(MsgMarkNewHeaviest) returns (MsgMarkNewHeaviestResponse) {}
-  rpc NewRequest(MsgNewRequest) returns (MsgNewRequestResponse) {}
-  rpc ProvideProof(MsgProvideProof) returns (MsgProvideProofResponse) {}
+  rpc IngestHeaderChain(MsgIngestHeaderChain) returns (string) {}
+  rpc IngestDifficultyChange(MsgIngestDifficultyChange) returns (string) {}
+  rpc MarkNewHeaviest(MsgMarkNewHeaviest) returns (string) {}
+  rpc NewRequest(MsgNewRequest) returns (string) {}
+  rpc ProvideProof(MsgProvideProof) returns (string) {}
 }
