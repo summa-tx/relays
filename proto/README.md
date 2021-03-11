@@ -1,5 +1,5 @@
 ## Setup
-
+<!-- TODO: update all this -->
 1. Install Go:
 
     - [link](https://golang.org/doc/install)

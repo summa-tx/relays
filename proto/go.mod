@@ -1,4 +1,4 @@
-module github.com/summa-tx/relays/relayproto
+module github.com/summa-tx/relays/proto
 
 go 1.16
 

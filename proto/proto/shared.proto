@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/summa-tx/relays/relayproto";
+option go_package = "github.com/summa-tx/relays/proto";
 
 package relayproto;
 

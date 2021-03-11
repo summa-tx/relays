@@ -1,4 +1,4 @@
-package relayproto
+package proto
 
 import (
 	"fmt"
