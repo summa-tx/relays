@@ -8,7 +8,7 @@ import (
 
 	"github.com/summa-tx/relays/golang/x/relay/types"
 
-	"github.com/summa-tx/realys/proto"
+	"github.com/summa-tx/relays/proto"
 )
 
 var _ MsgServer;

@@ -196,8 +196,8 @@ func (c *msgServerClient) ProvideProof(ctx context.Context, in *MsgProvideProof,
 	return out, nil
 }
 
-// MsgServerServer is the server API for MsgServer service.
-type MsgServerServer interface {
+// MsgServer is the server API for MsgServer service.
+type MsgServer interface {
 	IngestHeaderChain(context.Context, *MsgIngestHeaderChain) (*MsgIngestHeaderChainResponse, error)
 	IngestDifficultyChange(context.Context, *MsgIngestDifficultyChange) (*MsgIngestDifficultyChangeResponse, error)
 	MarkNewHeaviest(context.Context, *MsgMarkNewHeaviest) (*MsgMarkNewHeaviestResponse, error)
@@ -205,27 +205,27 @@ type MsgServerServer interface {
 	ProvideProof(context.Context, *MsgProvideProof) (*MsgProvideProofResponse, error)
 }
 
-// UnimplementedMsgServerServer can be embedded to have forward compatible implementations.
-type UnimplementedMsgServerServer struct {
+// UnimplementedMsgServer can be embedded to have forward compatible implementations.
+type UnimplementedMsgServer struct {
 }
 
-func (*UnimplementedMsgServerServer) IngestHeaderChain(context.Context, *MsgIngestHeaderChain) (*MsgIngestHeaderChainResponse, error) {
+func (*UnimplementedMsgServer) IngestHeaderChain(context.Context, *MsgIngestHeaderChain) (*MsgIngestHeaderChainResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IngestHeaderChain not implemented")
 }
-func (*UnimplementedMsgServerServer) IngestDifficultyChange(context.Context, *MsgIngestDifficultyChange) (*MsgIngestDifficultyChangeResponse, error) {
+func (*UnimplementedMsgServer) IngestDifficultyChange(context.Context, *MsgIngestDifficultyChange) (*MsgIngestDifficultyChangeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IngestDifficultyChange not implemented")
 }
-func (*UnimplementedMsgServerServer) MarkNewHeaviest(context.Context, *MsgMarkNewHeaviest) (*MsgMarkNewHeaviestResponse, error) {
+func (*UnimplementedMsgServer) MarkNewHeaviest(context.Context, *MsgMarkNewHeaviest) (*MsgMarkNewHeaviestResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MarkNewHeaviest not implemented")
 }
-func (*UnimplementedMsgServerServer) NewRequest(context.Context, *MsgNewRequest) (*MsgNewRequestResponse, error) {
+func (*UnimplementedMsgServer) NewRequest(context.Context, *MsgNewRequest) (*MsgNewRequestResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewRequest not implemented")
 }
-func (*UnimplementedMsgServerServer) ProvideProof(context.Context, *MsgProvideProof) (*MsgProvideProofResponse, error) {
+func (*UnimplementedMsgServer) ProvideProof(context.Context, *MsgProvideProof) (*MsgProvideProofResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProvideProof not implemented")
 }
 
-func RegisterMsgServerServer(s *grpc.Server, srv MsgServerServer) {
+func RegisterMsgServer(s *grpc.Server, srv MsgServer) {
 	s.RegisterService(&_MsgServer_serviceDesc, srv)
 }
 
@@ -235,14 +235,14 @@ func _MsgServer_IngestHeaderChain_Handler(srv interface{}, ctx context.Context, 
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServerServer).IngestHeaderChain(ctx, in)
+		return srv.(MsgServer).IngestHeaderChain(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
 		FullMethod: "/relayproto.MsgServer/IngestHeaderChain",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServerServer).IngestHeaderChain(ctx, req.(*MsgIngestHeaderChain))
+		return srv.(MsgServer).IngestHeaderChain(ctx, req.(*MsgIngestHeaderChain))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -253,14 +253,14 @@ func _MsgServer_IngestDifficultyChange_Handler(srv interface{}, ctx context.Cont
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServerServer).IngestDifficultyChange(ctx, in)
+		return srv.(MsgServer).IngestDifficultyChange(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
 		FullMethod: "/relayproto.MsgServer/IngestDifficultyChange",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServerServer).IngestDifficultyChange(ctx, req.(*MsgIngestDifficultyChange))
+		return srv.(MsgServer).IngestDifficultyChange(ctx, req.(*MsgIngestDifficultyChange))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -271,14 +271,14 @@ func _MsgServer_MarkNewHeaviest_Handler(srv interface{}, ctx context.Context, de
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServerServer).MarkNewHeaviest(ctx, in)
+		return srv.(MsgServer).MarkNewHeaviest(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
 		FullMethod: "/relayproto.MsgServer/MarkNewHeaviest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServerServer).MarkNewHeaviest(ctx, req.(*MsgMarkNewHeaviest))
+		return srv.(MsgServer).MarkNewHeaviest(ctx, req.(*MsgMarkNewHeaviest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -289,14 +289,14 @@ func _MsgServer_NewRequest_Handler(srv interface{}, ctx context.Context, dec fun
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServerServer).NewRequest(ctx, in)
+		return srv.(MsgServer).NewRequest(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
 		FullMethod: "/relayproto.MsgServer/NewRequest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServerServer).NewRequest(ctx, req.(*MsgNewRequest))
+		return srv.(MsgServer).NewRequest(ctx, req.(*MsgNewRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -307,21 +307,21 @@ func _MsgServer_ProvideProof_Handler(srv interface{}, ctx context.Context, dec f
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServerServer).ProvideProof(ctx, in)
+		return srv.(MsgServer).ProvideProof(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
 		FullMethod: "/relayproto.MsgServer/ProvideProof",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServerServer).ProvideProof(ctx, req.(*MsgProvideProof))
+		return srv.(MsgServer).ProvideProof(ctx, req.(*MsgProvideProof))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 var _MsgServer_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "relayproto.MsgServer",
-	HandlerType: (*MsgServerServer)(nil),
+	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "IngestHeaderChain",
