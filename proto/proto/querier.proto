@@ -6,7 +6,7 @@ package relayproto;
 import "queries.proto";
 import "shared.proto";
 
-service Query {
+service QueryServer {
     rpc IsAncestor(QueryParamsIsAncestor) returns (QueryResIsAncestor) {}
     rpc GetRelayGenesis(EmptyParams) returns (QueryResGetRelayGenesis) {}
     rpc GetLastReorgLCA(EmptyParams) returns (QueryResGetLastReorgLCA) {}
