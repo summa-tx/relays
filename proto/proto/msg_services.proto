@@ -5,10 +5,12 @@ package relayproto;
 
 import "msgs.proto";
 
+message EmptyResponse {};
+
 service MsgServer {
-  rpc IngestHeaderChain(MsgIngestHeaderChain) returns (string) {}
-  rpc IngestDifficultyChange(MsgIngestDifficultyChange) returns (string) {}
-  rpc MarkNewHeaviest(MsgMarkNewHeaviest) returns (string) {}
-  rpc NewRequest(MsgNewRequest) returns (string) {}
-  rpc ProvideProof(MsgProvideProof) returns (string) {}
+  rpc IngestHeaderChain(MsgIngestHeaderChain) returns (EmptyResponse) {}
+  rpc IngestDifficultyChange(MsgIngestDifficultyChange) returns (EmptyResponse) {}
+  rpc MarkNewHeaviest(MsgMarkNewHeaviest) returns (EmptyResponse) {}
+  rpc NewRequest(MsgNewRequest) returns (EmptyResponse) {}
+  rpc ProvideProof(MsgProvideProof) returns (EmptyResponse) {}
 }
