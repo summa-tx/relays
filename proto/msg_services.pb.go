@@ -15,6 +15,7 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
+	sync "sync"
 )
 
 const (
@@ -28,70 +29,114 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+type EmptyResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *EmptyResponse) Reset() {
+	*x = EmptyResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_msg_services_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EmptyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EmptyResponse) ProtoMessage() {}
+
+func (x *EmptyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_msg_services_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EmptyResponse.ProtoReflect.Descriptor instead.
+func (*EmptyResponse) Descriptor() ([]byte, []int) {
+	return file_msg_services_proto_rawDescGZIP(), []int{0}
+}
+
 var File_msg_services_proto protoreflect.FileDescriptor
 
 var file_msg_services_proto_rawDesc = []byte{
 	0x0a, 0x12, 0x6d, 0x73, 0x67, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x2e, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0a, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x1a, 0x0a, 0x6d, 0x73, 0x67, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x32, 0xdf, 0x03, 0x0a,
-	0x09, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x12, 0x61, 0x0a, 0x11, 0x49, 0x6e,
-	0x67, 0x65, 0x73, 0x74, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x43, 0x68, 0x61, 0x69, 0x6e, 0x12,
-	0x20, 0x2e, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x73, 0x67,
-	0x49, 0x6e, 0x67, 0x65, 0x73, 0x74, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x43, 0x68, 0x61, 0x69,
-	0x6e, 0x1a, 0x28, 0x2e, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d,
-	0x73, 0x67, 0x49, 0x6e, 0x67, 0x65, 0x73, 0x74, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x43, 0x68,
-	0x61, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x70, 0x0a,
-	0x16, 0x49, 0x6e, 0x67, 0x65, 0x73, 0x74, 0x44, 0x69, 0x66, 0x66, 0x69, 0x63, 0x75, 0x6c, 0x74,
-	0x79, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x12, 0x25, 0x2e, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x73, 0x67, 0x49, 0x6e, 0x67, 0x65, 0x73, 0x74, 0x44, 0x69,
-	0x66, 0x66, 0x69, 0x63, 0x75, 0x6c, 0x74, 0x79, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x1a, 0x2d,
-	0x2e, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x73, 0x67, 0x49,
-	0x6e, 0x67, 0x65, 0x73, 0x74, 0x44, 0x69, 0x66, 0x66, 0x69, 0x63, 0x75, 0x6c, 0x74, 0x79, 0x43,
-	0x68, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12,
-	0x5b, 0x0a, 0x0f, 0x4d, 0x61, 0x72, 0x6b, 0x4e, 0x65, 0x77, 0x48, 0x65, 0x61, 0x76, 0x69, 0x65,
-	0x73, 0x74, 0x12, 0x1e, 0x2e, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
-	0x4d, 0x73, 0x67, 0x4d, 0x61, 0x72, 0x6b, 0x4e, 0x65, 0x77, 0x48, 0x65, 0x61, 0x76, 0x69, 0x65,
-	0x73, 0x74, 0x1a, 0x26, 0x2e, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
-	0x4d, 0x73, 0x67, 0x4d, 0x61, 0x72, 0x6b, 0x4e, 0x65, 0x77, 0x48, 0x65, 0x61, 0x76, 0x69, 0x65,
-	0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x4c, 0x0a, 0x0a,
-	0x4e, 0x65, 0x77, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x2e, 0x72, 0x65, 0x6c,
-	0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x73, 0x67, 0x4e, 0x65, 0x77, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x70, 0x72, 0x6f,
+	0x1a, 0x0a, 0x6d, 0x73, 0x67, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x0f, 0x0a, 0x0d,
+	0x45, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0x97, 0x03,
+	0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x52, 0x0a, 0x11, 0x49, 0x6e, 0x67, 0x65, 0x73, 0x74, 0x48,
+	0x65, 0x61, 0x64, 0x65, 0x72, 0x43, 0x68, 0x61, 0x69, 0x6e, 0x12, 0x20, 0x2e, 0x72, 0x65, 0x6c,
+	0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x73, 0x67, 0x49, 0x6e, 0x67, 0x65, 0x73,
+	0x74, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x43, 0x68, 0x61, 0x69, 0x6e, 0x1a, 0x19, 0x2e, 0x72,
+	0x65, 0x6c, 0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x5c, 0x0a, 0x16, 0x49, 0x6e, 0x67,
+	0x65, 0x73, 0x74, 0x44, 0x69, 0x66, 0x66, 0x69, 0x63, 0x75, 0x6c, 0x74, 0x79, 0x43, 0x68, 0x61,
+	0x6e, 0x67, 0x65, 0x12, 0x25, 0x2e, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x2e, 0x4d, 0x73, 0x67, 0x49, 0x6e, 0x67, 0x65, 0x73, 0x74, 0x44, 0x69, 0x66, 0x66, 0x69, 0x63,
+	0x75, 0x6c, 0x74, 0x79, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x1a, 0x19, 0x2e, 0x72, 0x65, 0x6c,
+	0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x4e, 0x0a, 0x0f, 0x4d, 0x61, 0x72, 0x6b, 0x4e,
+	0x65, 0x77, 0x48, 0x65, 0x61, 0x76, 0x69, 0x65, 0x73, 0x74, 0x12, 0x1e, 0x2e, 0x72, 0x65, 0x6c,
+	0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x73, 0x67, 0x4d, 0x61, 0x72, 0x6b, 0x4e,
+	0x65, 0x77, 0x48, 0x65, 0x61, 0x76, 0x69, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x72, 0x65, 0x6c,
+	0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x44, 0x0a, 0x0a, 0x4e, 0x65, 0x77, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x2e, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x2e, 0x4d, 0x73, 0x67, 0x4e, 0x65, 0x77, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x52, 0x0a, 0x0c, 0x50, 0x72,
-	0x6f, 0x76, 0x69, 0x64, 0x65, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x12, 0x1b, 0x2e, 0x72, 0x65, 0x6c,
-	0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x76, 0x69,
-	0x64, 0x65, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x1a, 0x23, 0x2e, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x76, 0x69, 0x64, 0x65, 0x50,
-	0x72, 0x6f, 0x6f, 0x66, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x22,
-	0x5a, 0x20, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x75, 0x6d,
-	0x6d, 0x61, 0x2d, 0x74, 0x78, 0x2f, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x73, 0x2f, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x1a, 0x19, 0x2e, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x6d,
+	0x70, 0x74, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x48, 0x0a,
+	0x0c, 0x50, 0x72, 0x6f, 0x76, 0x69, 0x64, 0x65, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x12, 0x1b, 0x2e,
+	0x72, 0x65, 0x6c, 0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x73, 0x67, 0x50, 0x72,
+	0x6f, 0x76, 0x69, 0x64, 0x65, 0x50, 0x72, 0x6f, 0x6f, 0x66, 0x1a, 0x19, 0x2e, 0x72, 0x65, 0x6c,
+	0x61, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x22, 0x5a, 0x20, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x75, 0x6d, 0x6d, 0x61, 0x2d, 0x74, 0x78, 0x2f, 0x72,
+	0x65, 0x6c, 0x61, 0x79, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
+var (
+	file_msg_services_proto_rawDescOnce sync.Once
+	file_msg_services_proto_rawDescData = file_msg_services_proto_rawDesc
+)
+
+func file_msg_services_proto_rawDescGZIP() []byte {
+	file_msg_services_proto_rawDescOnce.Do(func() {
+		file_msg_services_proto_rawDescData = protoimpl.X.CompressGZIP(file_msg_services_proto_rawDescData)
+	})
+	return file_msg_services_proto_rawDescData
+}
+
+var file_msg_services_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_msg_services_proto_goTypes = []interface{}{
-	(*MsgIngestHeaderChain)(nil),              // 0: relayproto.MsgIngestHeaderChain
-	(*MsgIngestDifficultyChange)(nil),         // 1: relayproto.MsgIngestDifficultyChange
-	(*MsgMarkNewHeaviest)(nil),                // 2: relayproto.MsgMarkNewHeaviest
-	(*MsgNewRequest)(nil),                     // 3: relayproto.MsgNewRequest
-	(*MsgProvideProof)(nil),                   // 4: relayproto.MsgProvideProof
-	(*MsgIngestHeaderChainResponse)(nil),      // 5: relayproto.MsgIngestHeaderChainResponse
-	(*MsgIngestDifficultyChangeResponse)(nil), // 6: relayproto.MsgIngestDifficultyChangeResponse
-	(*MsgMarkNewHeaviestResponse)(nil),        // 7: relayproto.MsgMarkNewHeaviestResponse
-	(*MsgNewRequestResponse)(nil),             // 8: relayproto.MsgNewRequestResponse
-	(*MsgProvideProofResponse)(nil),           // 9: relayproto.MsgProvideProofResponse
+	(*EmptyResponse)(nil),             // 0: relayproto.EmptyResponse
+	(*MsgIngestHeaderChain)(nil),      // 1: relayproto.MsgIngestHeaderChain
+	(*MsgIngestDifficultyChange)(nil), // 2: relayproto.MsgIngestDifficultyChange
+	(*MsgMarkNewHeaviest)(nil),        // 3: relayproto.MsgMarkNewHeaviest
+	(*MsgNewRequest)(nil),             // 4: relayproto.MsgNewRequest
+	(*MsgProvideProof)(nil),           // 5: relayproto.MsgProvideProof
 }
 var file_msg_services_proto_depIdxs = []int32{
-	0, // 0: relayproto.MsgServer.IngestHeaderChain:input_type -> relayproto.MsgIngestHeaderChain
-	1, // 1: relayproto.MsgServer.IngestDifficultyChange:input_type -> relayproto.MsgIngestDifficultyChange
-	2, // 2: relayproto.MsgServer.MarkNewHeaviest:input_type -> relayproto.MsgMarkNewHeaviest
-	3, // 3: relayproto.MsgServer.NewRequest:input_type -> relayproto.MsgNewRequest
-	4, // 4: relayproto.MsgServer.ProvideProof:input_type -> relayproto.MsgProvideProof
-	5, // 5: relayproto.MsgServer.IngestHeaderChain:output_type -> relayproto.MsgIngestHeaderChainResponse
-	6, // 6: relayproto.MsgServer.IngestDifficultyChange:output_type -> relayproto.MsgIngestDifficultyChangeResponse
-	7, // 7: relayproto.MsgServer.MarkNewHeaviest:output_type -> relayproto.MsgMarkNewHeaviestResponse
-	8, // 8: relayproto.MsgServer.NewRequest:output_type -> relayproto.MsgNewRequestResponse
-	9, // 9: relayproto.MsgServer.ProvideProof:output_type -> relayproto.MsgProvideProofResponse
+	1, // 0: relayproto.Msg.IngestHeaderChain:input_type -> relayproto.MsgIngestHeaderChain
+	2, // 1: relayproto.Msg.IngestDifficultyChange:input_type -> relayproto.MsgIngestDifficultyChange
+	3, // 2: relayproto.Msg.MarkNewHeaviest:input_type -> relayproto.MsgMarkNewHeaviest
+	4, // 3: relayproto.Msg.NewRequest:input_type -> relayproto.MsgNewRequest
+	5, // 4: relayproto.Msg.ProvideProof:input_type -> relayproto.MsgProvideProof
+	0, // 5: relayproto.Msg.IngestHeaderChain:output_type -> relayproto.EmptyResponse
+	0, // 6: relayproto.Msg.IngestDifficultyChange:output_type -> relayproto.EmptyResponse
+	0, // 7: relayproto.Msg.MarkNewHeaviest:output_type -> relayproto.EmptyResponse
+	0, // 8: relayproto.Msg.NewRequest:output_type -> relayproto.EmptyResponse
+	0, // 9: relayproto.Msg.ProvideProof:output_type -> relayproto.EmptyResponse
 	5, // [5:10] is the sub-list for method output_type
 	0, // [0:5] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -105,18 +150,33 @@ func file_msg_services_proto_init() {
 		return
 	}
 	file_msgs_proto_init()
+	if !protoimpl.UnsafeEnabled {
+		file_msg_services_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EmptyResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_msg_services_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   0,
+			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_msg_services_proto_goTypes,
 		DependencyIndexes: file_msg_services_proto_depIdxs,
+		MessageInfos:      file_msg_services_proto_msgTypes,
 	}.Build()
 	File_msg_services_proto = out.File
 	file_msg_services_proto_rawDesc = nil
@@ -132,104 +192,104 @@ var _ grpc.ClientConnInterface
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
 
-// MsgServerClient is the client API for MsgServer service.
+// MsgClient is the client API for Msg service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type MsgServerClient interface {
-	IngestHeaderChain(ctx context.Context, in *MsgIngestHeaderChain, opts ...grpc.CallOption) (*MsgIngestHeaderChainResponse, error)
-	IngestDifficultyChange(ctx context.Context, in *MsgIngestDifficultyChange, opts ...grpc.CallOption) (*MsgIngestDifficultyChangeResponse, error)
-	MarkNewHeaviest(ctx context.Context, in *MsgMarkNewHeaviest, opts ...grpc.CallOption) (*MsgMarkNewHeaviestResponse, error)
-	NewRequest(ctx context.Context, in *MsgNewRequest, opts ...grpc.CallOption) (*MsgNewRequestResponse, error)
-	ProvideProof(ctx context.Context, in *MsgProvideProof, opts ...grpc.CallOption) (*MsgProvideProofResponse, error)
+type MsgClient interface {
+	IngestHeaderChain(ctx context.Context, in *MsgIngestHeaderChain, opts ...grpc.CallOption) (*EmptyResponse, error)
+	IngestDifficultyChange(ctx context.Context, in *MsgIngestDifficultyChange, opts ...grpc.CallOption) (*EmptyResponse, error)
+	MarkNewHeaviest(ctx context.Context, in *MsgMarkNewHeaviest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	NewRequest(ctx context.Context, in *MsgNewRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	ProvideProof(ctx context.Context, in *MsgProvideProof, opts ...grpc.CallOption) (*EmptyResponse, error)
 }
 
-type msgServerClient struct {
+type msgClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewMsgServerClient(cc grpc.ClientConnInterface) MsgServerClient {
-	return &msgServerClient{cc}
+func NewMsgClient(cc grpc.ClientConnInterface) MsgClient {
+	return &msgClient{cc}
 }
 
-func (c *msgServerClient) IngestHeaderChain(ctx context.Context, in *MsgIngestHeaderChain, opts ...grpc.CallOption) (*MsgIngestHeaderChainResponse, error) {
-	out := new(MsgIngestHeaderChainResponse)
-	err := c.cc.Invoke(ctx, "/relayproto.MsgServer/IngestHeaderChain", in, out, opts...)
+func (c *msgClient) IngestHeaderChain(ctx context.Context, in *MsgIngestHeaderChain, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/relayproto.Msg/IngestHeaderChain", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgServerClient) IngestDifficultyChange(ctx context.Context, in *MsgIngestDifficultyChange, opts ...grpc.CallOption) (*MsgIngestDifficultyChangeResponse, error) {
-	out := new(MsgIngestDifficultyChangeResponse)
-	err := c.cc.Invoke(ctx, "/relayproto.MsgServer/IngestDifficultyChange", in, out, opts...)
+func (c *msgClient) IngestDifficultyChange(ctx context.Context, in *MsgIngestDifficultyChange, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/relayproto.Msg/IngestDifficultyChange", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgServerClient) MarkNewHeaviest(ctx context.Context, in *MsgMarkNewHeaviest, opts ...grpc.CallOption) (*MsgMarkNewHeaviestResponse, error) {
-	out := new(MsgMarkNewHeaviestResponse)
-	err := c.cc.Invoke(ctx, "/relayproto.MsgServer/MarkNewHeaviest", in, out, opts...)
+func (c *msgClient) MarkNewHeaviest(ctx context.Context, in *MsgMarkNewHeaviest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/relayproto.Msg/MarkNewHeaviest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgServerClient) NewRequest(ctx context.Context, in *MsgNewRequest, opts ...grpc.CallOption) (*MsgNewRequestResponse, error) {
-	out := new(MsgNewRequestResponse)
-	err := c.cc.Invoke(ctx, "/relayproto.MsgServer/NewRequest", in, out, opts...)
+func (c *msgClient) NewRequest(ctx context.Context, in *MsgNewRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/relayproto.Msg/NewRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgServerClient) ProvideProof(ctx context.Context, in *MsgProvideProof, opts ...grpc.CallOption) (*MsgProvideProofResponse, error) {
-	out := new(MsgProvideProofResponse)
-	err := c.cc.Invoke(ctx, "/relayproto.MsgServer/ProvideProof", in, out, opts...)
+func (c *msgClient) ProvideProof(ctx context.Context, in *MsgProvideProof, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/relayproto.Msg/ProvideProof", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// MsgServer is the server API for MsgServer service.
+// MsgServer is the server API for Msg service.
 type MsgServer interface {
-	IngestHeaderChain(context.Context, *MsgIngestHeaderChain) (*MsgIngestHeaderChainResponse, error)
-	IngestDifficultyChange(context.Context, *MsgIngestDifficultyChange) (*MsgIngestDifficultyChangeResponse, error)
-	MarkNewHeaviest(context.Context, *MsgMarkNewHeaviest) (*MsgMarkNewHeaviestResponse, error)
-	NewRequest(context.Context, *MsgNewRequest) (*MsgNewRequestResponse, error)
-	ProvideProof(context.Context, *MsgProvideProof) (*MsgProvideProofResponse, error)
+	IngestHeaderChain(context.Context, *MsgIngestHeaderChain) (*EmptyResponse, error)
+	IngestDifficultyChange(context.Context, *MsgIngestDifficultyChange) (*EmptyResponse, error)
+	MarkNewHeaviest(context.Context, *MsgMarkNewHeaviest) (*EmptyResponse, error)
+	NewRequest(context.Context, *MsgNewRequest) (*EmptyResponse, error)
+	ProvideProof(context.Context, *MsgProvideProof) (*EmptyResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
-func (*UnimplementedMsgServer) IngestHeaderChain(context.Context, *MsgIngestHeaderChain) (*MsgIngestHeaderChainResponse, error) {
+func (*UnimplementedMsgServer) IngestHeaderChain(context.Context, *MsgIngestHeaderChain) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IngestHeaderChain not implemented")
 }
-func (*UnimplementedMsgServer) IngestDifficultyChange(context.Context, *MsgIngestDifficultyChange) (*MsgIngestDifficultyChangeResponse, error) {
+func (*UnimplementedMsgServer) IngestDifficultyChange(context.Context, *MsgIngestDifficultyChange) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IngestDifficultyChange not implemented")
 }
-func (*UnimplementedMsgServer) MarkNewHeaviest(context.Context, *MsgMarkNewHeaviest) (*MsgMarkNewHeaviestResponse, error) {
+func (*UnimplementedMsgServer) MarkNewHeaviest(context.Context, *MsgMarkNewHeaviest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MarkNewHeaviest not implemented")
 }
-func (*UnimplementedMsgServer) NewRequest(context.Context, *MsgNewRequest) (*MsgNewRequestResponse, error) {
+func (*UnimplementedMsgServer) NewRequest(context.Context, *MsgNewRequest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewRequest not implemented")
 }
-func (*UnimplementedMsgServer) ProvideProof(context.Context, *MsgProvideProof) (*MsgProvideProofResponse, error) {
+func (*UnimplementedMsgServer) ProvideProof(context.Context, *MsgProvideProof) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProvideProof not implemented")
 }
 
 func RegisterMsgServer(s *grpc.Server, srv MsgServer) {
-	s.RegisterService(&_MsgServer_serviceDesc, srv)
+	s.RegisterService(&_Msg_serviceDesc, srv)
 }
 
-func _MsgServer_IngestHeaderChain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Msg_IngestHeaderChain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgIngestHeaderChain)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -239,7 +299,7 @@ func _MsgServer_IngestHeaderChain_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/relayproto.MsgServer/IngestHeaderChain",
+		FullMethod: "/relayproto.Msg/IngestHeaderChain",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).IngestHeaderChain(ctx, req.(*MsgIngestHeaderChain))
@@ -247,7 +307,7 @@ func _MsgServer_IngestHeaderChain_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MsgServer_IngestDifficultyChange_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Msg_IngestDifficultyChange_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgIngestDifficultyChange)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -257,7 +317,7 @@ func _MsgServer_IngestDifficultyChange_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/relayproto.MsgServer/IngestDifficultyChange",
+		FullMethod: "/relayproto.Msg/IngestDifficultyChange",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).IngestDifficultyChange(ctx, req.(*MsgIngestDifficultyChange))
@@ -265,7 +325,7 @@ func _MsgServer_IngestDifficultyChange_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MsgServer_MarkNewHeaviest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Msg_MarkNewHeaviest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgMarkNewHeaviest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -275,7 +335,7 @@ func _MsgServer_MarkNewHeaviest_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/relayproto.MsgServer/MarkNewHeaviest",
+		FullMethod: "/relayproto.Msg/MarkNewHeaviest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).MarkNewHeaviest(ctx, req.(*MsgMarkNewHeaviest))
@@ -283,7 +343,7 @@ func _MsgServer_MarkNewHeaviest_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MsgServer_NewRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Msg_NewRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgNewRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -293,7 +353,7 @@ func _MsgServer_NewRequest_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/relayproto.MsgServer/NewRequest",
+		FullMethod: "/relayproto.Msg/NewRequest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).NewRequest(ctx, req.(*MsgNewRequest))
@@ -301,7 +361,7 @@ func _MsgServer_NewRequest_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MsgServer_ProvideProof_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Msg_ProvideProof_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgProvideProof)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -311,7 +371,7 @@ func _MsgServer_ProvideProof_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/relayproto.MsgServer/ProvideProof",
+		FullMethod: "/relayproto.Msg/ProvideProof",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).ProvideProof(ctx, req.(*MsgProvideProof))
@@ -319,29 +379,29 @@ func _MsgServer_ProvideProof_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-var _MsgServer_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "relayproto.MsgServer",
+var _Msg_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "relayproto.Msg",
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "IngestHeaderChain",
-			Handler:    _MsgServer_IngestHeaderChain_Handler,
+			Handler:    _Msg_IngestHeaderChain_Handler,
 		},
 		{
 			MethodName: "IngestDifficultyChange",
-			Handler:    _MsgServer_IngestDifficultyChange_Handler,
+			Handler:    _Msg_IngestDifficultyChange_Handler,
 		},
 		{
 			MethodName: "MarkNewHeaviest",
-			Handler:    _MsgServer_MarkNewHeaviest_Handler,
+			Handler:    _Msg_MarkNewHeaviest_Handler,
 		},
 		{
 			MethodName: "NewRequest",
-			Handler:    _MsgServer_NewRequest_Handler,
+			Handler:    _Msg_NewRequest_Handler,
 		},
 		{
 			MethodName: "ProvideProof",
-			Handler:    _MsgServer_ProvideProof_Handler,
+			Handler:    _Msg_ProvideProof_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
