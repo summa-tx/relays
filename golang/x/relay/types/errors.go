@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
 const (
@@ -188,27 +189,27 @@ const (
 )
 
 // ErrBadHeaderLength throws an error
-func ErrBadHeaderLength(codespace sdk.CodespaceType, label string, digest RawHeader, length int) sdk.Error {
-	return sdk.NewError(codespace, BadHeaderLength, fmt.Sprintf(BadHeaderLengthMessage, label, digest, length))
+func ErrBadHeaderLength(codespace sdk.CodespaceType, label string, header btcspv.RawHeader, length int) sdk.Error {
+	return sdk.NewError(codespace, BadHeaderLength, fmt.Sprintf(BadHeaderLengthMessage, label, header, length))
 }
 
 // ErrBadHeight throws an error
-func ErrBadHeight(codespace sdk.CodespaceType, label string, digest Hash256Digest) sdk.Error {
+func ErrBadHeight(codespace sdk.CodespaceType, label string, digest btcspv.Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, BadHeight, fmt.Sprintf(BadHeightMessage, label, digest))
 }
 
 // ErrHeightMismatch throws an error
-func ErrHeightMismatch(codespace sdk.CodespaceType, prevDigest, digest Hash256Digest) sdk.Error {
+func ErrHeightMismatch(codespace sdk.CodespaceType, prevDigest, digest btcspv.Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, HeightMismatch, fmt.Sprintf(HeightMismatchMessage, prevDigest, digest))
 }
 
 // ErrUnknownBlock throws an error
-func ErrUnknownBlock(codespace sdk.CodespaceType, label string, digest Hash256Digest) sdk.Error {
+func ErrUnknownBlock(codespace sdk.CodespaceType, label string, digest btcspv.Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, UnknownBlock, fmt.Sprintf(UnknownBlockMessage, label, digest))
 }
 
 // ErrUnexpectedRetarget throws an error
-func ErrUnexpectedRetarget(codespace sdk.CodespaceType, rawHeader RawHeader) sdk.Error {
+func ErrUnexpectedRetarget(codespace sdk.CodespaceType, rawHeader btcspv.RawHeader) sdk.Error {
 	return sdk.NewError(codespace, UnexpectedRetarget, fmt.Sprintf(UnexpectedRetargetMessage, rawHeader))
 }
 
@@ -238,17 +239,17 @@ func ErrLimitTooHigh(codespace sdk.CodespaceType, limit uint32) sdk.Error {
 }
 
 // ErrNotBestKnown throws an error
-func ErrNotBestKnown(codespace sdk.CodespaceType, invalidBest, expectedBest Hash256Digest) sdk.Error {
+func ErrNotBestKnown(codespace sdk.CodespaceType, invalidBest, expectedBest btcspv.Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, NotBestKnown, fmt.Sprintf(NotBestKnownMessage, invalidBest, expectedBest))
 }
 
 // ErrNotHeaviestAncestor throws an error
-func ErrNotHeaviestAncestor(codespace sdk.CodespaceType, ancestor Hash256Digest) sdk.Error {
+func ErrNotHeaviestAncestor(codespace sdk.CodespaceType, ancestor btcspv.Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, NotHeaviestAncestor, fmt.Sprintf(NotHeaviestAncestorMessage, ancestor))
 }
 
 // ErrNotHeavier throws an error
-func ErrNotHeavier(codespace sdk.CodespaceType, newBest, prevBest Hash256Digest) sdk.Error {
+func ErrNotHeavier(codespace sdk.CodespaceType, newBest, prevBest btcspv.Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, NotHeavier, fmt.Sprintf(NotHeavierMessage, newBest, prevBest))
 }
 
@@ -273,7 +274,7 @@ func ErrAlreadyInit(codespace sdk.CodespaceType) sdk.Error {
 }
 
 // ErrBadOffset throws an error
-func ErrBadOffset(codespace sdk.CodespaceType, digest Hash256Digest) sdk.Error {
+func ErrBadOffset(codespace sdk.CodespaceType, digest btcspv.Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, BadHexLen, fmt.Sprintf(BadOffsetMessage, digest))
 }
 
@@ -338,7 +339,7 @@ func ErrRequestSpends(codespace sdk.CodespaceType, requestID RequestID) sdk.Erro
 }
 
 // ErrNotAncestor throws an error
-func ErrNotAncestor(codespace sdk.CodespaceType, lca Hash256Digest) sdk.Error {
+func ErrNotAncestor(codespace sdk.CodespaceType, lca btcspv.Hash256Digest) sdk.Error {
 	return sdk.NewError(codespace, NotAncestor, fmt.Sprintf(NotAncestorMessage, lca))
 }
 

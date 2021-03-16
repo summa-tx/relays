@@ -1,118 +1,128 @@
 package types
 
 import (
-	"fmt"
-
-	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/summa-tx/relays/golang/x/relay/types"
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 
 	"github.com/summa-tx/relays/proto"
 )
 
-var _ MsgServer;
+var _ proto.MsgServer;
 
-func stringToError(str string) (sdk.Error) {
-	// TODO: How to handle CodeType?
-	return sdk.NewError(DefaultCodespace, ExternalError, str)
+// MsgIngestHeaderChain defines a IngestHeaderChain message
+type MsgIngestHeaderChain struct {
+	Signer  sdk.AccAddress
+	Headers []BitcoinHeader
 }
 
-func bufToH256(buf []byte) (btcspv.Hash256Digest, error) {
-	var h btcspv.Hash256Digest;
-	if len(buf) != 32 {
-		return h, fmt.Errorf("Expected 32 bytes, got %d bytes", len(buf))
-	}
-
-	copy(h[:], buf)
-
-	return h, nil
-}
-
-func bufToRawHeader(buf []byte) (btcspv.RawHeader, error) {
-	var h btcspv.RawHeader;
-	if len(buf) != 80 {
-		return h, fmt.Errorf("Expected 80 bytes, got %d bytes", len(buf))
-	}
-
-	copy(h[:], buf)
-
-	return h, nil
-}
-
-func (m *MsgIngestHeaderChain) translate() (types.MsgIngestHeaderChain, error) {
-	var msg types.MsgIngestHeaderChain;
-
+// FromProto populates a MsgIngestHeaderChain from a protobuf
+func (msg *MsgIngestHeaderChain) FromProto(m *proto.MsgIngestHeaderChain) (error) {
 	// Do any parsing/translation work
-	address, err := sdk.AccAddressFromBech32(signer)
+	address, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
-		return msg, err
+		return err
+	}
+
+	headers, err := headerSliceFromProto(m.Headers)
+	if err != nil {
+		return err
 	}
 
 	msg.Signer = address
-	msg.Headers = m.Headers
+	msg.Headers = headers
 
-	return msg, nil
+	return nil
 }
 
-func (m *MsgIngestDifficultyChange) translate() (types.MsgIngestDifficultyChange, error) {
-	var msg types.MsgIngestDifficultyChange;
+// MsgIngestDifficultyChange defines a IngestDifficultChange message
+type MsgIngestDifficultyChange struct {
+	Signer  sdk.AccAddress
+	Start   btcspv.Hash256Digest
+	Headers []BitcoinHeader
+}
 
-	address, err := sdk.AccAddressFromBech32(signer)
+// FromProto populates a MsgIngestDifficultyChange from a protobuf
+func (msg *MsgIngestDifficultyChange) FromProto(m *proto.MsgIngestDifficultyChange) (error) {
+
+	address, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
-		return msg, err
+		return err
 	}
 
-	start, err := bufToH256(q.Start)
+	start, err := bufToH256(m.Start)
 	if err != nil {
-		return msg, err
+		return err
+	}
+
+	headers, err := headerSliceFromProto(m.Headers)
+	if err != nil {
+		return err
 	}
 
 	msg.Signer = address
 	msg.Start = start
-	msg.Headers = m.Headers
+	msg.Headers = headers
 
-	return msg, nil
+	return nil
 }
 
-func (m *MsgMarkNewHeaviest) translate() (types.MsgMarkNewHeaviest, error) {
-	var msg types.MsgMarkNewHeaviest;
+// MsgMarkNewHeaviest defines a MarkNewHeaviest message
+type MsgMarkNewHeaviest struct {
+	Signer      sdk.AccAddress
+	Ancestor    btcspv.Hash256Digest
+	CurrentBest btcspv.RawHeader
+	NewBest     btcspv.RawHeader
+	Limit       uint32
+}
 
-	address, err := sdk.AccAddressFromBech32(signer)
+// FromProto populates a MsgMarkNewHeaviest from a protobuf
+func (msg *MsgMarkNewHeaviest) FromProto(m *proto.MsgMarkNewHeaviest) (error) {
+	address, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
-		return msg, err
+		return err
 	}
 
-	ancestor, err := bufToH256(q.Ancestor)
+	ancestor, err := bufToH256(m.Ancestor)
 	if err != nil {
-		return msg, err
+		return err
 	}
 
-	currentBest, err := bufToRawHeader(q.CurrentBest)
+	currentBest, err := bufToRawHeader(m.CurrentBest)
 	if err != nil {
-		return msg, err
+		return err
 	}
 
-	newBest, err := bufToRawHeader(q.NewBest)
+	newBest, err := bufToRawHeader(m.NewBest)
 	if err != nil {
-		return msg, err
+		return err
 	}
 
 	msg.Signer = address
-	msg.Ancestor = m.Ancestor
+	msg.Ancestor = ancestor
 	msg.CurrentBest = currentBest
 	msg.NewBest = newBest
 	msg.Limit = m.Limit
 
-	return msg, nil
+	return nil
 }
 
-func (m *MsgNewRequest) translate() (types.MsgNewRequest, error) {
-	var msg types.MsgNewRequest;
+// MsgNewRequest defines a NewRequest message
+type MsgNewRequest struct {
+	Signer    sdk.AccAddress
+	Spends    HexBytes
+	Pays      HexBytes
+	PaysValue uint64
+	NumConfs  uint8
+	Origin    Origin
+	Action    HexBytes
+}
 
-	address, err := sdk.AccAddressFromBech32(signer)
+
+// FromProto populates a MsgNewRequest from a protobuf
+func (msg *MsgNewRequest) FromProto(m *proto.MsgNewRequest) (error) {
+	address, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
-		return msg, err
+		return err
 	}
 
 	msg.Signer = address
@@ -120,22 +130,34 @@ func (m *MsgNewRequest) translate() (types.MsgNewRequest, error) {
 	msg.Pays = btcspv.HexBytes(m.Pays)
 	msg.PaysValue = m.PaysValue
 	msg.NumConfs = uint8(m.NumConfs)
-	msg.Origin = m.Origin
+	msg.Origin = Origin(uint8(m.Origin))
 	msg.Action = btcspv.HexBytes(m.Action)
 
-	return msg, nil
+	return nil
 }
 
-func (m *MsgProvideProof) translate() (types.MsgProvideProof, error) {
-	var msg types.MsgProvideProof;
+// MsgProvideProof defines a NewRequest message
+type MsgProvideProof struct {
+	Signer sdk.AccAddress
+	Filled FilledRequests
+}
 
-	address, err := sdk.AccAddressFromBech32(signer)
+// FromProto populates a MsgProvideProof from a protobuf
+func (msg *MsgProvideProof) FromProto(m *proto.MsgProvideProof) (error) {
+
+	address, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
-		return msg, err
+		return err
+	}
+
+	var filled FilledRequests;
+	err = filled.FromProto(m.Filled)
+	if err != nil {
+		return err
 	}
 
 	msg.Signer = address
-	msg.FilledRequests = m.FilledRequests
+	msg.Filled = filled
 
-	return msg, nil
+	return nil
 }

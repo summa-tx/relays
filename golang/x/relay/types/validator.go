@@ -1,22 +1,26 @@
 package types
 
+import "github.com/summa-tx/relays/proto"
+
 // FilledRequestInfo contains information about what input and/or output satisfied the request
 type FilledRequestInfo struct {
-	InputIndex  uint32    `json:"inputIndex"`
-	OutputIndex uint32    `json:"outputIndex"`
-	ID          RequestID `json:"id"`
+	InputIndex  uint32
+	OutputIndex uint32
+	ID          RequestID
+}
+
+func (f *FilledRequestInfo) FromProto(m *proto.FilledRequestInfo) (error) {
+	// TODO
+	return nil
 }
 
 // FilledRequests contains a proof that satisfies one or more requests
 type FilledRequests struct {
-	Proof  SPVProof            `json:"proof"`
-	Filled []FilledRequestInfo `json:"requests"`
+	Proof  SPVProof
+	Filled []FilledRequestInfo
 }
 
-// NewFilledRequests instantiates a FilledRequests
-func NewFilledRequests(proof SPVProof, filled []FilledRequestInfo) FilledRequests {
-	return FilledRequests{
-		proof,
-		filled,
-	}
+func (f *FilledRequests) FromProto(m *proto.FilledRequests) (error) {
+	// TODO
+	return nil
 }

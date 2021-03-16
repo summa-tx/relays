@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
 const (
@@ -43,15 +45,15 @@ const (
 
 // QueryParamsIsAncestor represents the parameters for an IsAncestor query
 type QueryParamsIsAncestor struct {
-	DigestLE            Hash256Digest `json:"digest"`
-	ProspectiveAncestor Hash256Digest `json:"prospectiveAncestor"`
-	Limit               uint32        `json:"limit"`
+	DigestLE            btcspv.Hash256Digest
+	ProspectiveAncestor btcspv.Hash256Digest
+	Limit               uint32
 }
 
 // QueryResIsAncestor is the response to a IsAncestor query
 type QueryResIsAncestor struct {
-	Params QueryParamsIsAncestor `json:"params"`
-	Res    bool                  `json:"result"`
+	Params QueryParamsIsAncestor
+	Res    bool
 }
 
 // String formats a QueryResIsAncestor struct
@@ -65,7 +67,7 @@ func (r QueryResIsAncestor) String() string {
 
 // QueryResGetRelayGenesis is the response struct for queryGetRelayGenesis
 type QueryResGetRelayGenesis struct {
-	Res Hash256Digest `json:"result"`
+	Res btcspv.Hash256Digest
 }
 
 // String formats a QueryResGetRelayGenesis struct
@@ -76,7 +78,7 @@ func (r QueryResGetRelayGenesis) String() string {
 
 // QueryResGetLastReorgLCA is the response struct for queryGetLastReorgLCA
 type QueryResGetLastReorgLCA struct {
-	Res Hash256Digest `json:"result"`
+	Res btcspv.Hash256Digest
 }
 
 // String formats a QueryResGetLastReorgLCA struct
@@ -87,7 +89,7 @@ func (r QueryResGetLastReorgLCA) String() string {
 
 // QueryResGetBestDigest is the response struct for queryGetBestDigest
 type QueryResGetBestDigest struct {
-	Res Hash256Digest `json:"result"`
+	Res btcspv.Hash256Digest
 }
 
 // String formats a QueryResGetBestDigest struct
@@ -98,14 +100,14 @@ func (r QueryResGetBestDigest) String() string {
 
 // QueryParamsFindAncestor represents the parameters for a FindAncestor query
 type QueryParamsFindAncestor struct {
-	DigestLE Hash256Digest `json:"digestLE"`
-	Offset   uint32        `json:"offset"`
+	DigestLE btcspv.Hash256Digest
+	Offset   uint32
 }
 
 // QueryResFindAncestor is the response struct for queryFindAncestor
 type QueryResFindAncestor struct {
-	Params QueryParamsFindAncestor `json:"params"`
-	Res    Hash256Digest           `json:"result"`
+	Params QueryParamsFindAncestor
+	Res    btcspv.Hash256Digest
 }
 
 // String formats a QueryResFindAncestor struct
@@ -120,16 +122,16 @@ func (r QueryResFindAncestor) String() string {
 
 // QueryParamsHeaviestFromAncestor is the params struct for queryHeaviestFromAncestor
 type QueryParamsHeaviestFromAncestor struct {
-	Ancestor    Hash256Digest `json:"ancestor"`
-	CurrentBest Hash256Digest `json:"currentBest"`
-	NewBest     Hash256Digest `json:"newBest"`
-	Limit       uint32        `json:"limit"`
+	Ancestor    btcspv.Hash256Digest
+	CurrentBest btcspv.Hash256Digest
+	NewBest     btcspv.Hash256Digest
+	Limit       uint32
 }
 
 // QueryResHeaviestFromAncestor is the response struct for queryHeaviestFromAncestor
 type QueryResHeaviestFromAncestor struct {
-	Params QueryParamsHeaviestFromAncestor `json:"params"`
-	Res    Hash256Digest                   `json:"result"`
+	Params QueryParamsHeaviestFromAncestor
+	Res    btcspv.Hash256Digest
 }
 
 // String formats a QueryResHeaviestFromAncestor struct
@@ -145,16 +147,16 @@ func (r QueryResHeaviestFromAncestor) String() string {
 
 // QueryParamsIsMostRecentCommonAncestor is the params struct for queryIsMostRecentCommonAncestor
 type QueryParamsIsMostRecentCommonAncestor struct {
-	Ancestor Hash256Digest `json:"ancestor"`
-	Left     Hash256Digest `json:"left"`
-	Right    Hash256Digest `json:"right"`
-	Limit    uint32        `json:"limit"`
+	Ancestor btcspv.Hash256Digest
+	Left     btcspv.Hash256Digest
+	Right    btcspv.Hash256Digest
+	Limit    uint32
 }
 
 // QueryResIsMostRecentCommonAncestor is the response struct for queryIsMostRecentCommonAncestor
 type QueryResIsMostRecentCommonAncestor struct {
-	Params QueryParamsIsMostRecentCommonAncestor `json:"params"`
-	Res    bool                                  `json:"result"`
+	Params QueryParamsIsMostRecentCommonAncestor
+	Res    bool
 }
 
 // String formats a QueryResIsMostRecentCommonAncestor struct
@@ -169,13 +171,13 @@ func (r QueryResIsMostRecentCommonAncestor) String() string {
 
 // QueryParamsGetRequest is the response struct for queryGetRequest
 type QueryParamsGetRequest struct {
-	ID RequestID `json:"id"`
+	ID RequestID
 }
 
 // QueryResGetRequest is the response struct for queryGetRequest
 type QueryResGetRequest struct {
-	Params QueryParamsGetRequest `json:"params"`
-	Res    ProofRequest          `json:"result"`
+	Params QueryParamsGetRequest
+	Res    ProofRequest
 }
 
 // String formats a QueryResIsMostRecentCommonAncestor struct
@@ -189,14 +191,14 @@ func (r QueryResGetRequest) String() string {
 
 // QueryParamsCheckRequests is the response struct for queryCheckRequests
 type QueryParamsCheckRequests struct {
-	Filled FilledRequests `json:"filledRequests"`
+	Filled FilledRequests
 }
 
 // QueryResCheckRequests is the response struct for queryCheckRequests
 type QueryResCheckRequests struct {
-	Params       QueryParamsCheckRequests `json:"params"`
-	Valid        bool                     `json:"valid"`
-	ErrorMessage string                   `json:"errorMessage"`
+	Params       QueryParamsCheckRequests
+	Valid        bool
+	ErrorMessage string
 }
 
 // String formats a QueryResCheckRequests struct
@@ -207,14 +209,14 @@ func (r QueryResCheckRequests) String() string {
 
 // QueryParamsCheckProof is the response struct for queryCheckProof
 type QueryParamsCheckProof struct {
-	Proof SPVProof `json:"proof"`
+	Proof SPVProof
 }
 
 // QueryResCheckProof is the response struct for queryCheckProof
 type QueryResCheckProof struct {
-	Params       QueryParamsCheckProof `json:"params"`
-	Valid        bool                  `json:"valid"`
-	ErrorMessage string                `json:"errorMessage"`
+	Params       QueryParamsCheckProof
+	Valid        bool
+	ErrorMessage string
 }
 
 // String formats a QueryResCheckProof struct

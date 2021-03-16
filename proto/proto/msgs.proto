@@ -7,39 +7,39 @@ import "shared.proto";
 
 // MsgIngestHeaderChain defines a IngestHeaderChain message
 message MsgIngestHeaderChain {
-	string Signer = 1;
-	repeated BitcoinHeader Headers = 2;
+	string signer = 1;
+	repeated BitcoinHeader headers = 2;
 }
 
 // MsgIngestDifficultyChange defines a IngestDifficultyChange message
 message MsgIngestDifficultyChange {
-  string Signer = 1;
-  bytes Start = 2;
-  repeated BitcoinHeader Headers = 3;
+  string signer = 1;
+  bytes start = 2;
+  repeated BitcoinHeader headers = 3;
 }
 
 // MsgMarkNewHeaviest defines a MarkNewHeaviest message
 message MsgMarkNewHeaviest {
-  string Signer = 1;
-  bytes Ancestor = 2;
-  bytes CurrentBest = 3;
-  bytes NewBest = 4;
-  uint32 Limit = 5;
+  string signer = 1;
+  bytes ancestor = 2;
+  bytes current_best = 3;
+  bytes new_best = 4;
+  uint32 limit = 5;
 }
 
 // MsgNewRequest defines a NewRequest message
 message MsgNewRequest {
-  string Signer = 1;
-  bytes Spends = 2;
-  bytes Pays = 3;
-  uint64 PaysValue = 4;
-  uint32 NumConfs = 5;
-  Origin Origin = 6;
-  bytes Action = 7;
+  string signer = 1;
+  bytes spends = 2;
+  bytes pays = 3;
+  uint64 pays_value = 4;
+  uint32 num_confs = 5;
+  Origin origin = 6;
+  bytes action = 7;
 }
 
 // MsgProvideProof defines a NewRequest message
 message MsgProvideProof {
-  string Signer = 1;
-  FilledRequests Filled = 2;
+  string signer = 1;
+  FilledRequests filled = 2;
 }
