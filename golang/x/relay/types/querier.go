@@ -54,6 +54,7 @@ type QueryParamsIsAncestor struct {
 	Limit               uint32
 }
 
+// FromProto populates a QueryParamsIsAncestor from a protobuf
 func (query *QueryParamsIsAncestor) FromProto(q *proto.QueryParamsIsAncestor) (error) {
 	digest, err := bufToH256(q.DigestLE)
 	if err != nil {
@@ -78,6 +79,7 @@ type QueryResIsAncestor struct {
 	Res    bool
 }
 
+// FromProto populates a QueryResIsAncestor from a protobuf
 func (query *QueryResIsAncestor) FromProto(q *proto.QueryResIsAncestor) (error) {
 	params, err := q.Params.FromProto()
 	if err != nil {
@@ -95,6 +97,7 @@ type QueryResGetRelayGenesis struct {
 	Res btcspv.Hash256Digest
 }
 
+// FromProto populates a QueryResGetRelayGenesis from a protobuf
 func (query *QueryResGetRelayGenesis) FromProto(q *proto.QueryResGetRelayGenesis) (error) {
 	res, err := bufToH256(q.Res)
 	if err != nil {
@@ -111,6 +114,7 @@ type QueryResGetLastReorgLCA struct {
 	Res btcspv.Hash256Digest
 }
 
+// FromProto populates a QueryResGetLastReorgLCA from a protobuf
 func (query *QueryResGetLastReorgLCA) FromProto(q *proto.QueryResGetLastReorgLCA) (error) {
 	res, err := bufToH256(q.Res)
 	if err != nil {
@@ -127,6 +131,7 @@ type QueryResGetBestDigest struct {
 	Res btcspv.Hash256Digest
 }
 
+// FromProto populates a QueryResGetBestDigest from a protobuf
 func (query *QueryResGetBestDigest) FromProto(q *proto.QueryResGetBestDigest) (error) {
 	res, err := bufToH256(q.Res)
 	if err != nil {
@@ -144,6 +149,7 @@ type QueryParamsFindAncestor struct {
 	Offset   uint32
 }
 
+// FromProto populates a QueryParamsFindAncestor from a protobuf
 func (query *QueryParamsFindAncestor) FromProto(q *proto.QueryParamsFindAncestor) (error) {
 	digest, err := bufToH256(q.DigestLE)
 	if err != nil {
@@ -162,6 +168,7 @@ type QueryResFindAncestor struct {
 	Res    btcspv.Hash256Digest
 }
 
+// FromProto populates a QueryResFindAncestor from a protobuf
 func (query *QueryResFindAncestor) FromProto(q *proto.QueryResFindAncestor) (error) {
 	params, err := q.Params.FromProto()
 	if err != nil {
@@ -187,6 +194,7 @@ type QueryParamsHeaviestFromAncestor struct {
 	Limit       uint32
 }
 
+// FromProto populates a QueryParamsHeaviestFromAncestor from a protobuf
 func (query *QueryParamsHeaviestFromAncestor) FromProto(q *proto.QueryParamsHeaviestFromAncestor) (error) {
 	ancestor, err := bufToH256(q.Ancestor)
 	if err != nil {
@@ -217,6 +225,7 @@ type QueryResHeaviestFromAncestor struct {
 	Res    btcspv.Hash256Digest
 }
 
+// FromProto populates a QueryResHeaviestFromAncestor from a protobuf
 func (query *QueryResHeaviestFromAncestor) FromProto(q *proto.QueryResHeaviestFromAncestor) (error) {
 	params, err := q.Params.FromProto()
 	if err != nil {
@@ -242,6 +251,7 @@ type QueryParamsIsMostRecentCommonAncestor struct {
 	Limit    uint32
 }
 
+// FromProto populates a QueryParamsIsMostRecentCommonAncestor from a protobuf
 func (query *QueryParamsIsMostRecentCommonAncestor) FromProto(q *proto.QueryParamsIsMostRecentCommonAncestor) {
 	ancestor, err := bufToH256(q.Ancestor)
 	if err != nil {
@@ -272,6 +282,7 @@ type QueryResIsMostRecentCommonAncestor struct {
 	Res    bool
 }
 
+// FromProto populates a QueryResIsMostRecentCommonAncestor from a protobuf
 func (query *QueryResIsMostRecentCommonAncestor) FromProto(q *proto.QueryResIsMostRecentCommonAncestor) (error) {
 	params, err := q.Params.FromProto()
 	if err != nil {
@@ -289,6 +300,7 @@ type QueryParamsGetRequest struct {
 	ID RequestID
 }
 
+// FromProto populates a QueryParamsGetRequest from a protobuf
 func (query *QueryParamsGetRequest) FromProto(q *proto.QueryParamsGetRequest) (error) {
 	id, err := bufToRequestID(q.ID)
 	if err != nil {
@@ -306,6 +318,7 @@ type QueryResGetRequest struct {
 	Res    ProofRequest
 }
 
+// FromProto populates a QueryResGetRequest from a protobuf
 func (query *QueryResGetRequest) FromProto(q *proto.QueryResGetRequest) (error) {
 	params, err := q.Params.FromProto()
 	if err != nil {
@@ -328,6 +341,7 @@ type QueryParamsCheckRequests struct {
 	Filled FilledRequests
 }
 
+// FromProto populates a QueryParamsCheckRequests from a protobuf
 func (query *QueryParamsCheckRequests) FromProto(q *proto.QueryParamsCheckRequests) (error) {
 	filledRequests, err := filledRequestsFromProto(q)
 	if err != nil {
@@ -346,6 +360,7 @@ type QueryResCheckRequests struct {
 	ErrorMessage string
 }
 
+// FromProto populates a QueryResCheckRequests from a protobuf
 func (query *QueryResCheckRequests) FromProto(q *proto.QueryResCheckRequests) (error) {
 	params, err := q.Params.FromProto()
 	if err != nil {
@@ -364,6 +379,7 @@ type QueryParamsCheckProof struct {
 	Proof SPVProof
 }
 
+// FromProto populates a QueryParamsCheckProof from a protobuf
 func (query *QueryParamsCheckProof) FromProto(q *proto.QueryParamsCheckProof) (error) {
 	spvProof, err :=spvProofFromProto(q)
 	if err != nil {
@@ -382,6 +398,7 @@ type QueryResCheckProof struct {
 	ErrorMessage string
 }
 
+// FromProto populates a QueryResCheckProof from a protobuf
 func (query *QueryResCheckProof) FromProto(q *proto.QueryResCheckProof) (error) {
 	params, err := q.Params.FromProto()
 	if err != nil {

@@ -9,6 +9,7 @@ type FilledRequestInfo struct {
 	ID          RequestID
 }
 
+// FromProto populates a FilledRequestInfo from a protobuf
 func filledRequestInfoFromProto(m *proto.FilledRequestInfo) (FilledRequestInfo, error) {
 	var filledRequest FilledRequestInfo
 
@@ -30,6 +31,7 @@ type FilledRequests struct {
 	Filled []FilledRequestInfo
 }
 
+// FromProto populates FilledRequests from a protobuf
 func filledRequestsFromProto(m *proto.FilledRequests) (FilledRequests, error) {
 	filledRequests := make([]FilledRequests, len(m))
 	for	i, f := range m {
