@@ -94,6 +94,17 @@ func bufToRawHeader(buf []byte) (btcspv.RawHeader, error) {
 	return h, nil
 }
 
+func bufToRequestID(buf []byte) (RequestID, error) {
+	var h RequestID;
+	if len(buf) != 8 {
+		return h, fmt.Errorf("Expected 8 bytes, got %d bytes", len(buf))
+	}
+
+	copy(h[:], buf)
+
+	return h, nil
+}
+
 
 func headerFromProto(m *proto.BitcoinHeader) (btcspv.BitcoinHeader, error) {
 	var header btcspv.BitcoinHeader
@@ -134,4 +145,51 @@ func headerSliceFromProto(m []*proto.BitcoinHeader) ([]btcspv.BitcoinHeader, err
 	}
 
 	return headers, nil
+}
+
+func spvProofFromProto(q *proto.SPVProof) (btcspv.SPVProof, error) {
+	var spvProof btcspv.SPVProof
+
+	txID, err := bufToH256(q.TxID)
+	if err != nil {
+		return spvProof, err
+	}
+
+	header, err := headerFromProto(q.ConfirmingHeader)
+	if err != nil {
+		return spvProof, err
+	}
+
+	spvProof.Version = HexBytes(q.Version)
+	spvProof.Vin = HexBytes(q.Vin)
+	spvProof.Vout = HexBytes(q.Vout)
+	spvProof.Locktime = HexBytes(q.Locktime)
+	spvProof.TxID = txID
+	spvProof.Index = q.Index
+	spvProof.ConfirmingHeader = header
+	spvProof.IntermediateNodes = HexBytes(q.IntermediateNodes)
+
+	return spvProof, nil
+}
+
+func proofRequestFromProto(q *proto.ProofRequest) (ProofRequest, error) {
+	var proofRequest ProofRequest
+
+	spends, err := bufToH256(q.Spends)
+	if err != nil {
+		return proofRequest, err
+	}
+
+	pays, err := bufToH256(q.Pays)
+	if err != nil {
+		return proofRequest, err
+	}
+
+	proofRequest.Spends = spends
+	proofRequest.Pays = pays
+	proofRequest.PaysValue = q.PaysValue
+	proofRequest.ActiveState = q.ActiveState
+	proofRequest.NumConfs = uint8(q.NumConfs)
+	proofRequest.Origin = Origin(q.Origin)
+	proofRequest.Action = btcspv.HexBytes(q.Action)
 }

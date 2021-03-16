@@ -9,9 +9,19 @@ type FilledRequestInfo struct {
 	ID          RequestID
 }
 
-func (f *FilledRequestInfo) FromProto(m *proto.FilledRequestInfo) (error) {
-	// TODO
-	return nil
+func filledRequestInfoFromProto(m *proto.FilledRequestInfo) (FilledRequestInfo, error) {
+	var filledRequest FilledRequestInfo
+
+	id, err := bufToRequestID(q.ID)
+	if err != nil {
+		return filledRequest, err
+	}
+
+	filledRequest.InputIndex = m.InputIndex
+	filledRequest.OutputIndex = m.OutputIndex
+	filledRequest.ID = id
+
+	return filledRequest, nil
 }
 
 // FilledRequests contains a proof that satisfies one or more requests
@@ -20,7 +30,15 @@ type FilledRequests struct {
 	Filled []FilledRequestInfo
 }
 
-func (f *FilledRequests) FromProto(m *proto.FilledRequests) (error) {
-	// TODO
-	return nil
+func filledRequestsFromProto(m *proto.FilledRequests) (FilledRequests, error) {
+	filledRequests := make([]FilledRequests, len(m))
+	for	i, f := range m {
+		filledRequest, err := filledRequestInfoFromProto(f)
+		filledRequests[i] = filledRequest
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return filledRequests, nil
 }
