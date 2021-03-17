@@ -2,12 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-<<<<<<< HEAD
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
-=======
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-)
->>>>>>> update_codec
 
 	"github.com/summa-tx/relays/proto"
 )
@@ -36,17 +31,6 @@ func (msg *MsgIngestHeaderChain) FromProto(m *proto.MsgIngestHeaderChain) (error
 	msg.Signer = address
 	msg.Headers = headers
 
-<<<<<<< HEAD
-=======
-// ValidateBasic runs stateless validation
-func (msg MsgIngestHeaderChain) ValidateBasic() *sdkerrors.Error {
-	for i := range msg.Headers {
-		valid, err := msg.Headers[i].Validate()
-		if !valid || err != nil {
-			return FromBTCSPVError(DefaultCodespace, err)
-		}
-	}
->>>>>>> update_codec
 	return nil
 }
 
