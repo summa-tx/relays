@@ -231,7 +231,7 @@ func (s *KeeperSuite) InitTestContext(mainnet, isCheckTx bool) {
 		panic(err.Error())
 	}
 
-	cdc := codec.New()
+	cdc := codec.NewLegacyAmino()
 
 	ctx := sdk.NewContext(ms, abci.Header{ChainID: "relayTestChain"}, isCheckTx, tmlog.NewNopLogger())
 	keeper := NewKeeper(relayKey, cdc, mainnet, types.NewNullHandler())

@@ -39,7 +39,7 @@ func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 }
 
 // DefaultGenesis is
-func (AppModuleBasic) DefaultGenesis() json.RawMessage {
+func (AppModuleBasic) DefaultGenesis(cdc codec.JSONMarshaler) json.RawMessage {
 	return types.ModuleCdc.MustMarshalJSON(DefaultGenesisState())
 }
 
@@ -103,7 +103,7 @@ func (AppModule) Name() string {
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {}
 
 // Route is
-func (am AppModule) Route() string {
+func (am AppModule) Route() sdk.Route {
 	return types.RouterKey
 }
 

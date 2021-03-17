@@ -22,7 +22,7 @@ func NewGenesisState(headers []types.BitcoinHeader, periodStart types.BitcoinHea
 }
 
 // ValidateGenesis validates a genesis state
-func ValidateGenesis(data GenesisState) error {
+func ValidateGenesis(cdc codec.JSONMarshaler, config client.TxEncodingConfig, bz json.RawMessage, data GenesisState) error {
 	raw := []byte{}
 	for _, header := range data.Headers {
 		_, err := header.Validate()
@@ -55,7 +55,7 @@ func DefaultGenesisState() GenesisState {
 }
 
 // InitGenesis inits the app state based on the genesis state
-func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data GenesisState) []abci.ValidatorUpdate {
+func InitGenesis(ctx sdk.Context, cdc codec.JSONMarshaler, keeper keeper.Keeper, data GenesisState) []abci.ValidatorUpdate {
 	err := keeper.SetGenesisState(ctx, data.Headers[0], data.PeriodStart)
 	if err != nil {
 		panic("already init!")
@@ -72,6 +72,6 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data GenesisState) []abc
 // ExportGenesis exports the genesis state
 // TODO: export GenesisState
 //       May need special store keys for it
-func ExportGenesis(ctx sdk.Context, k keeper.Keeper) GenesisState {
+func ExportGenesis(ctx sdk.Context, cdc codec.JSONMarshaler, k keeper.Keeper) GenesisState {
 	panic("Not implemented")
 }

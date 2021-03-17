@@ -5,7 +5,7 @@ import (
 )
 
 // ModuleCdc is the codec for the module
-var ModuleCdc = codec.New()
+var ModuleCdc = codec.NewLegacyAmino()
 
 func init() {
 	RegisterCodec(ModuleCdc)
