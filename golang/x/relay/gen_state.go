@@ -5,9 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
-func getGenesisHeaders() (BitcoinHeader, []BitcoinHeader) {
+func getGenesisHeaders() (types.BitcoinHeader, []types.BitcoinHeader) {
 	// get path to root directory
 	path, err := os.Getwd()
 	if err != nil {
@@ -21,7 +23,7 @@ func getGenesisHeaders() (BitcoinHeader, []BitcoinHeader) {
 		panic("could not retreive data in gen_state: " + jsonErr.Error())
 	}
 
-	var genesisHeaders []BitcoinHeader
+	var genesisHeaders []types.BitcoinHeader
 	err = json.Unmarshal([]byte(headerJSON), &genesisHeaders)
 	if err != nil {
 		panic("bad json in gen_state: " + err.Error())

@@ -1,10 +1,12 @@
 package types
 
 import (
-	"encoding/hex"
-	"encoding/json"
-	"fmt"
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
+
+	"github.com/summa-tx/relays/proto"
 )
+
+var _ proto.QueryServer;
 
 const (
 	// DefaultLookupLimit is the default limit for lookup requests
@@ -43,182 +45,372 @@ const (
 
 // QueryParamsIsAncestor represents the parameters for an IsAncestor query
 type QueryParamsIsAncestor struct {
-	DigestLE            Hash256Digest `json:"digest"`
-	ProspectiveAncestor Hash256Digest `json:"prospectiveAncestor"`
-	Limit               uint32        `json:"limit"`
+	DigestLE            btcspv.Hash256Digest
+	ProspectiveAncestor btcspv.Hash256Digest
+	Limit               uint32
+}
+
+// FromProto populates a QueryParamsIsAncestor from a protobuf
+func (query *QueryParamsIsAncestor) FromProto(q *proto.QueryParamsIsAncestor) (error) {
+	digest, err := bufToH256(q.DigestLE)
+	if err != nil {
+		return err
+	}
+
+	ancestor, err := bufToH256(q.ProspectiveAncestor)
+	if err != nil {
+		return err
+	}
+
+	query.DigestLE = digest
+	query.ProspectiveAncestor = ancestor
+	query.Limit = q.Limit
+
+	return nil
 }
 
 // QueryResIsAncestor is the response to a IsAncestor query
 type QueryResIsAncestor struct {
-	Params QueryParamsIsAncestor `json:"params"`
-	Res    bool                  `json:"result"`
+	Params QueryParamsIsAncestor
+	Res    bool
 }
 
-// String formats a QueryResIsAncestor struct
-func (r QueryResIsAncestor) String() string {
-	dig := "0x" + hex.EncodeToString(r.Params.DigestLE[:])
-	digAnc := "0x" + hex.EncodeToString(r.Params.ProspectiveAncestor[:])
-	return fmt.Sprintf(
-		"Digest: %s, Ancestor: %s, Limit: %d, Result: %t",
-		dig, digAnc, r.Params.Limit, r.Res)
+// FromProto populates a QueryResIsAncestor from a protobuf
+func (query *QueryResIsAncestor) FromProto(q *proto.QueryResIsAncestor) (error) {
+	var params QueryParamsIsAncestor
+	err := params.FromProto(q.Params)
+	if err != nil {
+		return err
+	}
+
+	query.Params = params
+	query.Res = q.Res
+
+	return nil
 }
 
 // QueryResGetRelayGenesis is the response struct for queryGetRelayGenesis
 type QueryResGetRelayGenesis struct {
-	Res Hash256Digest `json:"result"`
+	Res btcspv.Hash256Digest
 }
 
-// String formats a QueryResGetRelayGenesis struct
-func (r QueryResGetRelayGenesis) String() string {
-	digest := "0x" + hex.EncodeToString(r.Res[:])
-	return fmt.Sprintf("%s\n", digest)
+// FromProto populates a QueryResGetRelayGenesis from a protobuf
+func (query *QueryResGetRelayGenesis) FromProto(q *proto.QueryResGetRelayGenesis) (error) {
+	res, err := bufToH256(q.Res)
+	if err != nil {
+		return err
+	}
+
+	query.Res = res
+
+	return nil
 }
 
 // QueryResGetLastReorgLCA is the response struct for queryGetLastReorgLCA
 type QueryResGetLastReorgLCA struct {
-	Res Hash256Digest `json:"result"`
+	Res btcspv.Hash256Digest
 }
 
-// String formats a QueryResGetLastReorgLCA struct
-func (r QueryResGetLastReorgLCA) String() string {
-	digest := "0x" + hex.EncodeToString(r.Res[:])
-	return fmt.Sprintf("%s\n", digest)
+// FromProto populates a QueryResGetLastReorgLCA from a protobuf
+func (query *QueryResGetLastReorgLCA) FromProto(q *proto.QueryResGetLastReorgLCA) (error) {
+	res, err := bufToH256(q.Res)
+	if err != nil {
+		return err
+	}
+
+	query.Res = res
+
+	return nil
 }
 
 // QueryResGetBestDigest is the response struct for queryGetBestDigest
 type QueryResGetBestDigest struct {
-	Res Hash256Digest `json:"result"`
+	Res btcspv.Hash256Digest
 }
 
-// String formats a QueryResGetBestDigest struct
-func (r QueryResGetBestDigest) String() string {
-	digest := "0x" + hex.EncodeToString(r.Res[:])
-	return fmt.Sprintf("%s\n", digest)
+// FromProto populates a QueryResGetBestDigest from a protobuf
+func (query *QueryResGetBestDigest) FromProto(q *proto.QueryResGetBestDigest) (error) {
+	res, err := bufToH256(q.Res)
+	if err != nil {
+		return err
+	}
+
+	query.Res = res
+
+	return nil
 }
 
 // QueryParamsFindAncestor represents the parameters for a FindAncestor query
 type QueryParamsFindAncestor struct {
-	DigestLE Hash256Digest `json:"digestLE"`
-	Offset   uint32        `json:"offset"`
+	DigestLE btcspv.Hash256Digest
+	Offset   uint32
+}
+
+// FromProto populates a QueryParamsFindAncestor from a protobuf
+func (query *QueryParamsFindAncestor) FromProto(q *proto.QueryParamsFindAncestor) (error) {
+	digest, err := bufToH256(q.DigestLE)
+	if err != nil {
+		return err
+	}
+
+	query.DigestLE = digest
+	query.Offset = q.Offset
+
+	return nil
 }
 
 // QueryResFindAncestor is the response struct for queryFindAncestor
 type QueryResFindAncestor struct {
-	Params QueryParamsFindAncestor `json:"params"`
-	Res    Hash256Digest           `json:"result"`
+	Params QueryParamsFindAncestor
+	Res    btcspv.Hash256Digest
 }
 
-// String formats a QueryResFindAncestor struct
-func (r QueryResFindAncestor) String() string {
-	dig := "0x" + hex.EncodeToString(r.Params.DigestLE[:])
-	offset := r.Params.Offset
-	res := "0x" + hex.EncodeToString(r.Res[:])
-	return fmt.Sprintf(
-		"Digest LE: %s, Offset: %d, Result: %s",
-		dig, offset, res)
+// FromProto populates a QueryResFindAncestor from a protobuf
+func (query *QueryResFindAncestor) FromProto(q *proto.QueryResFindAncestor) (error) {
+	var params QueryParamsFindAncestor
+	err := params.FromProto(q.Params)
+	if err != nil {
+		return err
+	}
+
+	res, err := bufToH256(q.Res)
+	if err != nil {
+		return err
+	}
+
+	query.Params = params
+	query.Res = res
+
+	return nil
 }
 
 // QueryParamsHeaviestFromAncestor is the params struct for queryHeaviestFromAncestor
 type QueryParamsHeaviestFromAncestor struct {
-	Ancestor    Hash256Digest `json:"ancestor"`
-	CurrentBest Hash256Digest `json:"currentBest"`
-	NewBest     Hash256Digest `json:"newBest"`
-	Limit       uint32        `json:"limit"`
+	Ancestor    btcspv.Hash256Digest
+	CurrentBest btcspv.Hash256Digest
+	NewBest     btcspv.Hash256Digest
+	Limit       uint32
+}
+
+// FromProto populates a QueryParamsHeaviestFromAncestor from a protobuf
+func (query *QueryParamsHeaviestFromAncestor) FromProto(q *proto.QueryParamsHeaviestFromAncestor) (error) {
+	ancestor, err := bufToH256(q.Ancestor)
+	if err != nil {
+		return err
+	}
+
+	currentBest, err := bufToH256(q.CurrentBest)
+	if err != nil {
+		return err
+	}
+
+	newBest, err := bufToH256(q.NewBest)
+	if err != nil {
+		return err
+	}
+
+	query.Ancestor = ancestor
+	query.CurrentBest = currentBest
+	query.NewBest = newBest
+	query.Limit = q.Limit
+
+	return nil
 }
 
 // QueryResHeaviestFromAncestor is the response struct for queryHeaviestFromAncestor
 type QueryResHeaviestFromAncestor struct {
-	Params QueryParamsHeaviestFromAncestor `json:"params"`
-	Res    Hash256Digest                   `json:"result"`
+	Params QueryParamsHeaviestFromAncestor
+	Res    btcspv.Hash256Digest
 }
 
-// String formats a QueryResHeaviestFromAncestor struct
-func (r QueryResHeaviestFromAncestor) String() string {
-	anc := "0x" + hex.EncodeToString(r.Params.Ancestor[:])
-	curBest := "0x" + hex.EncodeToString(r.Params.CurrentBest[:])
-	newBest := "0x" + hex.EncodeToString(r.Params.NewBest[:])
-	res := "0x" + hex.EncodeToString(r.Res[:])
-	return fmt.Sprintf(
-		"Ancestor: %s, Current Best: %s, New Best: %s, Limit: %d, Result: %s",
-		anc, curBest, newBest, r.Params.Limit, res)
+// FromProto populates a QueryResHeaviestFromAncestor from a protobuf
+func (query *QueryResHeaviestFromAncestor) FromProto(q *proto.QueryResHeaviestFromAncestor) (error) {
+	var params QueryParamsHeaviestFromAncestor
+	err := params.FromProto(q.Params)
+	if err != nil {
+		return err
+	}
+
+	res, err := bufToH256(q.Res)
+	if err != nil {
+		return err
+	}
+
+	query.Params = params
+	query.Res = res
+
+	return nil
 }
 
 // QueryParamsIsMostRecentCommonAncestor is the params struct for queryIsMostRecentCommonAncestor
 type QueryParamsIsMostRecentCommonAncestor struct {
-	Ancestor Hash256Digest `json:"ancestor"`
-	Left     Hash256Digest `json:"left"`
-	Right    Hash256Digest `json:"right"`
-	Limit    uint32        `json:"limit"`
+	Ancestor btcspv.Hash256Digest
+	Left     btcspv.Hash256Digest
+	Right    btcspv.Hash256Digest
+	Limit    uint32
+}
+
+// FromProto populates a QueryParamsIsMostRecentCommonAncestor from a protobuf
+func (query *QueryParamsIsMostRecentCommonAncestor) FromProto(q *proto.QueryParamsIsMostRecentCommonAncestor) (error) {
+	ancestor, err := bufToH256(q.Ancestor)
+	if err != nil {
+		return err
+	}
+
+	left, err := bufToH256(q.Left)
+	if err != nil {
+		return err
+	}
+
+	right, err := bufToH256(q.Right)
+	if err != nil {
+		return err
+	}
+
+	query.Ancestor = ancestor
+	query.Left = left
+	query.Right = right
+	query.Limit = q.Limit
+
+	return nil
 }
 
 // QueryResIsMostRecentCommonAncestor is the response struct for queryIsMostRecentCommonAncestor
 type QueryResIsMostRecentCommonAncestor struct {
-	Params QueryParamsIsMostRecentCommonAncestor `json:"params"`
-	Res    bool                                  `json:"result"`
+	Params QueryParamsIsMostRecentCommonAncestor
+	Res    bool
 }
 
-// String formats a QueryResIsMostRecentCommonAncestor struct
-func (r QueryResIsMostRecentCommonAncestor) String() string {
-	anc := "0x" + hex.EncodeToString(r.Params.Ancestor[:])
-	left := "0x" + hex.EncodeToString(r.Params.Left[:])
-	right := "0x" + hex.EncodeToString(r.Params.Right[:])
-	return fmt.Sprintf(
-		"Ancestor: %s, Left: %s, Right: %s, Limit: %d, Result: %t",
-		anc, left, right, r.Params.Limit, r.Res)
+// FromProto populates a QueryResIsMostRecentCommonAncestor from a protobuf
+func (query *QueryResIsMostRecentCommonAncestor) FromProto(q *proto.QueryResIsMostRecentCommonAncestor) (error) {
+	var params QueryParamsIsMostRecentCommonAncestor
+	err := params.FromProto(q.Params)
+	if err != nil {
+		return err
+	}
+
+	query.Params = params
+	query.Res = q.Res
+
+	return nil
 }
 
 // QueryParamsGetRequest is the response struct for queryGetRequest
 type QueryParamsGetRequest struct {
-	ID RequestID `json:"id"`
+	ID RequestID
+}
+
+// FromProto populates a QueryParamsGetRequest from a protobuf
+func (query *QueryParamsGetRequest) FromProto(q *proto.QueryParamsGetRequest) (error) {
+	id, err := bufToRequestID(q.ID)
+	if err != nil {
+		return err
+	}
+
+	query.ID = id
+
+	return nil
 }
 
 // QueryResGetRequest is the response struct for queryGetRequest
 type QueryResGetRequest struct {
-	Params QueryParamsGetRequest `json:"params"`
-	Res    ProofRequest          `json:"result"`
+	Params QueryParamsGetRequest
+	Res    ProofRequest
 }
 
-// String formats a QueryResIsMostRecentCommonAncestor struct
-func (r QueryResGetRequest) String() string {
-	spends := "0x" + hex.EncodeToString(r.Res.Spends[:])
-	pays := "0x" + hex.EncodeToString(r.Res.Pays[:])
-	return fmt.Sprintf(
-		"ID: %d, Spends: %s, Pays: %s, Value: %d, Active: %t, Confirmations: %d",
-		r.Params.ID, spends, pays, r.Res.PaysValue, r.Res.ActiveState, r.Res.NumConfs)
+// FromProto populates a QueryResGetRequest from a protobuf
+func (query *QueryResGetRequest) FromProto(q *proto.QueryResGetRequest) (error) {
+	var params QueryParamsGetRequest
+	err := params.FromProto(q.Params)
+	if err != nil {
+		return err
+	}
+
+	res, err := proofRequestFromProto(q.Res)
+	if err != nil {
+		return err
+	}
+
+	query.Params = params
+	query.Res = res
+
+	return nil
 }
 
 // QueryParamsCheckRequests is the response struct for queryCheckRequests
 type QueryParamsCheckRequests struct {
-	Filled FilledRequests `json:"filledRequests"`
+	Filled FilledRequests
+}
+
+// FromProto populates a QueryParamsCheckRequests from a protobuf
+func (query *QueryParamsCheckRequests) FromProto(q *proto.QueryParamsCheckRequests) (error) {
+	filled, err := filledRequestsFromProto(q.Filled)
+	if err != nil {
+		return err
+	}
+
+	query.Filled = filled
+
+	return nil
 }
 
 // QueryResCheckRequests is the response struct for queryCheckRequests
 type QueryResCheckRequests struct {
-	Params       QueryParamsCheckRequests `json:"params"`
-	Valid        bool                     `json:"valid"`
-	ErrorMessage string                   `json:"errorMessage"`
+	Params       QueryParamsCheckRequests
+	Valid        bool
+	ErrorMessage string
 }
 
-// String formats a QueryResCheckRequests struct
-func (r QueryResCheckRequests) String() string {
-	json, _ := json.Marshal(r)
-	return string(json)
+// FromProto populates a QueryResCheckRequests from a protobuf
+func (query *QueryResCheckRequests) FromProto(q *proto.QueryResCheckRequests) (error) {
+	var params QueryParamsCheckRequests
+	err := params.FromProto(q.Params)
+	if err != nil {
+		return err
+	}
+
+	query.Params = params
+	query.Valid = q.Valid
+	query.ErrorMessage = *q.ErrorMessage
+
+	return nil
 }
 
 // QueryParamsCheckProof is the response struct for queryCheckProof
 type QueryParamsCheckProof struct {
-	Proof SPVProof `json:"proof"`
+	Proof SPVProof
+}
+
+// FromProto populates a QueryParamsCheckProof from a protobuf
+func (query *QueryParamsCheckProof) FromProto(q *proto.QueryParamsCheckProof) (error) {
+	proof, err :=spvProofFromProto(q.Proof)
+	if err != nil {
+		return err
+	}
+
+	query.Proof = proof
+
+	return nil
 }
 
 // QueryResCheckProof is the response struct for queryCheckProof
 type QueryResCheckProof struct {
-	Params       QueryParamsCheckProof `json:"params"`
-	Valid        bool                  `json:"valid"`
-	ErrorMessage string                `json:"errorMessage"`
+	Params       QueryParamsCheckProof
+	Valid        bool
+	ErrorMessage string
 }
 
-// String formats a QueryResCheckProof struct
-func (r QueryResCheckProof) String() string {
-	json, _ := json.Marshal(r)
-	return string(json)
+// FromProto populates a QueryResCheckProof from a protobuf
+func (query *QueryResCheckProof) FromProto(q *proto.QueryResCheckProof) (error) {
+	var params QueryParamsCheckProof
+	err := params.FromProto(q.Params)
+	if err != nil {
+		return err
+	}
+
+	query.Params = params
+	query.Valid = q.Valid
+	query.ErrorMessage = *q.ErrorMessage
+
+	return nil
 }

@@ -1,0 +1,45 @@
+syntax = "proto3";
+option go_package = "github.com/summa-tx/relays/proto";
+
+package relayproto;
+
+import "shared.proto";
+
+// MsgIngestHeaderChain defines a IngestHeaderChain message
+message MsgIngestHeaderChain {
+	string signer = 1;
+	repeated BitcoinHeader headers = 2;
+}
+
+// MsgIngestDifficultyChange defines a IngestDifficultyChange message
+message MsgIngestDifficultyChange {
+  string signer = 1;
+  bytes start = 2;
+  repeated BitcoinHeader headers = 3;
+}
+
+// MsgMarkNewHeaviest defines a MarkNewHeaviest message
+message MsgMarkNewHeaviest {
+  string signer = 1;
+  bytes ancestor = 2;
+  bytes current_best = 3;
+  bytes new_best = 4;
+  uint32 limit = 5;
+}
+
+// MsgNewRequest defines a NewRequest message
+message MsgNewRequest {
+  string signer = 1;
+  bytes spends = 2;
+  bytes pays = 3;
+  uint64 pays_value = 4;
+  uint32 num_confs = 5;
+  Origin origin = 6;
+  bytes action = 7;
+}
+
+// MsgProvideProof defines a NewRequest message
+message MsgProvideProof {
+  string signer = 1;
+  FilledRequests filled = 2;
+}

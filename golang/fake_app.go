@@ -17,6 +17,9 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/summa-tx/relays/golang/x/relay"
+	"github.com/summa-tx/relays/golang/x/relay/keeper"
+	relayKeeper "github.com/summa-tx/relays/golang/x/relay/keeper"
+	relayTypes "github.com/summa-tx/relays/golang/x/relay/types"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -77,7 +80,7 @@ type relayApp struct {
 	supplyKeeper   supply.Keeper
 	paramsKeeper   params.Keeper
 
-	relayKeeper relay.Keeper
+	relayKeeper relayKeeper.Keeper
 
 	// Module Manager
 	mm *module.Manager
@@ -108,7 +111,7 @@ func NewRelayApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 		distr.StoreKey,
 		slashing.StoreKey,
 		params.StoreKey,
-		relay.StoreKey)
+		relayTypes.StoreKey)
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
 	// Here you initialize your application with the store keys it requires
@@ -192,11 +195,11 @@ func NewRelayApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 
 	// The RelayKeeper is the Keeper from the module for this tutorial
 	// It handles interactions with the store
-	app.relayKeeper = relay.NewKeeper(
-		keys[relay.StoreKey],
+	app.relayKeeper = keeper.NewKeeper(
+		keys[relayTypes.StoreKey],
 		app.cdc,
 		true,                // Mainnet // TODO: pass this in somehow
-		relay.NullHandler{}, // Proof Handler. real apps should fill this in
+		relayTypes.NullHandler{}, // Proof Handler. real apps should fill this in
 	)
 
 	app.mm = module.NewManager(
@@ -222,7 +225,7 @@ func NewRelayApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 		auth.ModuleName,
 		bank.ModuleName,
 		slashing.ModuleName,
-		relay.ModuleName,
+		relayTypes.ModuleName,
 		genutil.ModuleName,
 	)
 
