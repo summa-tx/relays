@@ -13,7 +13,7 @@ import (
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
 	storeKey     sdk.StoreKey // Unexposed key to access store from sdk.Context
-	cdc          *codec.Codec // The wire codec for binary encoding/decoding.
+	cdc          *codec.LegacyAmino // The wire codec for binary encoding/decoding.
 	IsMainNet    bool
 	ProofHandler types.ProofHandler
 }

@@ -87,7 +87,7 @@ type relayApp struct {
 }
 
 // MakeCodec generates the necessary codecs for Amino
-func MakeCodec() *codec.Codec {
+func MakeCodec() *codec.LegacyAmino {
 	var cdc = codec.NewLegacyAmino()
 	ModuleBasics.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)

@@ -61,7 +61,7 @@ In order to extend this module, follow these steps:
       1. returns a `cobra.Command` object
       1. define `Use` `Example` `Short` `Long` `Args` and `RunE`
       1. `RunE` parses args, returns errors, and calls `cliCtx.QueryWithData`
-      1. parses the output and returns it with `cliCtx.PrintOutput`
+      1. parses the output and returns it with `cliCtx.PrintProto`
 1. Add to REST
     1. add to `x/relay/client/rest/query.go`
     1. new function `_____Handler`

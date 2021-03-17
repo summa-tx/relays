@@ -10,7 +10,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 
 	"github.com/summa-tx/relays/golang/x/relay/types"
@@ -19,7 +18,7 @@ import (
 )
 
 // GetTxCmd sets up transaction CLI commands
-func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
+func GetTxCmd(storeKey string, cdc *codec.LegacyAmino) *cobra.Command {
 	relayTxCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      "Relay transaction subcommands",
@@ -40,7 +39,7 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 }
 
 // GetCmdIngestHeaderChain creates a CLI command to ingest a header chain
-func GetCmdIngestHeaderChain(cdc *codec.Codec) *cobra.Command {
+func GetCmdIngestHeaderChain(cdc *codec.LegacyAmino) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "ingestheaders <json list of headers>",
 		Example: "ingestheaders  2_ingest_headers.json --inputfile --from me",
@@ -71,10 +70,10 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 
 			msgs := []sdk.Msg{types.NewMsgWithdrawDelegatorReward(cliCtx.GetFromAddress(), headers)}
 
-			err := msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
+			// err := msg.ValidateBasic()
+			// if err != nil {
+			// 	return err
+			// }
 
 			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msgs...)
 
@@ -86,7 +85,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 }
 
 // GetCmdIngestDifficultyChange creates a CLI command to ingest a difficulty change
-func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
+func GetCmdIngestDifficultyChange(cdc *codec.LegacyAmino) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "ingestdiffchange <prev epoch start> <json list of headers>",
 		Example: "ingestdiffchange ef8248820b277b542ac2a726ccd293e8f2a3ea24c1fe04000000000000000000  0_new_difficulty.json --inputfile --from me",
@@ -124,10 +123,10 @@ func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
 				prevEpochStart,
 				headers,
 			)}
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
+			// err = msg.ValidateBasic()
+			// if err != nil {
+			// 	return err
+			// }
 
 			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msgs...)
 
@@ -139,7 +138,7 @@ func GetCmdIngestDifficultyChange(cdc *codec.Codec) *cobra.Command {
 }
 
 // GetCmdNewRequest stores a new proof request
-func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
+func GetCmdNewRequest(cdc *codec.LegacyAmino) *cobra.Command {
 	return &cobra.Command{
 		Use:     "newrequest <spends> <pays> <value> <numConfs>",
 		Example: "newrequest 0x 17a91423737cd98bb6b2da5a11bcd82e5de36591d69f9f87 0 1 --from me",
@@ -169,10 +168,10 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 				types.Local,
 				nil,
 			)}
-			err := msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
+			// err := msg.ValidateBasic()
+			// if err != nil {
+			// 	return err
+			// }
 
 			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msgs...)
 
@@ -181,7 +180,7 @@ func GetCmdNewRequest(cdc *codec.Codec) *cobra.Command {
 }
 
 // GetCmdProvideProof stores a new proof request
-func GetCmdProvideProof(cdc *codec.Codec) *cobra.Command {
+func GetCmdProvideProof(cdc *codec.LegacyAmino) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "provideproof <json proof> <json list of requests>",
 		Example: "provideproof 1_check_proof.json 3_filled_requests.json --inputfile --from me",
@@ -232,10 +231,10 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				filledRequests,
 			)}
 
-			err := msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
+			// err := msg.ValidateBasic()
+			// if err != nil {
+			// 	return err
+			// }
 
 			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msgs...)
 
@@ -247,7 +246,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 }
 
 // GetCmdMarkNewHeaviest creates a CLI command to update best known digest and LCA
-func GetCmdMarkNewHeaviest(cdc *codec.Codec) *cobra.Command {
+func GetCmdMarkNewHeaviest(cdc *codec.LegacyAmino) *cobra.Command {
 	return &cobra.Command{
 		Use:     "marknewheaviest <ancestor> <currentBest (raw header)> <newBest (raw header)> [limit]",
 		Example: "marknewheaviest 0x4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000 0x0000c020954ea1d980abc34fd5c260205e025a405f59cdf510960c000000000000000000ad864d04a6ca14e597da45c4936dd3a07946e7d72aab72a3ed7444f0f6da618dd150425eff3212173f0c982d 0x0000c020bc00d40ffb1b0e8850475b0ff71d990080bb0e8203d1090000000000000000008a317b377cc53010ed4c741bd6bcea5fe6748665a6a9374510ff77e5cdfac7e3b971425ed41a12174334a315 0 --from me",
@@ -287,10 +286,10 @@ func GetCmdMarkNewHeaviest(cdc *codec.Codec) *cobra.Command {
 				newBest,
 				uint32(limit),
 			)}
-			err = msg.ValidateBasic()
-			if err != nil {
-				return err
-			}
+			// err = msg.ValidateBasic()
+			// if err != nil {
+			// 	return err
+			// }
 
 			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msgs...)
 		},

@@ -79,12 +79,12 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 }
 
 // GetQueryCmd get the root query command of this module
-func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
+func (AppModuleBasic) GetQueryCmd(cdc *codec.LegacyAmino) *cobra.Command {
 	return cli.GetQueryCmd(types.StoreKey, cdc)
 }
 
 // GetTxCmd get the root tx command of this module
-func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
+func (AppModuleBasic) GetTxCmd(cdc *codec.LegacyAmino) *cobra.Command {
 	return cli.GetTxCmd(types.StoreKey, cdc)
 }
 

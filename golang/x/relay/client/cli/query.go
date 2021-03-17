@@ -6,38 +6,42 @@ import (
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
+// TODO: Add queryRoute string param?
+
 // GetQueryCmd sets up query CLI commands
 func GetQueryCmd(queryRoute string) *cobra.Command {
-	relayQueryCommand := &cobra.Command{
+	relayQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      "Querying commands for the relay module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	relayQueryCommand.AddCommand(client.GetCommands(
-		GetCmdIsAncestor(queryRoute, cdc),
-		GetCmdGetRelayGenesis(queryRoute, cdc),
-		GetCmdGetLastReorgLCA(queryRoute, cdc),
-		GetCmdGetBestDigest(queryRoute, cdc),
-		GetCmdFindAncestor(queryRoute, cdc),
-		GetCmdIsMostRecentCommonAncestor(queryRoute, cdc),
-		GetCmdHeaviestFromAncestor(queryRoute, cdc),
-		GetCmdCheckProof(queryRoute, cdc),
-		GetCmdCheckRequests(queryRoute, cdc),
-	)...)
-	return relayQueryCommand
+
+	relayQueryCmd.AddCommand(
+		GetCmdIsAncestor(queryRoute),
+		GetCmdGetRelayGenesis(queryRoute),
+		GetCmdGetLastReorgLCA(queryRoute),
+		GetCmdGetBestDigest(queryRoute),
+		GetCmdFindAncestor(queryRoute),
+		GetCmdIsMostRecentCommonAncestor(queryRoute),
+		GetCmdHeaviestFromAncestor(queryRoute),
+		GetCmdCheckProof(queryRoute),
+		GetCmdCheckRequests(queryRoute),
+	)
+
+	return relayQueryCmd
 }
 
 // GetCmdIsAncestor returns the CLI command struct for IsAncestor
 func GetCmdIsAncestor(queryRoute string) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		// what are the arguments. <> for required, [] for optional
 		Use:     "isancestor <digest> <ancestor> [limit]",
 		Example: "isancestor 0641238051855d1759da9b6603b156684a68a146d36a09000000000000000000 9be6406d5311123b6212b14b1a070276157364a5d5f004000000000000000000 200", // how do you use it?
@@ -94,14 +98,18 @@ func GetCmdIsAncestor(queryRoute string) *cobra.Command {
 
 			var out types.QueryResIsAncestor
 			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return cliCtx.PrintProto(&out)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdGetRelayGenesis returns the CLI command struct for GetRelayGenesis
 func GetCmdGetRelayGenesis(queryRoute string) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "getrelaygenesis",
 		Example: "getrelaygenesis",
 		Long:    "Get the first digest in the relay",
@@ -117,14 +125,18 @@ func GetCmdGetRelayGenesis(queryRoute string) *cobra.Command {
 
 			var out types.QueryResGetRelayGenesis
 			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return cliCtx.PrintProto(&out)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdGetLastReorgLCA returns the CLI command struct for GetLastReorgLCA
 func GetCmdGetLastReorgLCA(queryRoute string) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "getlastreorglca",
 		Example: "getlastreorglca",
 		Long:    "Returns the latest common ancestor of the last-known reorg",
@@ -140,14 +152,18 @@ func GetCmdGetLastReorgLCA(queryRoute string) *cobra.Command {
 
 			var out types.QueryResGetLastReorgLCA
 			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return cliCtx.PrintProto(&out)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdGetBestDigest returns the CLI command struct for GetBestDigest
 func GetCmdGetBestDigest(queryRoute string) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "getbestdigest",
 		Example: "getbestdigest",
 		Long:    "Returns the best known digest in the relay",
@@ -163,14 +179,18 @@ func GetCmdGetBestDigest(queryRoute string) *cobra.Command {
 
 			var out types.QueryResGetBestDigest
 			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return cliCtx.PrintProto(&out)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdFindAncestor returns the CLI command struct for FindAncestor
 func GetCmdFindAncestor(queryRoute string) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "findancestor <digest> <offset>",
 		Example: "findancestor f8d0a038bfe4027e5de3b6bf07262122636fd2916d7503000000000000000000 2", // how do you use it?
 		Long:    "Finds the digest <offset> blocks before <digest>. Errors if digest or the ancestor is unknown",
@@ -212,14 +232,18 @@ func GetCmdFindAncestor(queryRoute string) *cobra.Command {
 
 			var out types.QueryResFindAncestor
 			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return cliCtx.PrintProto(&out)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdIsMostRecentCommonAncestor returns the CLI command struct for IsMostRecentCommonAncestor
 func GetCmdIsMostRecentCommonAncestor(queryRoute string) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "ismostrecentcommonancestor <ancestor> <left> <right> [limit]",
 		Example: "ismostrecentcommonancestor 9be6406d5311123b6212b14b1a070276157364a5d5f004000000000000000000 0641238051855d1759da9b6603b156684a68a146d36a09000000000000000000 7f9923db1d3ad6a08054b4a80a5cd7478b57a9650eaf09000000000000000000 3", // how do you use it?
 		Long:    "Checks if <ancestor> is the LCA of <left> and <right> digests",
@@ -277,14 +301,18 @@ func GetCmdIsMostRecentCommonAncestor(queryRoute string) *cobra.Command {
 
 			var out types.QueryResIsMostRecentCommonAncestor
 			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return cliCtx.PrintProto(&out)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdHeaviestFromAncestor returns the CLI command struct for HeaviestFromAncestor
 func GetCmdHeaviestFromAncestor(queryRoute string) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "heaviestfromancestor <ancestor> <currentbest> <newbest> [limit]",
 		Example: "heaviestfromancestor 4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000 4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000 0641238051855d1759da9b6603b156684a68a146d36a09000000000000000000 200", // how do you use it?
 		Long:    "Determines the heavier descendant of a common ancestor",
@@ -342,14 +370,18 @@ func GetCmdHeaviestFromAncestor(queryRoute string) *cobra.Command {
 
 			var out types.QueryResHeaviestFromAncestor
 			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return cliCtx.PrintProto(&out)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdGetRequest returns the CLI command struct for getRequest
 func GetCmdGetRequest(queryRoute string) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "getrequest <id>",
 		Example: "getrequest 12",
 		Long:    "Get a proof request using the associated ID. ID can be an\n\"0x\" prepended hexbyte string or an integer",
@@ -381,9 +413,13 @@ func GetCmdGetRequest(queryRoute string) *cobra.Command {
 
 			var out types.QueryResGetRequest
 			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return cliCtx.PrintProto(&out)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdCheckRequests returns the CLI command struct for checkRequests
@@ -451,11 +487,13 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 
 			var out types.QueryResCheckRequests
 			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return cliCtx.PrintProto(&out)
 		},
 	}
 
 	attachFlagFileinput(cmd)
+	flags.AddQueryFlagsToCmd(cmd)
+
 	return cmd
 }
 
@@ -506,10 +544,12 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 
 			var out types.QueryResCheckProof
 			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return cliCtx.PrintProto(&out)
 		},
 	}
 
 	attachFlagFileinput(cmd)
+	flags.AddQueryFlagsToCmd(cmd)
+
 	return cmd
 }
