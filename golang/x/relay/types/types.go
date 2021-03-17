@@ -45,6 +45,21 @@ const (
 )
 
 // Hash256DigestFromHex converts a hex into a Hash256Digest
+func BytesFromHex(hexStr string) ([]byte, *sdkerrors.Error) {
+	data := hexStr
+	if data[:2] == "0x" {
+		data = data[2:]
+	}
+
+	bytes, decodeErr := hex.DecodeString(data)
+	if decodeErr != nil {
+		return []byte{}, ErrBadHex(DefaultCodespace, hexStr)
+	}
+
+	return bytes, nil
+}
+
+// Hash256DigestFromHex converts a hex into a Hash256Digest
 func Hash256DigestFromHex(hexStr string) (btcspv.Hash256Digest, *sdkerrors.Error) {
 	data := hexStr
 	if data[:2] == "0x" {
@@ -55,6 +70,7 @@ func Hash256DigestFromHex(hexStr string) (btcspv.Hash256Digest, *sdkerrors.Error
 	if decodeErr != nil {
 		return btcspv.Hash256Digest{}, ErrBadHex(DefaultCodespace, hexStr)
 	}
+
 	digest, newDigestErr := btcspv.NewHash256Digest(bytes)
 	if newDigestErr != nil {
 		return btcspv.Hash256Digest{}, FromBTCSPVError(DefaultCodespace, newDigestErr)

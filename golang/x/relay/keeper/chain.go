@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/summa-tx/relays/golang/x/relay/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -155,7 +157,7 @@ func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, c
 	currentBestDigest := btcspv.Hash256(currentBest[:])
 
 	if limit > 2016 {
-		return types.ErrLimitTooHigh(types.DefaultCodespace, fmt.Sprintf(limit))
+		return types.ErrLimitTooHigh(types.DefaultCodespace, fmt.Sprintf("%d", limit))
 	}
 
 	if !k.HasHeader(ctx, newBestDigest) {

@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/summa-tx/relays/proto"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
-
 
 // TODO: Should this have the queryRoute param or not?
 // GetQueryCmd sets up query CLI commands
@@ -57,8 +57,7 @@ func GetCmdIsAncestor(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			// TODO: Where does this NewQueryClient function come from?
-			queryClient := types.NewQueryClient(clientCtx)
+			queryClient := proto.NewQueryClient(clientCtx)
 
 			var limit uint32
 			if len(args) == 3 {
@@ -70,18 +69,18 @@ func GetCmdIsAncestor(queryRoute string) *cobra.Command {
 				limit = uint32(lim)
 			}
 
-			digestLE, sdkErr := types.Hash256DigestFromHex(args[0])
+			digestLE, sdkErr := types.BytesFromHex(args[0])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
 			}
-			ancestor, sdkErr := types.Hash256DigestFromHex(args[1])
+			ancestor, sdkErr := types.BytesFromHex(args[1])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
 			}
 
-			params := &types.QueryParamsIsAncestor{
+			params := &proto.QueryParamsIsAncestor{
 				DigestLE:            digestLE,
 				ProspectiveAncestor: ancestor,
 				Limit:               limit,
@@ -93,8 +92,7 @@ func GetCmdIsAncestor(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			// TODO: is res.IsAncestor correct?
-			return clientCtx.PrintProto(&res.IsAncestor)
+			return clientCtx.PrintProto(&res)
 		},
 	}
 
@@ -114,16 +112,15 @@ func GetCmdGetRelayGenesis(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			queryClient := types.NewQueryClient(clientCtx)
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			res, _, err := cliCtx.QueryWithData("custom/relay/getrelaygenesis", nil)
-
+			res, err := queryClient.GetRelayGenesis(cmd.Context(), nil)
 			if err != nil {
 				fmt.Println("could not get the first digest in the relay")
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.GetRelayGenesis)
+			return clientCtx.PrintProto(&res)
 		},
 	}
 
@@ -143,16 +140,15 @@ func GetCmdGetLastReorgLCA(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			queryClient := types.NewQueryClient(clientCtx)
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			res, _, err := cliCtx.QueryWithData("custom/relay/getlastreorglca", nil)
-
+			res, err := queryClient.GetLastReorgLCA(cmd.Context(), nil)
 			if err != nil {
 				fmt.Println("could not get the last Reorg LCA")
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.GetLastReorgLCA)
+			return clientCtx.PrintProto(&res)
 		},
 	}
 
@@ -172,16 +168,15 @@ func GetCmdGetBestDigest(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			queryClient := types.NewQueryClient(clientCtx)
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			res, _, err := cliCtx.QueryWithData("custom/relay/getbestdigest", nil)
-
+			res, err := queryClient.GetBestDigest(cmd.Context(), nil)
 			if err != nil {
 				fmt.Println("could not get best known digest")
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.GetBestDigest)
+			return clientCtx.PrintProto(&res)
 		},
 	}
 
@@ -202,9 +197,9 @@ func GetCmdFindAncestor(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			queryClient := types.NewQueryClient(clientCtx)
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			digest, sdkErr := types.Hash256DigestFromHex(args[0])
+			digest, sdkErr := types.BytesFromHex(args[0])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
@@ -218,7 +213,7 @@ func GetCmdFindAncestor(queryRoute string) *cobra.Command {
 			}
 			offset = uint32(off)
 
-			params := &types.QueryParamsFindAncestor{
+			params := &proto.QueryParamsFindAncestor{
 				DigestLE: digest,
 				Offset:   offset,
 			}
@@ -229,7 +224,7 @@ func GetCmdFindAncestor(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.FindAncestor)
+			return clientCtx.PrintProto(&res)
 		},
 	}
 
@@ -250,21 +245,21 @@ func GetCmdIsMostRecentCommonAncestor(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			queryClient := types.NewQueryClient(clientCtx)
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			ancestor, sdkErr := types.Hash256DigestFromHex(args[0])
+			ancestor, sdkErr := types.BytesFromHex(args[0])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
 			}
 
-			left, sdkErr := types.Hash256DigestFromHex(args[1])
+			left, sdkErr := types.BytesFromHex(args[1])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
 			}
 
-			right, sdkErr := types.Hash256DigestFromHex(args[2])
+			right, sdkErr := types.BytesFromHex(args[2])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
@@ -280,7 +275,7 @@ func GetCmdIsMostRecentCommonAncestor(queryRoute string) *cobra.Command {
 				limit = uint32(lim)
 			}
 
-			params := &types.QueryParamsIsMostRecentCommonAncestor{
+			params := &proto.QueryParamsIsMostRecentCommonAncestor{
 				Ancestor: ancestor,
 				Left:     left,
 				Right:    right,
@@ -293,7 +288,7 @@ func GetCmdIsMostRecentCommonAncestor(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.IsMostRecentCommonAncestor)
+			return clientCtx.PrintProto(&res)
 
 		},
 	}
@@ -315,21 +310,21 @@ func GetCmdHeaviestFromAncestor(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			queryClient := types.NewQueryClient(clientCtx)
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			ancestor, sdkErr := types.Hash256DigestFromHex(args[0])
+			ancestor, sdkErr := types.BytesFromHex(args[0])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
 			}
 
-			currentBest, sdkErr := types.Hash256DigestFromHex(args[1])
+			currentBest, sdkErr := types.BytesFromHex(args[1])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
 			}
 
-			newBest, sdkErr := types.Hash256DigestFromHex(args[2])
+			newBest, sdkErr := types.BytesFromHex(args[2])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
@@ -345,7 +340,7 @@ func GetCmdHeaviestFromAncestor(queryRoute string) *cobra.Command {
 				limit = uint32(lim)
 			}
 
-			params := &types.QueryParamsHeaviestFromAncestor{
+			params := &proto.QueryParamsHeaviestFromAncestor{
 				Ancestor:    ancestor,
 				CurrentBest: currentBest,
 				NewBest:     newBest,
@@ -358,7 +353,7 @@ func GetCmdHeaviestFromAncestor(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.HeaviestFromAncestor)
+			return clientCtx.PrintProto(&res)
 		},
 	}
 
@@ -379,14 +374,14 @@ func GetCmdGetRequest(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			queryClient := types.NewQueryClient(clientCtx)
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			id, idErr := types.RequestIDFromString(args[0])
+			id, idErr := types.BytesFromHex(args[0])
 			if idErr != nil {
 				return idErr
 			}
 
-			params := types.QueryParamsGetRequest{
+			params := &proto.QueryParamsGetRequest{
 				ID: id,
 			}
 
@@ -396,7 +391,7 @@ func GetCmdGetRequest(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.GetRequest)
+			return clientCtx.PrintProto(&res)
 
 		},
 	}
@@ -419,9 +414,9 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 			if err != nil {
 				return err
 			}
-			queryClient := types.NewQueryClient(clientCtx)
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			var proof types.SPVProof
+			var proof proto.SPVProof
 			var requests []types.FilledRequestInfo
 			if viper.GetBool("inputfile") {
 				jsonFileProof, err := readJSONFromFile(args[0])
@@ -451,12 +446,12 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				}
 			}
 
-			filledRequests := types.NewFilledRequests(
+			filledRequests := proto.FilledRequests{
 				proof,
 				requests,
-			)
+			}
 
-			params := types.QueryParamsCheckRequests{
+			params := &proto.QueryParamsCheckRequests{
 				Filled: filledRequests,
 			}
 
@@ -466,7 +461,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.CheckRequests)
+			return clientCtx.PrintProto(&res)
 		},
 	}
 
@@ -489,10 +484,9 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 			if err != nil {
 				return err
 			}
-			queryClient := types.NewQueryClient(clientCtx)
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			// TODO: use FromProto functions??
-			var proof types.SPVProof
+			var proof proto.SPVProof
 			if viper.GetBool("inputfile") {
 				jsonFile, err := readJSONFromFile(args[0])
 				if err != nil {
@@ -509,7 +503,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				}
 			}
 
-			params := types.QueryParamsCheckProof{
+			params := &proto.QueryParamsCheckProof{
 				Proof: proof,
 			}
 
@@ -519,7 +513,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.CheckProof)
+			return clientCtx.PrintProto(&res)
 		},
 	}
 
