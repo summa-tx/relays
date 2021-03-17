@@ -150,8 +150,7 @@ func (msg *MsgProvideProof) FromProto(m *proto.MsgProvideProof) (error) {
 		return err
 	}
 
-	var filled FilledRequests;
-	err = filled.FromProto(m.Filled)
+	filled, err := filledRequestsFromProto(m.Filled)
 	if err != nil {
 		return err
 	}

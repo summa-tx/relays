@@ -13,7 +13,7 @@ type FilledRequestInfo struct {
 func filledRequestInfoFromProto(m *proto.FilledRequestInfo) (FilledRequestInfo, error) {
 	var filledRequest FilledRequestInfo
 
-	id, err := bufToRequestID(q.ID)
+	id, err := bufToRequestID(m.ID)
 	if err != nil {
 		return filledRequest, err
 	}
@@ -33,14 +33,24 @@ type FilledRequests struct {
 
 // FromProto populates FilledRequests from a protobuf
 func filledRequestsFromProto(m *proto.FilledRequests) (FilledRequests, error) {
-	filledRequests := make([]FilledRequests, len(m))
-	for	i, f := range m {
+	var filledRequests FilledRequests
+
+	proof, err := spvProofFromProto(m.Proof)
+	if err != nil {
+		return filledRequests, err
+	}
+
+	filled := make([]FilledRequestInfo, len(m.Filled))
+	for	i, f := range m.Filled {
 		filledRequest, err := filledRequestInfoFromProto(f)
-		filledRequests[i] = filledRequest
+		filled[i] = filledRequest
 		if err != nil {
-			return nil, err
+			return filledRequests, err
 		}
 	}
+
+	filledRequests.Proof = proof
+	filledRequests.Filled = filled
 
 	return filledRequests, nil
 }

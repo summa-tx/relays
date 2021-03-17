@@ -40,7 +40,7 @@ message ProofRequest {
     bytes spends = 1;
     bytes pays = 2;
     uint64 pays_value = 3;
-    bool acive_state = 4;
+    bool active_state = 4;
     uint32 num_confs = 5;
     Origin origin = 6;
     bytes action = 7;

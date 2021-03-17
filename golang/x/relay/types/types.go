@@ -192,4 +192,6 @@ func proofRequestFromProto(q *proto.ProofRequest) (ProofRequest, error) {
 	proofRequest.NumConfs = uint8(q.NumConfs)
 	proofRequest.Origin = Origin(q.Origin)
 	proofRequest.Action = btcspv.HexBytes(q.Action)
+
+	return proofRequest, nil
 }
