@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -50,7 +49,7 @@ func GetCmdIsAncestor(queryRoute string) *cobra.Command {
 		// what does it do when run?
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// spin up a context
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtx, err := client.GetClientQueryContext(cmd)
 
 			var limit uint32
 			if len(args) == 3 {
@@ -107,7 +106,7 @@ func GetCmdGetRelayGenesis(queryRoute string) *cobra.Command {
 		Example: "getrelaygenesis",
 		Long:    "Get the first digest in the relay",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtx, err := client.GetClientQueryContext(cmd)
 
 			res, _, err := cliCtx.QueryWithData("custom/relay/getrelaygenesis", nil)
 
@@ -130,7 +129,7 @@ func GetCmdGetLastReorgLCA(queryRoute string) *cobra.Command {
 		Example: "getlastreorglca",
 		Long:    "Returns the latest common ancestor of the last-known reorg",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtx, err := client.GetClientQueryContext(cmd)
 
 			res, _, err := cliCtx.QueryWithData("custom/relay/getlastreorglca", nil)
 
@@ -153,7 +152,7 @@ func GetCmdGetBestDigest(queryRoute string) *cobra.Command {
 		Example: "getbestdigest",
 		Long:    "Returns the best known digest in the relay",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtx, err := client.GetClientQueryContext(cmd)
 
 			res, _, err := cliCtx.QueryWithData("custom/relay/getbestdigest", nil)
 
@@ -177,7 +176,7 @@ func GetCmdFindAncestor(queryRoute string) *cobra.Command {
 		Long:    "Finds the digest <offset> blocks before <digest>. Errors if digest or the ancestor is unknown",
 		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtx, err := client.GetClientQueryContext(cmd)
 
 			digest, sdkErr := types.Hash256DigestFromHex(args[0])
 			if sdkErr != nil {
@@ -226,7 +225,7 @@ func GetCmdIsMostRecentCommonAncestor(queryRoute string) *cobra.Command {
 		Long:    "Checks if <ancestor> is the LCA of <left> and <right> digests",
 		Args:    cobra.RangeArgs(3, 4),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtx, err := client.GetClientQueryContext(cmd)
 
 			ancestor, sdkErr := types.Hash256DigestFromHex(args[0])
 			if sdkErr != nil {
@@ -291,7 +290,7 @@ func GetCmdHeaviestFromAncestor(queryRoute string) *cobra.Command {
 		Long:    "Determines the heavier descendant of a common ancestor",
 		Args:    cobra.RangeArgs(3, 4),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtx, err := client.GetClientQueryContext(cmd)
 
 			ancestor, sdkErr := types.Hash256DigestFromHex(args[0])
 			if sdkErr != nil {
@@ -356,7 +355,7 @@ func GetCmdGetRequest(queryRoute string) *cobra.Command {
 		Long:    "Get a proof request using the associated ID. ID can be an\n\"0x\" prepended hexbyte string or an integer",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtx, err := client.GetClientQueryContext(cmd)
 
 			id, idErr := types.RequestIDFromString(args[0])
 			if idErr != nil {
@@ -396,7 +395,7 @@ func GetCmdCheckRequests(queryRoute string) *cobra.Command {
 Use flag --inputfile to submit a json filename as input from scripts/seed_data directory`,
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtx, err := client.GetClientQueryContext(cmd)
 
 			var proof types.SPVProof
 			var requests []types.FilledRequestInfo
@@ -469,7 +468,7 @@ func GetCmdCheckProof(queryRoute string) *cobra.Command {
 Use flag --inputfile to submit a json filename as input from scripts/seed_data directory.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtx, err := client.GetClientQueryContext(cmd)
 
 			var proof types.SPVProof
 			if viper.GetBool("inputfile") {

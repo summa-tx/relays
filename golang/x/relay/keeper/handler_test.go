@@ -4,6 +4,7 @@ import (
 	"bytes"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
@@ -21,7 +22,7 @@ func (msg MsgBadMessage) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Signer}
 }
 func (msg MsgBadMessage) Type() string             { return "bad_message" }
-func (msg MsgBadMessage) ValidateBasic() sdk.Error { return nil }
+func (msg MsgBadMessage) ValidateBasic() *sdkerrors.Error { return nil }
 func (msg MsgBadMessage) GetSignBytes() []byte {
 	return sdk.MustSortJSON(types.ModuleCdc.MustMarshalJSON(msg))
 }

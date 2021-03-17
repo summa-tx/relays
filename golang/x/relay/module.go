@@ -9,12 +9,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/summa-tx/relays/golang/x/relay/client/cli"
 	"github.com/summa-tx/relays/golang/x/relay/client/rest"
 	"github.com/summa-tx/relays/golang/x/relay/keeper"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 
-	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -38,6 +38,12 @@ func (AppModuleBasic) Name() string {
 // RegisterCodec is
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterCodec(cdc)
+}
+
+// RegisterInterfaces registers the module's interfaces and implementations with
+// the given interface registry.
+func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
+	types.RegisterInterfaces(registry)
 }
 
 // DefaultGenesis is
@@ -94,24 +100,6 @@ func NewAppModule(k keeper.Keeper) AppModule {
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         k,
 	}
-}
-
-func (AppModule) RegisterInterfaces(registry types.InterfaceRegistry) {
-	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgIngestHeaderChain{},
-		&MsgIngestDifficultyChange{},
-		&MsgMarkNewHeaviest{},
-		&MsgNewRequest{},
-		&MsgProvideProof{},
-	)
-
-	registry.RegisterInterface(
-		"cosmos.bank.v1beta1.SupplyI",
-		(*exported.SupplyI)(nil),
-		&Supply{},
-	)
-
-	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
 
 // Name is

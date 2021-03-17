@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/gorilla/mux"
 
 	"github.com/summa-tx/relays/golang/x/relay/types"

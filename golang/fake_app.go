@@ -13,7 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/summa-tx/relays/golang/x/relay"
@@ -21,11 +20,11 @@ import (
 	relayKeeper "github.com/summa-tx/relays/golang/x/relay/keeper"
 	relayTypes "github.com/summa-tx/relays/golang/x/relay/types"
 
+	tmos "github.com/tendermint/tendermint/libs/os"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	abci "github.com/tendermint/tendermint/abci/types"
-	cmn "github.com/tendermint/tendermint/libs/common"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 )
@@ -49,7 +48,6 @@ var (
 		distr.AppModuleBasic{},
 		params.AppModuleBasic{},
 		slashing.AppModuleBasic{},
-		supply.AppModuleBasic{},
 
 		relay.AppModule{},
 	)
@@ -58,8 +56,8 @@ var (
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
 		distr.ModuleName:          nil,
-		staking.BondedPoolName:    {supply.Burner, supply.Staking},
-		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		staking.BondedPoolName:    {auth.Burner, auth.Staking},
+		staking.NotBondedPoolName: {auth.Burner, auth.Staking},
 	}
 )
 
@@ -254,7 +252,7 @@ func NewRelayApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 
 	err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
 	if err != nil {
-		cmn.Exit(err.Error())
+		tmos.Exit(err.Error())
 	}
 
 	return app

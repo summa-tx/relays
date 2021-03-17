@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	"github.com/summa-tx/relays/proto"
@@ -38,7 +39,7 @@ const (
 )
 
 // Hash256DigestFromHex converts a hex into a Hash256Digest
-func Hash256DigestFromHex(hexStr string) (btcspv.Hash256Digest, sdk.Error) {
+func Hash256DigestFromHex(hexStr string) (btcspv.Hash256Digest, *sdkerrors.Error) {
 	data := hexStr
 	if data[:2] == "0x" {
 		data = data[2:]

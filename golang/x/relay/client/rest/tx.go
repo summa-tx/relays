@@ -5,7 +5,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/summa-tx/relays/golang/x/relay/types"
@@ -45,7 +44,7 @@ func ingestHeaderChainHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, baseReq, msg)
 	}
 }
 
@@ -84,7 +83,7 @@ func ingestDifficultyChangeHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, baseReq, msg)
 	}
 }
 
@@ -125,7 +124,7 @@ func markNewHeaviestHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, baseReq, msg)
 	}
 }
 
@@ -166,7 +165,7 @@ func newRequestHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, baseReq, msg)
 	}
 }
 
@@ -207,6 +206,6 @@ func provideProofHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, baseReq, msg)
 	}
 }
