@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
 
@@ -14,7 +14,7 @@ import (
 
 // handler function for isAncestor queries. parses arguments from url string, and passes them through
 // as a QueryParamsIsAncestor struct
-func isAncestorHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func isAncestorHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// mux.Vars holds the variable elements of the URL from rest.go
 		vars := mux.Vars(r)
@@ -66,7 +66,7 @@ func isAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handler
 }
 
 // handler function for getRelayGenesis queries
-func getRelayGenesisHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func getRelayGenesisHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		res, _, err := cliCtx.QueryWithData("custom/relay/getrelaygenesis", nil)
 		if err != nil {
@@ -79,7 +79,7 @@ func getRelayGenesisHandler(cliCtx context.CLIContext, storeName string) http.Ha
 }
 
 // handler function for getLastReorgLCA queries
-func getLastReorgLCAHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func getLastReorgLCAHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		res, _, err := cliCtx.QueryWithData("custom/relay/getlastreorglca", nil)
 		if err != nil {
@@ -92,7 +92,7 @@ func getLastReorgLCAHandler(cliCtx context.CLIContext, storeName string) http.Ha
 }
 
 // handler function for getBestDigest queries
-func getBestDigest(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func getBestDigest(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		res, _, err := cliCtx.QueryWithData("custom/relay/getbestdigest", nil)
 		if err != nil {
@@ -106,7 +106,7 @@ func getBestDigest(cliCtx context.CLIContext, storeName string) http.HandlerFunc
 
 // handler function for findAncestor queries. parses arguments from url string, and passes them through
 // as a QueryParamsFindAncestor struct
-func findAncestorHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func findAncestorHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// mux.Vars holds the variable elements of the URL from rest.go
 		vars := mux.Vars(r)
@@ -150,7 +150,7 @@ func findAncestorHandler(cliCtx context.CLIContext, storeName string) http.Handl
 
 // handler function for IsMostRecentCommonAncestor queries. parses arguments from url string, and passes them through
 // as a QueryParamsIsMostRecentCommonAncestor struct
-func isMostRecentCommonAncestorHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func isMostRecentCommonAncestorHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// mux.Vars holds the variable elements of the URL from rest.go
 		vars := mux.Vars(r)
@@ -211,7 +211,7 @@ func isMostRecentCommonAncestorHandler(cliCtx context.CLIContext, storeName stri
 
 // handler function for heaviestFromAncestor queries. parses arguments from url string, and passes them
 // through as a QueryParamsHeaviestFromAncestor struct
-func heaviestFromAncestorHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func heaviestFromAncestorHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// mux.Vars holds the variable elements of the URL from rest.go
 		vars := mux.Vars(r)
@@ -272,7 +272,7 @@ func heaviestFromAncestorHandler(cliCtx context.CLIContext, storeName string) ht
 
 // handler function for getRequest queries. parses arguments from url string, and passes them through
 // as a QueryParamsGetRequest struct
-func getRequestHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func getRequestHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
@@ -313,7 +313,7 @@ type checkRequestsReq struct {
 // handler function for checkRequests queries. parses arguments from url string, and passes them through
 // as a QueryParamsCheckRequests struct
 // Comes in as POST request will proceed to treat it as a GET
-func checkRequestsHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func checkRequestsHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req checkRequestsReq
 
@@ -354,7 +354,7 @@ type checkProofReq struct {
 // handler function for checkProof queries. parses arguments from url string, and passes them through
 // as a QueryParamsCheckProof struct
 // Comes in as POST request will proceed to treat it as a GET
-func checkProofHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func checkProofHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req checkProofReq
 

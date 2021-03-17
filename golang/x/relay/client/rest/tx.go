@@ -3,7 +3,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
@@ -18,7 +18,7 @@ type IngestHeaderChainReq struct {
 	Sender  string                `json:"sender"`
 }
 
-func ingestHeaderChainHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func ingestHeaderChainHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req IngestHeaderChainReq
 
@@ -57,7 +57,7 @@ type IngestDifficultyChangeReq struct {
 	Sender  string                `json:"sender"`
 }
 
-func ingestDifficultyChangeHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func ingestDifficultyChangeHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req IngestDifficultyChangeReq
 
@@ -98,7 +98,7 @@ type MarkNewHeaviestReq struct {
 	Sender      string              `json:"sender"`
 }
 
-func markNewHeaviestHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func markNewHeaviestHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req MarkNewHeaviestReq
 
@@ -139,7 +139,7 @@ type NewRequestReq struct {
 	Sender    string       `json:"sender"`
 }
 
-func newRequestHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func newRequestHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req NewRequestReq
 
@@ -178,7 +178,7 @@ type ProvideProofReq struct {
 	Sender   string                    `json:"sender"`
 }
 
-func provideProofHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func provideProofHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req ProvideProofReq
 
