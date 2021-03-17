@@ -12,7 +12,7 @@ func init() {
 }
 
 // RegisterCodec registers concrete types on the Amino codec
-func RegisterCodec(cdc *codec.Codec) {
+func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(MsgIngestHeaderChain{}, "relay/IngestHeaderChain", nil)
 	cdc.RegisterConcrete(MsgIngestDifficultyChange{}, "relay/IngestDifficultyChange", nil)
 	cdc.RegisterConcrete(MsgMarkNewHeaviest{}, "relay/MarkNewHeaviest", nil)
