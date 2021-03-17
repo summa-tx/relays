@@ -14,7 +14,7 @@ import (
 )
 
 // GetQueryCmd sets up query CLI commands
-func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetQueryCmd(queryRoute string) *cobra.Command {
 	relayQueryCommand := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      "Querying commands for the relay module",
@@ -37,7 +37,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 }
 
 // GetCmdIsAncestor returns the CLI command struct for IsAncestor
-func GetCmdIsAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdIsAncestor(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		// what are the arguments. <> for required, [] for optional
 		Use:     "isancestor <digest> <ancestor> [limit]",
@@ -101,7 +101,7 @@ func GetCmdIsAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 }
 
 // GetCmdGetRelayGenesis returns the CLI command struct for GetRelayGenesis
-func GetCmdGetRelayGenesis(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdGetRelayGenesis(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:     "getrelaygenesis",
 		Example: "getrelaygenesis",
@@ -124,7 +124,7 @@ func GetCmdGetRelayGenesis(queryRoute string, cdc *codec.Codec) *cobra.Command {
 }
 
 // GetCmdGetLastReorgLCA returns the CLI command struct for GetLastReorgLCA
-func GetCmdGetLastReorgLCA(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdGetLastReorgLCA(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:     "getlastreorglca",
 		Example: "getlastreorglca",
@@ -147,7 +147,7 @@ func GetCmdGetLastReorgLCA(queryRoute string, cdc *codec.Codec) *cobra.Command {
 }
 
 // GetCmdGetBestDigest returns the CLI command struct for GetBestDigest
-func GetCmdGetBestDigest(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdGetBestDigest(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:     "getbestdigest",
 		Example: "getbestdigest",
@@ -170,7 +170,7 @@ func GetCmdGetBestDigest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 }
 
 // GetCmdFindAncestor returns the CLI command struct for FindAncestor
-func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdFindAncestor(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:     "findancestor <digest> <offset>",
 		Example: "findancestor f8d0a038bfe4027e5de3b6bf07262122636fd2916d7503000000000000000000 2", // how do you use it?
@@ -219,7 +219,7 @@ func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 }
 
 // GetCmdIsMostRecentCommonAncestor returns the CLI command struct for IsMostRecentCommonAncestor
-func GetCmdIsMostRecentCommonAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdIsMostRecentCommonAncestor(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:     "ismostrecentcommonancestor <ancestor> <left> <right> [limit]",
 		Example: "ismostrecentcommonancestor 9be6406d5311123b6212b14b1a070276157364a5d5f004000000000000000000 0641238051855d1759da9b6603b156684a68a146d36a09000000000000000000 7f9923db1d3ad6a08054b4a80a5cd7478b57a9650eaf09000000000000000000 3", // how do you use it?
@@ -284,7 +284,7 @@ func GetCmdIsMostRecentCommonAncestor(queryRoute string, cdc *codec.Codec) *cobr
 }
 
 // GetCmdHeaviestFromAncestor returns the CLI command struct for HeaviestFromAncestor
-func GetCmdHeaviestFromAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdHeaviestFromAncestor(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:     "heaviestfromancestor <ancestor> <currentbest> <newbest> [limit]",
 		Example: "heaviestfromancestor 4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000 4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000 0641238051855d1759da9b6603b156684a68a146d36a09000000000000000000 200", // how do you use it?
@@ -349,7 +349,7 @@ func GetCmdHeaviestFromAncestor(queryRoute string, cdc *codec.Codec) *cobra.Comm
 }
 
 // GetCmdGetRequest returns the CLI command struct for getRequest
-func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdGetRequest(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:     "getrequest <id>",
 		Example: "getrequest 12",
@@ -388,7 +388,7 @@ func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
 }
 
 // GetCmdCheckRequests returns the CLI command struct for checkRequests
-func GetCmdCheckRequests(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdCheckRequests(queryRoute string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "checkrequests <json proof> <json list of requests>",
 		Example: "checkrequests 1_check_proof.json 3_filled_requests.json --inputfile",
@@ -461,7 +461,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 }
 
 // GetCmdCheckProof returns the CLI command struct for checkProof
-func GetCmdCheckProof(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdCheckProof(queryRoute string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "checkproof <json proof>",
 		Example: "checkproof 1_check_proof.json --inputfile",
