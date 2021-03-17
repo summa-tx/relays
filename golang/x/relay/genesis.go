@@ -55,13 +55,13 @@ func DefaultGenesisState() GenesisState {
 }
 
 // InitGenesis inits the app state based on the genesis state
-func InitGenesis(ctx sdk.Context, cdc codec.JSONMarshaler, keeper keeper.Keeper, data GenesisState) []abci.ValidatorUpdate {
-	err := keeper.SetGenesisState(ctx, data.Headers[0], data.PeriodStart)
+func InitGenesis(ctx sdk.Context, cdc codec.JSONMarshaler, data json.RawMessagekeeper keeper.Keeper, genData GenesisState) []abci.ValidatorUpdate {
+	err := keeper.SetGenesisState(ctx, genData.Headers[0], genData.PeriodStart)
 	if err != nil {
 		panic("already init!")
 	}
-	if len(data.Headers) > 1 {
-		err = keeper.IngestHeaderChain(ctx, data.Headers[1:])
+	if len(genData.Headers) > 1 {
+		err = keeper.IngestHeaderChain(ctx, genData.Headers[1:])
 		if err != nil {
 			panic("Bad header chain in genesis state! " + err.Error())
 		}
@@ -72,6 +72,6 @@ func InitGenesis(ctx sdk.Context, cdc codec.JSONMarshaler, keeper keeper.Keeper,
 // ExportGenesis exports the genesis state
 // TODO: export GenesisState
 //       May need special store keys for it
-func ExportGenesis(ctx sdk.Context, cdc codec.JSONMarshaler, k keeper.Keeper) GenesisState {
+func ExportGenesis(ctx sdk.Context, cdc codec.JSONMarshaler, data json.RawMessage, k keeper.Keeper) GenesisState {
 	panic("Not implemented")
 }
