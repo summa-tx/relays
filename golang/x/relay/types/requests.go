@@ -15,13 +15,13 @@ type RequestID [8]byte
 
 // ProofRequest is info about a proof request
 type ProofRequest struct {
-	Spends      Hash256Digest `json:"spends"`
-	Pays        Hash256Digest `json:"pays"`
-	PaysValue   uint64        `json:"paysValue"`
-	ActiveState bool          `json:"activeState"`
-	NumConfs    uint8         `json:"numConfs"`
-	Origin      Origin        `json:"origin"`
-	Action      HexBytes      `json:"action"`
+	Spends      btcspv.Hash256Digest
+	Pays        btcspv.Hash256Digest
+	PaysValue   uint64
+	ActiveState bool
+	NumConfs    uint8
+	Origin      Origin
+	Action      HexBytes
 }
 
 // NewRequestID instantiates a RequestID from a byte slice

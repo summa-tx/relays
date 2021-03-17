@@ -5,20 +5,21 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
 func TestHash256DigestFromHex(t *testing.T) {
 	Hash256FromHexPass := []struct {
 		Input  string
-		Output Hash256Digest
+		Output btcspv.Hash256Digest
 	}{
 		{
 			"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-			Hash256Digest{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255},
+			btcspv.Hash256Digest{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255},
 		},
 		{
 			"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-			Hash256Digest{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255},
+			btcspv.Hash256Digest{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255},
 		},
 	}
 

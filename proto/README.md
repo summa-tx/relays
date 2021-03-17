@@ -25,14 +25,9 @@
     - Install the Go protocol buffers plugin:
 
         ```sh
-        go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+        go get -u github.com/golang/protobuf/protoc-gen-go 
+        go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
         ```
-
-3. Install starport into /usr/local/bin:
-
-    ```sh
-    curl https://get.starport.network/starport@v0.13.1! | bash
-    ```
 
 ## Building protobuf files
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
 // Relay module event types
@@ -33,7 +34,7 @@ const (
 )
 
 // NewReorgEvent instantiates a reorg event
-func NewReorgEvent(prev, new, lca Hash256Digest) sdk.Event {
+func NewReorgEvent(prev, new, lca btcspv.Hash256Digest) sdk.Event {
 	return sdk.NewEvent(
 		EventTypeReorg,
 		sdk.NewAttribute(AttributeKeyPreviousBest, "0x"+hex.EncodeToString(prev[:])),
@@ -64,7 +65,7 @@ func NewProofRequestEvent(pays, spends []byte, paysValue uint64, id RequestID, o
 }
 
 // NewProofProvidedEvent instantiates a proof provided event
-func NewProofProvidedEvent(txid Hash256Digest, filled []RequestID) sdk.Event {
+func NewProofProvidedEvent(txid btcspv.Hash256Digest, filled []RequestID) sdk.Event {
 	filledJSON, _ := json.Marshal(filled)
 	return sdk.NewEvent(
 		EventTypeProofProvided,

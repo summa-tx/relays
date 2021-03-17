@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/summa-tx/relays/relayproto";
+option go_package = "github.com/summa-tx/relays/proto";
 
 package relayproto;
 import "shared.proto";
@@ -78,7 +78,7 @@ message QueryParamsCheckRequests {
 message QueryResCheckRequests {
     QueryParamsCheckRequests params = 1;
     bool valid = 2;
-    optional string error = 3;
+    optional string error_message = 3;
 }
 
 message QueryParamsCheckProof {
@@ -88,5 +88,5 @@ message QueryParamsCheckProof {
 message QueryResCheckProof {
     QueryParamsCheckProof params = 1;
     bool valid = 2;
-    optional string error = 3;
+    optional string error_message = 3;
 }

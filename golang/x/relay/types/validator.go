@@ -1,22 +1,56 @@
 package types
 
+import "github.com/summa-tx/relays/proto"
+
 // FilledRequestInfo contains information about what input and/or output satisfied the request
 type FilledRequestInfo struct {
-	InputIndex  uint32    `json:"inputIndex"`
-	OutputIndex uint32    `json:"outputIndex"`
-	ID          RequestID `json:"id"`
+	InputIndex  uint32
+	OutputIndex uint32
+	ID          RequestID
+}
+
+// FromProto populates a FilledRequestInfo from a protobuf
+func filledRequestInfoFromProto(m *proto.FilledRequestInfo) (FilledRequestInfo, error) {
+	var filledRequest FilledRequestInfo
+
+	id, err := bufToRequestID(m.ID)
+	if err != nil {
+		return filledRequest, err
+	}
+
+	filledRequest.InputIndex = m.InputIndex
+	filledRequest.OutputIndex = m.OutputIndex
+	filledRequest.ID = id
+
+	return filledRequest, nil
 }
 
 // FilledRequests contains a proof that satisfies one or more requests
 type FilledRequests struct {
-	Proof  SPVProof            `json:"proof"`
-	Filled []FilledRequestInfo `json:"requests"`
+	Proof  SPVProof
+	Filled []FilledRequestInfo
 }
 
-// NewFilledRequests instantiates a FilledRequests
-func NewFilledRequests(proof SPVProof, filled []FilledRequestInfo) FilledRequests {
-	return FilledRequests{
-		proof,
-		filled,
+// FromProto populates FilledRequests from a protobuf
+func filledRequestsFromProto(m *proto.FilledRequests) (FilledRequests, error) {
+	var filledRequests FilledRequests
+
+	proof, err := spvProofFromProto(m.Proof)
+	if err != nil {
+		return filledRequests, err
 	}
+
+	filled := make([]FilledRequestInfo, len(m.Filled))
+	for	i, f := range m.Filled {
+		filledRequest, err := filledRequestInfoFromProto(f)
+		filled[i] = filledRequest
+		if err != nil {
+			return filledRequests, err
+		}
+	}
+
+	filledRequests.Proof = proof
+	filledRequests.Filled = filled
+
+	return filledRequests, nil
 }
