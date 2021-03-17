@@ -65,7 +65,9 @@ var (
 
 type relayApp struct {
 	*bam.BaseApp
-	cdc *codec.Codec
+	legacyAmino *codec.legacyAmino
+	appCodec codec.Marshaler
+	interfaceRegistry types.InterfaceRegistry
 
 	// keys to access the substores
 	keys  map[string]*sdk.KVStoreKey
@@ -88,7 +90,7 @@ type relayApp struct {
 
 // MakeCodec generates the necessary codecs for Amino
 func MakeCodec() *codec.Codec {
-	var cdc = codec.New()
+	var cdc = codec.NewLegacyAmino()
 	ModuleBasics.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
