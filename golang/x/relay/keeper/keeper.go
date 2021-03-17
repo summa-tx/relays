@@ -18,7 +18,7 @@ type Keeper struct {
 }
 
 // NewKeeper instantiates a new keeper
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, mainnet bool, handler types.ProofHandler) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Marshaler, mainnet bool, handler types.ProofHandler) Keeper {
 	return Keeper{
 		storeKey:     storeKey,
 		cdc:          cdc,

@@ -26,7 +26,9 @@ var (
 )
 
 // AppModuleBasic is app module Basics object
-type AppModuleBasic struct{}
+type AppModuleBasic struct{
+	cdc codec.Marshaler
+}
 
 // Name is
 func (AppModuleBasic) Name() string {
@@ -34,7 +36,7 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec is
-func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterCodec(cdc)
 }
 
@@ -92,6 +94,24 @@ func NewAppModule(k keeper.Keeper) AppModule {
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         k,
 	}
+}
+
+func (AppModule) RegisterInterfaces(registry types.InterfaceRegistry) {
+	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgIngestHeaderChain{},
+		&MsgIngestDifficultyChange{},
+		&MsgMarkNewHeaviest{},
+		&MsgNewRequest{},
+		&MsgProvideProof{},
+	)
+
+	registry.RegisterInterface(
+		"cosmos.bank.v1beta1.SupplyI",
+		(*exported.SupplyI)(nil),
+		&Supply{},
+	)
+
+	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
 
 // Name is

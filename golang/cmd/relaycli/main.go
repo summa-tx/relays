@@ -123,6 +123,7 @@ func initConfig(cmd *cobra.Command) error {
 
 	cfgFile := path.Join(home, "config", "config.toml")
 	if _, err := os.Stat(cfgFile); err == nil {
+		// TODO: something about viper?
 		viper.SetConfigFile(cfgFile)
 
 		if err := viper.ReadInConfig(); err != nil {
