@@ -94,7 +94,13 @@ func GetCmdIsAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 
 			var out types.QueryResIsAncestor
-			cdc.MustUnmarshalJSON(res, &out)
+			// cdc.MustUnmarshalJSON(res, &out)
+			err := out.fromProto(res)
+			if err != nil {
+				// TODO: better error message
+				fmt.Printf("could not format data")
+				return nil
+			}
 			return cliCtx.PrintOutput(&out)
 		},
 	}
