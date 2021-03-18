@@ -62,9 +62,9 @@ func queryIsAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res
 	}
 
 	var params types.QueryParamsIsAncestor
-	err := params.FromProto(proto)
-	if err != nil {
-		return err
+	fromProtoErr := params.FromProto(&proto)
+	if fromProtoErr != nil {
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
 	limit := params.Limit
@@ -151,15 +151,15 @@ func queryGetBestDigest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (
 
 func queryFindAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	var proto proto.QueryParamsFindAncestor
-	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &proto)
 	if unmarshallErr != nil {
 		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
 	var params types.QueryParamsFindAncestor
-	err := params.FromProto(proto)
-	if err != nil {
-		return err
+	fromProtoErr := params.FromProto(&proto)
+	if fromProtoErr != nil {
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
@@ -184,15 +184,15 @@ func queryFindAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (r
 
 func queryHeaviestFromAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	var proto proto.QueryParamsHeaviestFromAncestor
-	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &proto)
 	if unmarshallErr != nil {
 		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
 	var params types.QueryParamsHeaviestFromAncestor
-	err := params.FromProto(proto)
-	if err != nil {
-		return err
+	fromProtoErr := params.FromProto(&proto)
+	if fromProtoErr != nil {
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
 	limit := params.Limit
@@ -222,15 +222,15 @@ func queryHeaviestFromAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Ke
 
 func queryIsMostRecentCommonAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	var proto proto.QueryParamsIsMostRecentCommonAncestor
-	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &proto)
 	if unmarshallErr != nil {
 		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
 	var params types.QueryParamsIsMostRecentCommonAncestor
-	err := params.FromProto(proto)
-	if err != nil {
-		return err
+	fromProtoErr := params.FromProto(&proto)
+	if fromProtoErr != nil {
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
 	limit := params.Limit
@@ -257,15 +257,15 @@ func queryIsMostRecentCommonAncestor(ctx sdk.Context, req abci.RequestQuery, kee
 
 func queryGetRequest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
 	var proto proto.QueryParamsGetRequest
-	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &proto)
 	if unmarshallErr != nil {
 		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
 	var params types.QueryParamsGetRequest
-	err := params.FromProto(proto)
-	if err != nil {
-		return err
+	fromProtoErr := params.FromProto(&proto)
+	if fromProtoErr != nil {
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
@@ -293,15 +293,15 @@ func queryCheckRequests(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (
 	var errMsg string
 	valid := true
 
-	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &proto)
 	if unmarshallErr != nil {
 		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
 	var params types.QueryParamsCheckRequests
-	err := params.FromProto(proto)
-	if err != nil {
-		return err
+	fromProtoErr := params.FromProto(&proto)
+	if fromProtoErr != nil {
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
@@ -327,12 +327,18 @@ func queryCheckRequests(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (
 }
 
 func queryCheckProof(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
-	var params proto.QueryParamsCheckProof
+	var proto proto.QueryParamsCheckProof
 	var errMsg string
 	valid := true
 
-	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &proto)
 	if unmarshallErr != nil {
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
+	}
+
+	var params types.QueryParamsCheckProof
+	fromProtoErr := params.FromProto(&proto)
+	if fromProtoErr != nil {
 		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
