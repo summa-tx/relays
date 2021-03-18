@@ -322,7 +322,10 @@ func checkRequestsHandler(cliCtx client.Context, storeName string) http.HandlerF
 			return
 		}
 
-		filledRequests := types.NewFilledRequests(req.Proof, req.Requests)
+		filledRequests := types.FilledRequests{
+			Proof: req.Proof, 
+			Requests: req.Requests,
+		}
 
 		params := types.QueryParamsCheckRequests{
 			Filled: filledRequests,

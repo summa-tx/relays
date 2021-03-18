@@ -199,7 +199,10 @@ func provideProofHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		filledRequests := types.NewFilledRequests(req.Proof, req.Requests)
+		filledRequests := types.FilledRequests{
+			Proof: req.Proof,
+			Requests: req.Requests,
+		}
 
 		msg := types.NewMsgProvideProof(addr, filledRequests)
 		err = msg.ValidateBasic()

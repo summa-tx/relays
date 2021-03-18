@@ -221,9 +221,9 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				}
 			}
 
-			filledRequests := types.NewFilledRequests(
-				proof,
-				requests,
+			filledRequests := types.FilledRequests(
+				Proot: proof,
+				Requests: requests,
 			)
 
 			msgs := []sdk.Msg{types.NewMsgProvideProof(
