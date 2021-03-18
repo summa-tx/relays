@@ -1,9 +1,9 @@
 package keeper
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/summa-tx/relays/proto"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -25,7 +25,7 @@ func decodeUint32FromPath(path []string, idx int, defaultLimit uint32) (uint32, 
 
 // NewQuerier makes a query routing function
 func NewQuerier(keeper Keeper) sdk.Querier {
-	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err *sdkerrors.Error) {
+	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err error) {
 		switch path[0] {
 		case types.QueryIsAncestor:
 			return queryIsAncestor(ctx, req, keeper)
@@ -48,17 +48,23 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 		case types.QueryCheckProof:
 			return queryCheckProof(ctx, req, keeper)
 		default:
-			return nil, sdk.ErrUnknownRequest("unknown relay query endpoint")
+			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown relay query endpoint")
 		}
 	}
 }
 
 func queryIsAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
-	var params types.QueryParamsIsAncestor
-
-	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	// TODO: Do we still unmarshal from json here?
+	var proto proto.QueryParamsIsAncestor
+	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &proto)
 	if unmarshallErr != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
+	}
+
+	var params types.QueryParamsIsAncestor
+	err := params.FromProto(proto)
+	if err != nil {
+		return err
 	}
 
 	limit := params.Limit
@@ -144,11 +150,16 @@ func queryGetBestDigest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (
 }
 
 func queryFindAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
-	var params types.QueryParamsFindAncestor
-
+	var proto proto.QueryParamsFindAncestor
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if unmarshallErr != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
+	}
+
+	var params types.QueryParamsFindAncestor
+	err := params.FromProto(proto)
+	if err != nil {
+		return err
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
@@ -172,11 +183,16 @@ func queryFindAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (r
 }
 
 func queryHeaviestFromAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
-	var params types.QueryParamsHeaviestFromAncestor
-
+	var proto proto.QueryParamsHeaviestFromAncestor
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if unmarshallErr != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
+	}
+
+	var params types.QueryParamsHeaviestFromAncestor
+	err := params.FromProto(proto)
+	if err != nil {
+		return err
 	}
 
 	limit := params.Limit
@@ -205,11 +221,16 @@ func queryHeaviestFromAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Ke
 }
 
 func queryIsMostRecentCommonAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
-	var params types.QueryParamsIsMostRecentCommonAncestor
-
+	var proto proto.QueryParamsIsMostRecentCommonAncestor
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if unmarshallErr != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
+	}
+
+	var params types.QueryParamsIsMostRecentCommonAncestor
+	err := params.FromProto(proto)
+	if err != nil {
+		return err
 	}
 
 	limit := params.Limit
@@ -235,11 +256,16 @@ func queryIsMostRecentCommonAncestor(ctx sdk.Context, req abci.RequestQuery, kee
 }
 
 func queryGetRequest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
-	var params types.QueryParamsGetRequest
-
+	var proto proto.QueryParamsGetRequest
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if unmarshallErr != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
+	}
+
+	var params types.QueryParamsGetRequest
+	err := params.FromProto(proto)
+	if err != nil {
+		return err
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
@@ -263,13 +289,19 @@ func queryGetRequest(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res
 }
 
 func queryCheckRequests(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
-	var params types.QueryParamsCheckRequests
+	var proto proto.QueryParamsCheckRequests
 	var errMsg string
 	valid := true
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if unmarshallErr != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
+	}
+
+	var params types.QueryParamsCheckRequests
+	err := params.FromProto(proto)
+	if err != nil {
+		return err
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer
@@ -295,13 +327,13 @@ func queryCheckRequests(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (
 }
 
 func queryCheckProof(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
-	var params types.QueryParamsCheckProof
+	var params proto.QueryParamsCheckProof
 	var errMsg string
 	valid := true
 
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if unmarshallErr != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", unmarshallErr))
+		return nil, types.ErrUnmarshalJSON(types.DefaultCodespace)
 	}
 
 	// This calls the keeper with the parsed arguments, and gets an answer

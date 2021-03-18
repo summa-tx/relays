@@ -120,6 +120,11 @@ const (
 	// MarshalJSONMessage is the corresponding message
 	MarshalJSONMessage = "Could not marshal result to JSON"
 
+	// MarshalJSON means there was an error marshalling a query result to json
+	UnmarshalJSON uint32 = 504
+	// MarshalJSONMessage is the corresponding message
+	UnmarshalJSONMessage = "failed to parse JSON"
+
 	// 600-block Proof Requests
 
 	// UnknownRequest means the request was not found
@@ -281,6 +286,11 @@ func ErrBadOffset(codespace string, digest btcspv.Hash256Digest) *sdkerrors.Erro
 // ErrMarshalJSON throws an error
 func ErrMarshalJSON(codespace string) *sdkerrors.Error {
 	return sdkerrors.Register(codespace, MarshalJSON, MarshalJSONMessage)
+}
+
+// ErrMarshalJSON throws an error
+func ErrUnmarshalJSON(codespace string, ) *sdkerrors.Error {
+	return sdkerrors.Register(codespace, UnmarshalJSON, UnmarshalJSONMessage)
 }
 
 // FromBTCSPVError converts a btcutils error into an sdk error

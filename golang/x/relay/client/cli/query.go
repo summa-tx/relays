@@ -92,7 +92,7 @@ func GetCmdIsAncestor(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -120,7 +120,7 @@ func GetCmdGetRelayGenesis(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -148,7 +148,7 @@ func GetCmdGetLastReorgLCA(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -176,7 +176,7 @@ func GetCmdGetBestDigest(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -224,7 +224,7 @@ func GetCmdFindAncestor(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -288,7 +288,7 @@ func GetCmdIsMostRecentCommonAncestor(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res)
+			return clientCtx.PrintProto(res)
 
 		},
 	}
@@ -353,7 +353,7 @@ func GetCmdHeaviestFromAncestor(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -391,7 +391,7 @@ func GetCmdGetRequest(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res)
+			return clientCtx.PrintProto(res)
 
 		},
 	}
@@ -452,7 +452,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 			}
 
 			params := &proto.QueryParamsCheckRequests{
-				Filled: filledRequests,
+				Filled: &filledRequests,
 			}
 
 			res, err := queryClient.CheckRequests(cmd.Context(), params)
@@ -461,7 +461,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				return err
 			}
 
-			return clientCtx.PrintProto(&res)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -513,7 +513,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				return err
 			}
 
-			return clientCtx.PrintProto(&res)
+			return clientCtx.PrintProto(res)
 		},
 	}
 

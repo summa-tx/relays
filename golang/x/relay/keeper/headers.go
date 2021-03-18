@@ -108,9 +108,9 @@ func compareTargets(full, truncated sdk.Uint) bool {
 	f, _ := full.MarshalAmino()
 	t, _ := truncated.MarshalAmino()
 	fullBI := new(big.Int)
-	fullBI.SetString(f, 0)
+	fullBI.SetBytes(f)
 	truncatedBI := new(big.Int)
-	truncatedBI.SetString(t, 0)
+	truncatedBI.SetBytes(t)
 
 	res := new(big.Int)
 	res.And(fullBI, truncatedBI)

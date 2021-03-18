@@ -317,7 +317,7 @@ func checkRequestsHandler(cliCtx client.Context, storeName string) http.HandlerF
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req checkRequestsReq
 
-		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return
 		}
@@ -358,7 +358,7 @@ func checkProofHandler(cliCtx client.Context, storeName string) http.HandlerFunc
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req checkProofReq
 
-		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return
 		}
