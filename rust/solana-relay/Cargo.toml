@@ -1,0 +1,23 @@
+[package]
+name = "solana-relay"
+version = "0.1.0"
+authors = ["James Prestwich <james@prestwi.ch>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+solana-sdk = { version = "=1.2.12", default-features = false, features=["program"] }
+
+# error
+thiserror = "1.0"
+num-derive = "0.2"
+num-traits = "0.2"
+
+# TODO: get rid of this?
+serde = { version = "1.0.99", features = ["derive"] }
+serde_cbor = "0.11.1"
+
+# TODO change to 4.0
+bitcoin-spv = "4.0.1"
+relay-core = { path = "../relay-core" }

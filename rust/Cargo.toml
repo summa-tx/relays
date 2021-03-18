@@ -1,0 +1,11 @@
+[workspace]
+members = [
+    "relay-core",
+    "solana-relay"
+]
+
+[profile.test]
+opt-level = 1  # necessary for instantiating large generic array
+
+[profile.dev]
+opt-level = 1  # necessary for instantiating large generic array

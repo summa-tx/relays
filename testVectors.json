@@ -128,6 +128,8 @@
         "output": 302
       },
       {
+        "rustSkip": true,
+        "rustSkipComment": "checked in header info retrieval",
         "comment": "period header difficulties do not match",
         "headers": [
           {

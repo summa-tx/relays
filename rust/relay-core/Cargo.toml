@@ -1,0 +1,26 @@
+[package]
+name = "relay-core"
+version = "0.1.0"
+authors = ["James Prestwich <james@prestwi.ch>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+generic-array = {version = "0.14.3", default-features = false, features = ["serde"] }
+thiserror = "1.0"
+
+bitcoin-spv = "4.0.1"
+
+# TODO: move to feature
+serde = { version = "1.0.99", features = ["derive"] }
+
+[dev-dependencies]
+hex = "0.4.2"
+serde_json = { version = "1.0" }
+serde = { version = "1.0.99", features = ["derive"] }
+lazy_static = "1.4.0"
+
+[features]
+default = ["offchain"]
+offchain = []
