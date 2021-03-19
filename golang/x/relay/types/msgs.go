@@ -39,10 +39,13 @@ func (msg *MsgIngestHeaderChain) FromProto(m *proto.MsgIngestHeaderChain) (error
 	return nil
 }
 
-// ToProto populates a protobuf MsgIngestHeaderChain from a MsgIngestHeaderChain
-func (msg *proto.MsgIngestHeaderChain) ToProto(m *MsgIngestHeaderChain) {
+// MsgIngestHeaderChainToProto populates a protobuf MsgIngestHeaderChain from a MsgIngestHeaderChain
+func MsgIngestHeaderChainToProto(m MsgIngestHeaderChain) (proto.MsgIngestHeaderChain) {
+	var msg proto.MsgIngestHeaderChain
+
 	msg.Signer = m.Signer
 	msg.Headers = []byte{m.Headers}
+	return msg
 }
 
 // NewMsgIngestHeaderChain instantiates a MsgIngestHeaderChain
@@ -72,11 +75,9 @@ func (msg MsgIngestHeaderChain) ValidateBasic() sdk.Error {
 	return nil
 }
 
-// TODO: toProto?
 // GetSignBytes returns the sighash for the message
 func (msg MsgIngestHeaderChain) GetSignBytes() []byte {
-	var proto proto.MsgIngestHeaderChain
-	proto.ToProto(&msg)
+	proto := MsgIngestHeaderChainToProto(msg)
 
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(proto))
 }
@@ -118,11 +119,14 @@ func (msg *MsgIngestDifficultyChange) FromProto(m *proto.MsgIngestDifficultyChan
 	return nil
 }
 
-// ToProto populates a protobuf MsgIngestDifficultyChange from a MsgIngestDifficultyChange
-func (msg *proto.MsgIngestDifficultyChange) ToProto(m *MsgIngestDifficultyChange) {
+// MsgIngestDifficultyChangeToProto populates a protobuf MsgIngestDifficultyChange from a MsgIngestDifficultyChange
+func MsgIngestDifficultyChangeToProto(m MsgIngestDifficultyChange) (proto.MsgIngestDifficultyChange) {
+	var msg proto.MsgIngestDifficultyChange
+
 	msg.Signer = m.Signer
 	msg.Start = []byte{m.Start}
 	msg.Headers = []byte{m.Headers}
+	return msg
 }
 
 // NewMsgIngestDifficultyChange instantiates a MsgIngestDifficultyChange
@@ -155,8 +159,7 @@ func (msg MsgIngestDifficultyChange) ValidateBasic() sdk.Error {
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgIngestDifficultyChange) GetSignBytes() []byte {
-	var proto proto.MsgIngestDifficultyChange
-	proto.ToProto(&msg)
+	proto := MsgIngestDifficultyChangeToProto(msg)
 
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(proto))
 }
@@ -206,13 +209,16 @@ func (msg *MsgMarkNewHeaviest) FromProto(m *proto.MsgMarkNewHeaviest) (error) {
 	return nil
 }
 
-// ToProto populates a protobuf MsgMarkNewHeaviest from a MsgMarkNewHeaviest
-func (msg *proto.MsgMarkNewHeaviest) ToProto(m *MsgMarkNewHeaviest) {
+// MsgMarkNewHeaviestToProto populates a protobuf MsgMarkNewHeaviest from a MsgMarkNewHeaviest
+func MsgMarkNewHeaviestToProto(m MsgMarkNewHeaviest) (proto.MsgMarkNewHeaviest) {
+	var msg proto.MsgMarkNewHeaviest
+
 	msg.Signer = m.Signer
 	msg.Ancestor = []byte{m.Ancestor}
 	msg.CurrentBest = []byte{m.CurrentBest}
 	msg.NewBest = []byte{m.NewBest}
 	msg.Limit = m.Limit
+	return msg
 }
 
 // NewMsgMarkNewHeaviest instantiates a MsgMarkNewHeaviest
@@ -253,8 +259,7 @@ func (msg MsgMarkNewHeaviest) ValidateBasic() sdk.Error {
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgMarkNewHeaviest) GetSignBytes() []byte {
-	var proto proto.MsgMarkNewHeaviest
-	proto.ToProto(&msg)
+	proto := MsgMarkNewHeaviestToProto(msg)
 
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(proto))
 }
@@ -294,8 +299,10 @@ func (msg *MsgNewRequest) FromProto(m *proto.MsgNewRequest) (error) {
 	return nil
 }
 
-// ToProto populates a protobuf MsgNewRequest from a MsgNewRequest
-func (msg *proto.MsgNewRequest) ToProto(m *MsgNewRequest) {
+// MsgNewRequestToProto populates a protobuf MsgNewRequest from a MsgNewRequest
+func MsgNewRequestToProto(m MsgNewRequest) (proto.MsgNewRequest) {
+	var msg proto.MsgNewRequest
+
 	msg.Signer = m.Signer
 	msg.Spends = []byte{m.Spends}
 	msg.Pays = []byte{m.Pays}
@@ -303,6 +310,7 @@ func (msg *proto.MsgNewRequest) ToProto(m *MsgNewRequest) {
 	msg.NumConfs = uint32(m.NumConfs)
 	msg.Origin = uint32(m.Origin)
 	msg.Action = []byte{m.Action}
+	return msg
 }
 
 // GetSigners gets signers
@@ -330,8 +338,7 @@ func (msg MsgNewRequest) ValidateBasic() sdk.Error {
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgNewRequest) GetSignBytes() []byte {
-	var proto proto.MsgNewRequest
-	proto.ToProto(&msg)
+	proto := MsgNewRequestToProto(msg)
 
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(proto))
 }
@@ -366,10 +373,13 @@ func (msg *MsgProvideProof) FromProto(m *proto.MsgProvideProof) (error) {
 	return nil
 }
 
-// ToProto populates a protobuf MsgProvideProof from a MsgProvideProof
-func (msg *proto.MsgProvideProof) ToProto(m *MsgProvideProof) {
+// MsgProvideProofToProto populates a protobuf MsgProvideProof from a MsgProvideProof
+func MsgProvideProofToProto(m MsgProvideProof) (proto.MsgProvideProof) {
+	var msg proto.MsgProvideProof
+
 	msg.Signer = m.Signer
 	msg.Filled = filledRequestsToProto(m.Filled)
+	return msg
 }
 
 // NewMsgProvideProof instantiates a MsgProvideProof
@@ -400,8 +410,7 @@ func (msg MsgProvideProof) Type() string { return "provide_proof" }
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgProvideProof) GetSignBytes() []byte {
-	var proto proto.MsgProvideProof
-	proto.ToProto(&msg)
+	proto := MsgProvideProofToProto(msg)
 
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(proto))
 }
