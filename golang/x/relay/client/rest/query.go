@@ -324,7 +324,7 @@ func checkRequestsHandler(cliCtx client.Context, storeName string) http.HandlerF
 
 		filledRequests := types.FilledRequests{
 			Proof: req.Proof, 
-			Requests: req.Requests,
+			Filled: req.Requests,
 		}
 
 		params := types.QueryParamsCheckRequests{

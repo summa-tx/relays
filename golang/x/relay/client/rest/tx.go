@@ -40,11 +40,11 @@ func ingestHeaderChainHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		msg := types.NewMsgIngestHeaderChain(addr, req.Headers)
-		err = msg.ValidateBasic()
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
+		// err = msg.ValidateBasic()
+		// if err != nil {
+		// 	rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+		// 	return
+		// }
 
 		tx.WriteGeneratedTxResponse(cliCtx, w, baseReq, msg)
 	}
@@ -79,11 +79,11 @@ func ingestDifficultyChangeHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		msg := proto.NewMsgIngestDifficultyChange(addr, req.Start, req.Headers)
-		err = msg.ValidateBasic()
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
+		// err = msg.ValidateBasic()
+		// if err != nil {
+		// 	rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+		// 	return
+		// }
 
 		tx.WriteGeneratedTxResponse(cliCtx, w, baseReq, msg)
 	}
@@ -120,11 +120,11 @@ func markNewHeaviestHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		msg := types.NewMsgMarkNewHeaviest(addr, req.Ancestor, req.CurrentBest, req.NewBest, req.Limit)
-		err = msg.ValidateBasic()
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
+		// err = msg.ValidateBasic()
+		// if err != nil {
+		// 	rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+		// 	return
+		// }
 
 		tx.WriteGeneratedTxResponse(cliCtx, w, baseReq, msg)
 	}
@@ -161,11 +161,11 @@ func newRequestHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		msg := types.NewMsgNewRequest(addr, req.Spends, req.Pays, req.PaysValue, req.NumConfs, types.Local, nil)
-		err = msg.ValidateBasic()
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
+		// err = msg.ValidateBasic()
+		// if err != nil {
+		// 	rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+		// 	return
+		// }
 
 		tx.WriteGeneratedTxResponse(cliCtx, w, baseReq, msg)
 	}
@@ -199,17 +199,17 @@ func provideProofHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		filledRequests := types.FilledRequests{
+		filledRequests := proto.FilledRequests{
 			Proof: req.Proof,
-			Requests: req.Requests,
+			Filled: req.Requests,
 		}
 
 		msg := types.NewMsgProvideProof(addr, filledRequests)
-		err = msg.ValidateBasic()
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
+		// err = msg.ValidateBasic()
+		// if err != nil {
+		// 	rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+		// 	return
+		// }
 
 		tx.WriteGeneratedTxResponse(cliCtx, w, baseReq, msg)
 	}
