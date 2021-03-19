@@ -5,40 +5,43 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/summa-tx/relays/proto"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 )
 
+// TODO: Should this have the queryRoute param or not?
 // GetQueryCmd sets up query CLI commands
-func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	relayQueryCommand := &cobra.Command{
+func GetQueryCmd(queryRoute string) *cobra.Command {
+	relayQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      "Querying commands for the relay module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	relayQueryCommand.AddCommand(client.GetCommands(
-		GetCmdIsAncestor(queryRoute, cdc),
-		GetCmdGetRelayGenesis(queryRoute, cdc),
-		GetCmdGetLastReorgLCA(queryRoute, cdc),
-		GetCmdGetBestDigest(queryRoute, cdc),
-		GetCmdFindAncestor(queryRoute, cdc),
-		GetCmdIsMostRecentCommonAncestor(queryRoute, cdc),
-		GetCmdHeaviestFromAncestor(queryRoute, cdc),
-		GetCmdCheckProof(queryRoute, cdc),
-		GetCmdCheckRequests(queryRoute, cdc),
-	)...)
-	return relayQueryCommand
+
+	relayQueryCmd.AddCommand(
+		GetCmdIsAncestor(queryRoute),
+		GetCmdGetRelayGenesis(queryRoute),
+		GetCmdGetLastReorgLCA(queryRoute),
+		GetCmdGetBestDigest(queryRoute),
+		GetCmdFindAncestor(queryRoute),
+		GetCmdIsMostRecentCommonAncestor(queryRoute),
+		GetCmdHeaviestFromAncestor(queryRoute),
+		GetCmdCheckProof(queryRoute),
+		GetCmdCheckRequests(queryRoute),
+	)
+
+	return relayQueryCmd
 }
 
 // GetCmdIsAncestor returns the CLI command struct for IsAncestor
-func GetCmdIsAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+func GetCmdIsAncestor(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
 		// what are the arguments. <> for required, [] for optional
 		Use:     "isancestor <digest> <ancestor> [limit]",
 		Example: "isancestor 0641238051855d1759da9b6603b156684a68a146d36a09000000000000000000 9be6406d5311123b6212b14b1a070276157364a5d5f004000000000000000000 200", // how do you use it?
@@ -50,7 +53,11 @@ func GetCmdIsAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		// what does it do when run?
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// spin up a context
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := proto.NewQueryClient(clientCtx)
 
 			var limit uint32
 			if len(args) == 3 {
@@ -62,124 +69,137 @@ func GetCmdIsAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				limit = uint32(lim)
 			}
 
-			digestLE, sdkErr := types.Hash256DigestFromHex(args[0])
+			digestLE, sdkErr := types.BytesFromHex(args[0])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
 			}
-			ancestor, sdkErr := types.Hash256DigestFromHex(args[1])
+			ancestor, sdkErr := types.BytesFromHex(args[1])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
 			}
 
-			params := types.QueryParamsIsAncestor{
+			params := &proto.QueryParamsIsAncestor{
 				DigestLE:            digestLE,
 				ProspectiveAncestor: ancestor,
 				Limit:               limit,
 			}
 
-			queryData, err := cdc.MarshalJSON(params)
-			if err != nil {
-				fmt.Print(err.Error())
-				return nil
-			}
-
-			// run the query. the routeString is passed as strings to our querier switch/case in `keeper/querier.go`
-			res, _, err := cliCtx.QueryWithData("custom/relay/isancestor", queryData)
-
+			res, err := queryClient.IsAncestor(cmd.Context(), params)
 			if err != nil {
 				fmt.Printf("could not check if %s... is ancestor of %s... \n", args[1][:8], args[0][:8])
-				return nil
+				return err
 			}
 
-			var out types.QueryResIsAncestor
-			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return clientCtx.PrintProto(res)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdGetRelayGenesis returns the CLI command struct for GetRelayGenesis
-func GetCmdGetRelayGenesis(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+func GetCmdGetRelayGenesis(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:     "getrelaygenesis",
 		Example: "getrelaygenesis",
 		Long:    "Get the first digest in the relay",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			res, _, err := cliCtx.QueryWithData("custom/relay/getrelaygenesis", nil)
-
+			res, err := queryClient.GetRelayGenesis(cmd.Context(), nil)
 			if err != nil {
 				fmt.Println("could not get the first digest in the relay")
-				return nil
+				return err
 			}
 
-			var out types.QueryResGetRelayGenesis
-			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return clientCtx.PrintProto(res)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdGetLastReorgLCA returns the CLI command struct for GetLastReorgLCA
-func GetCmdGetLastReorgLCA(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+func GetCmdGetLastReorgLCA(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:     "getlastreorglca",
 		Example: "getlastreorglca",
 		Long:    "Returns the latest common ancestor of the last-known reorg",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			res, _, err := cliCtx.QueryWithData("custom/relay/getlastreorglca", nil)
-
+			res, err := queryClient.GetLastReorgLCA(cmd.Context(), nil)
 			if err != nil {
 				fmt.Println("could not get the last Reorg LCA")
-				return nil
+				return err
 			}
 
-			var out types.QueryResGetLastReorgLCA
-			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return clientCtx.PrintProto(res)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdGetBestDigest returns the CLI command struct for GetBestDigest
-func GetCmdGetBestDigest(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+func GetCmdGetBestDigest(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:     "getbestdigest",
 		Example: "getbestdigest",
 		Long:    "Returns the best known digest in the relay",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			res, _, err := cliCtx.QueryWithData("custom/relay/getbestdigest", nil)
-
+			res, err := queryClient.GetBestDigest(cmd.Context(), nil)
 			if err != nil {
 				fmt.Println("could not get best known digest")
-				return nil
+				return err
 			}
 
-			var out types.QueryResGetBestDigest
-			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return clientCtx.PrintProto(res)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdFindAncestor returns the CLI command struct for FindAncestor
-func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+func GetCmdFindAncestor(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:     "findancestor <digest> <offset>",
 		Example: "findancestor f8d0a038bfe4027e5de3b6bf07262122636fd2916d7503000000000000000000 2", // how do you use it?
 		Long:    "Finds the digest <offset> blocks before <digest>. Errors if digest or the ancestor is unknown",
 		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			digest, sdkErr := types.Hash256DigestFromHex(args[0])
+			digest, sdkErr := types.BytesFromHex(args[0])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
@@ -193,54 +213,53 @@ func GetCmdFindAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 			offset = uint32(off)
 
-			params := types.QueryParamsFindAncestor{
+			params := &proto.QueryParamsFindAncestor{
 				DigestLE: digest,
 				Offset:   offset,
 			}
 
-			queryData, err := cdc.MarshalJSON(params)
-			if err != nil {
-				fmt.Print(err.Error())
-				return nil
-			}
-
-			res, _, err := cliCtx.QueryWithData("custom/relay/findancestor", queryData)
-
+			res, err := queryClient.FindAncestor(cmd.Context(), params)
 			if err != nil {
 				fmt.Printf("could not find ancestor of %s... \n", args[0][:8])
-				return nil
+				return err
 			}
 
-			var out types.QueryResFindAncestor
-			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return clientCtx.PrintProto(res)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdIsMostRecentCommonAncestor returns the CLI command struct for IsMostRecentCommonAncestor
-func GetCmdIsMostRecentCommonAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+func GetCmdIsMostRecentCommonAncestor(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:     "ismostrecentcommonancestor <ancestor> <left> <right> [limit]",
 		Example: "ismostrecentcommonancestor 9be6406d5311123b6212b14b1a070276157364a5d5f004000000000000000000 0641238051855d1759da9b6603b156684a68a146d36a09000000000000000000 7f9923db1d3ad6a08054b4a80a5cd7478b57a9650eaf09000000000000000000 3", // how do you use it?
 		Long:    "Checks if <ancestor> is the LCA of <left> and <right> digests",
 		Args:    cobra.RangeArgs(3, 4),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			ancestor, sdkErr := types.Hash256DigestFromHex(args[0])
+			ancestor, sdkErr := types.BytesFromHex(args[0])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
 			}
 
-			left, sdkErr := types.Hash256DigestFromHex(args[1])
+			left, sdkErr := types.BytesFromHex(args[1])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
 			}
 
-			right, sdkErr := types.Hash256DigestFromHex(args[2])
+			right, sdkErr := types.BytesFromHex(args[2])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
@@ -256,56 +275,56 @@ func GetCmdIsMostRecentCommonAncestor(queryRoute string, cdc *codec.Codec) *cobr
 				limit = uint32(lim)
 			}
 
-			params := types.QueryParamsIsMostRecentCommonAncestor{
+			params := &proto.QueryParamsIsMostRecentCommonAncestor{
 				Ancestor: ancestor,
 				Left:     left,
 				Right:    right,
 				Limit:    limit,
 			}
 
-			queryData, err := cdc.MarshalJSON(params)
-			if err != nil {
-				fmt.Print(err.Error())
-				return nil
-			}
-
-			res, _, err := cliCtx.QueryWithData("custom/relay/ismostrecentcommonancestor", queryData)
-
+			res, err := queryClient.IsMostRecentCommonAncestor(cmd.Context(), params)
 			if err != nil {
 				fmt.Printf("could not check if %s... is the LCA of %s... and %s... \n", args[0][:8], args[1][:8], args[2][:8])
-				return nil
+				return err
 			}
 
-			var out types.QueryResIsMostRecentCommonAncestor
-			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return clientCtx.PrintProto(res)
+
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdHeaviestFromAncestor returns the CLI command struct for HeaviestFromAncestor
-func GetCmdHeaviestFromAncestor(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+func GetCmdHeaviestFromAncestor(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:     "heaviestfromancestor <ancestor> <currentbest> <newbest> [limit]",
 		Example: "heaviestfromancestor 4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000 4c2078d0388e3844fe6241723e9543074bd3a974c16611000000000000000000 0641238051855d1759da9b6603b156684a68a146d36a09000000000000000000 200", // how do you use it?
 		Long:    "Determines the heavier descendant of a common ancestor",
 		Args:    cobra.RangeArgs(3, 4),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			ancestor, sdkErr := types.Hash256DigestFromHex(args[0])
+			ancestor, sdkErr := types.BytesFromHex(args[0])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
 			}
 
-			currentBest, sdkErr := types.Hash256DigestFromHex(args[1])
+			currentBest, sdkErr := types.BytesFromHex(args[1])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
 			}
 
-			newBest, sdkErr := types.Hash256DigestFromHex(args[2])
+			newBest, sdkErr := types.BytesFromHex(args[2])
 			if sdkErr != nil {
 				fmt.Print(sdkErr.Error())
 				return nil
@@ -321,74 +340,69 @@ func GetCmdHeaviestFromAncestor(queryRoute string, cdc *codec.Codec) *cobra.Comm
 				limit = uint32(lim)
 			}
 
-			params := types.QueryParamsHeaviestFromAncestor{
+			params := &proto.QueryParamsHeaviestFromAncestor{
 				Ancestor:    ancestor,
 				CurrentBest: currentBest,
 				NewBest:     newBest,
 				Limit:       limit,
 			}
 
-			queryData, err := cdc.MarshalJSON(params)
-			if err != nil {
-				fmt.Print(err.Error())
-				return nil
-			}
-
-			res, _, err := cliCtx.QueryWithData("custom/relay/heaviestfromancestor", queryData)
-
+			res, err := queryClient.HeaviestFromAncestor(cmd.Context(), params)
 			if err != nil {
 				fmt.Printf("could not determine if %s... or %s... is heaviest decendant of %s... \n", args[1][:8], args[2][:8], args[0][:8])
-				return nil
+				return err
 			}
 
-			var out types.QueryResHeaviestFromAncestor
-			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return clientCtx.PrintProto(res)
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdGetRequest returns the CLI command struct for getRequest
-func GetCmdGetRequest(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
+func GetCmdGetRequest(queryRoute string) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:     "getrequest <id>",
 		Example: "getrequest 12",
 		Long:    "Get a proof request using the associated ID. ID can be an\n\"0x\" prepended hexbyte string or an integer",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			id, idErr := types.RequestIDFromString(args[0])
+			id, idErr := types.BytesFromHex(args[0])
 			if idErr != nil {
 				return idErr
 			}
 
-			params := types.QueryParamsGetRequest{
+			params := &proto.QueryParamsGetRequest{
 				ID: id,
 			}
 
-			queryData, err := cdc.MarshalJSON(params)
-			if err != nil {
-				fmt.Print(err.Error())
-				return nil
-			}
-
-			res, _, err := cliCtx.QueryWithData("custom/relay/getrequest", queryData)
-
+			res, err := queryClient.GetRequest(cmd.Context(), params)
 			if err != nil {
 				fmt.Printf("could not find request associated with id: %s... \n", args[0])
-				return nil
+				return err
 			}
 
-			var out types.QueryResGetRequest
-			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return clientCtx.PrintProto(res)
+
 		},
 	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdCheckRequests returns the CLI command struct for checkRequests
-func GetCmdCheckRequests(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdCheckRequests(queryRoute string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "checkrequests <json proof> <json list of requests>",
 		Example: "checkrequests 1_check_proof.json 3_filled_requests.json --inputfile",
@@ -396,10 +410,14 @@ func GetCmdCheckRequests(queryRoute string, cdc *codec.Codec) *cobra.Command {
 Use flag --inputfile to submit a json filename as input from scripts/seed_data directory`,
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			var proof types.SPVProof
-			var requests []types.FilledRequestInfo
+			var proof proto.SPVProof
+			var requests []proto.FilledRequestInfo
 			if viper.GetBool("inputfile") {
 				jsonFileProof, err := readJSONFromFile(args[0])
 				if err != nil {
@@ -428,40 +446,33 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				}
 			}
 
-			filledRequests := types.NewFilledRequests(
-				proof,
-				requests,
-			)
-
-			params := types.QueryParamsCheckRequests{
-				Filled: filledRequests,
+			filledRequests := proto.FilledRequests{
+				Proof: &proof,
+				Filled: &requests,
 			}
 
-			queryData, err := cdc.MarshalJSON(params)
-			if err != nil {
-				fmt.Print(err.Error())
-				return nil
+			params := &proto.QueryParamsCheckRequests{
+				Filled: &filledRequests,
 			}
 
-			res, _, err := cliCtx.QueryWithData("custom/relay/checkrequests", queryData)
-
+			res, err := queryClient.CheckRequests(cmd.Context(), params)
 			if err != nil {
 				fmt.Printf("error processing checkrequests: %s \n", err)
-				return nil
+				return err
 			}
 
-			var out types.QueryResCheckRequests
-			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
 	attachFlagFileinput(cmd)
+	flags.AddQueryFlagsToCmd(cmd)
+
 	return cmd
 }
 
 // GetCmdCheckProof returns the CLI command struct for checkProof
-func GetCmdCheckProof(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdCheckProof(queryRoute string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "checkproof <json proof>",
 		Example: "checkproof 1_check_proof.json --inputfile",
@@ -469,9 +480,13 @@ func GetCmdCheckProof(queryRoute string, cdc *codec.Codec) *cobra.Command {
 Use flag --inputfile to submit a json filename as input from scripts/seed_data directory.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := proto.NewQueryClient(clientCtx)
 
-			var proof types.SPVProof
+			var proof proto.SPVProof
 			if viper.GetBool("inputfile") {
 				jsonFile, err := readJSONFromFile(args[0])
 				if err != nil {
@@ -488,29 +503,22 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				}
 			}
 
-			params := types.QueryParamsCheckProof{
-				Proof: proof,
+			params := &proto.QueryParamsCheckProof{
+				Proof: &proof,
 			}
 
-			queryData, err := cdc.MarshalJSON(params)
-			if err != nil {
-				fmt.Print(err.Error())
-				return nil
-			}
-
-			res, _, err := cliCtx.QueryWithData("custom/relay/checkproof", queryData)
-
+			res, err := queryClient.CheckProof(cmd.Context(), params)
 			if err != nil {
 				fmt.Printf("error processing checkproof: %s \n", err)
-				return nil
+				return err
 			}
 
-			var out types.QueryResCheckProof
-			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(&out)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
 	attachFlagFileinput(cmd)
+	flags.AddQueryFlagsToCmd(cmd)
+
 	return cmd
 }

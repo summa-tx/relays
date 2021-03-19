@@ -9,12 +9,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/summa-tx/relays/golang/x/relay/client/cli"
 	"github.com/summa-tx/relays/golang/x/relay/client/rest"
 	"github.com/summa-tx/relays/golang/x/relay/keeper"
 	"github.com/summa-tx/relays/golang/x/relay/types"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -26,7 +26,9 @@ var (
 )
 
 // AppModuleBasic is app module Basics object
-type AppModuleBasic struct{}
+type AppModuleBasic struct{
+	cdc codec.Marshaler
+}
 
 // Name is
 func (AppModuleBasic) Name() string {
@@ -34,12 +36,18 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec is
-func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterCodec(cdc)
 }
 
+// RegisterInterfaces registers the module's interfaces and implementations with
+// the given interface registry.
+func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
+	types.RegisterInterfaces(registry)
+}
+
 // DefaultGenesis is
-func (AppModuleBasic) DefaultGenesis() json.RawMessage {
+func (AppModuleBasic) DefaultGenesis(cdc codec.JSONMarshaler) json.RawMessage {
 	return types.ModuleCdc.MustMarshalJSON(DefaultGenesisState())
 }
 
@@ -55,7 +63,7 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 }
 
 // RegisterRESTRoutes registers rest routes
-func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
+func (AppModuleBasic) RegisterRESTRoutes(ctx client.Context, rtr *mux.Router) {
 	rest.RegisterRoutes(ctx, rtr, types.StoreKey)
 }
 
@@ -71,12 +79,12 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 }
 
 // GetQueryCmd get the root query command of this module
-func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
+func (AppModuleBasic) GetQueryCmd(cdc *codec.LegacyAmino) *cobra.Command {
 	return cli.GetQueryCmd(types.StoreKey, cdc)
 }
 
 // GetTxCmd get the root tx command of this module
-func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
+func (AppModuleBasic) GetTxCmd(cdc *codec.LegacyAmino) *cobra.Command {
 	return cli.GetTxCmd(types.StoreKey, cdc)
 }
 
@@ -103,7 +111,7 @@ func (AppModule) Name() string {
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {}
 
 // Route is
-func (am AppModule) Route() string {
+func (am AppModule) Route() sdk.Route {
 	return types.RouterKey
 }
 

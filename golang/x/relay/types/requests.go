@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
@@ -25,7 +25,7 @@ type ProofRequest struct {
 }
 
 // NewRequestID instantiates a RequestID from a byte slice
-func NewRequestID(b []byte) (RequestID, sdk.Error) {
+func NewRequestID(b []byte) (RequestID, *sdkerrors.Error) {
 	if len(b) != 8 {
 		return RequestID{}, ErrBadHexLen(DefaultCodespace, 8, len(b))
 	}

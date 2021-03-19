@@ -7,6 +7,7 @@ import (
 	"github.com/summa-tx/relays/golang/x/relay/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (k Keeper) getHeaderStore(ctx sdk.Context) sdk.KVStore {
@@ -23,7 +24,7 @@ func (k Keeper) HasHeader(ctx sdk.Context, digestLE types.Hash256Digest) bool {
 }
 
 // GetHeader retrieves a header from the store using its LE diges
-func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) (types.BitcoinHeader, sdk.Error) {
+func (k Keeper) GetHeader(ctx sdk.Context, digestLE types.Hash256Digest) (types.BitcoinHeader, *sdkerrors.Error) {
 	var header types.BitcoinHeader
 	store := k.getHeaderStore(ctx)
 
@@ -50,7 +51,7 @@ func (k Keeper) getCurrentEpochDifficulty(ctx sdk.Context) sdk.Uint {
 }
 
 // setCurrentEpochDifficulty sets the current epoch's difficulty
-func (k Keeper) setCurrentEpochDifficulty(ctx sdk.Context, diff sdk.Uint) sdk.Error {
+func (k Keeper) setCurrentEpochDifficulty(ctx sdk.Context, diff sdk.Uint) *sdkerrors.Error {
 	store := k.getHeaderStore(ctx)
 
 	b, err := diff.MarshalJSON()
@@ -75,7 +76,7 @@ func (k Keeper) getPrevEpochDifficulty(ctx sdk.Context) sdk.Uint {
 }
 
 // setPrevEpochDifficulty sets the previous epoch's difficulty
-func (k Keeper) setPrevEpochDifficulty(ctx sdk.Context, diff sdk.Uint) sdk.Error {
+func (k Keeper) setPrevEpochDifficulty(ctx sdk.Context, diff sdk.Uint) *sdkerrors.Error {
 	store := k.getHeaderStore(ctx)
 
 	b, err := diff.MarshalJSON()
@@ -89,7 +90,7 @@ func (k Keeper) setPrevEpochDifficulty(ctx sdk.Context, diff sdk.Uint) sdk.Error
 
 // updatePrevEpochDifficulty checks if there is a change in difficulty and updates
 // the previous epoch's difficulty accordingly
-func (k Keeper) updatePrevEpochDifficulty(ctx sdk.Context, oldDiff sdk.Uint) sdk.Error {
+func (k Keeper) updatePrevEpochDifficulty(ctx sdk.Context, oldDiff sdk.Uint) *sdkerrors.Error {
 	prevEpochDiff := k.getPrevEpochDifficulty(ctx)
 	if prevEpochDiff != oldDiff {
 		err := k.setPrevEpochDifficulty(ctx, oldDiff)
@@ -107,9 +108,9 @@ func compareTargets(full, truncated sdk.Uint) bool {
 	f, _ := full.MarshalAmino()
 	t, _ := truncated.MarshalAmino()
 	fullBI := new(big.Int)
-	fullBI.SetString(f, 0)
+	fullBI.SetBytes(f)
 	truncatedBI := new(big.Int)
-	truncatedBI.SetString(t, 0)
+	truncatedBI.SetBytes(t)
 
 	res := new(big.Int)
 	res.And(fullBI, truncatedBI)
@@ -126,7 +127,7 @@ func (k Keeper) ingestHeader(ctx sdk.Context, header types.BitcoinHeader) {
 }
 
 // validateHeaderChain validates a chain of Bitcoin Headers
-func validateHeaderChain(anchor types.BitcoinHeader, headers []types.BitcoinHeader, internal, isMainnet bool) sdk.Error {
+func validateHeaderChain(anchor types.BitcoinHeader, headers []types.BitcoinHeader, internal, isMainnet bool) *sdkerrors.Error {
 	prev := anchor // scratchpad, we change this later
 
 	// On internal call, use the header chain target
@@ -172,7 +173,7 @@ func validateHeaderChain(anchor types.BitcoinHeader, headers []types.BitcoinHead
 }
 
 // ingestHeaders validates and stores a chain of Bitcoin Headers
-func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, internal bool) sdk.Error {
+func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, internal bool) *sdkerrors.Error {
 	anchor, err := k.GetHeader(ctx, headers[0].PrevHash)
 	if err != nil {
 		return err
@@ -194,7 +195,7 @@ func (k Keeper) ingestHeaders(ctx sdk.Context, headers []types.BitcoinHeader, in
 }
 
 // validateDifficultyChange validates a Header Chain with a difficulty change
-func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anchor types.BitcoinHeader) sdk.Error {
+func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anchor types.BitcoinHeader) *sdkerrors.Error {
 	if anchor.Height%2016 != 2015 {
 		return types.ErrWrongEnd(types.DefaultCodespace)
 	}
@@ -222,7 +223,7 @@ func validateDifficultyChange(headers []types.BitcoinHeader, prevEpochStart, anc
 }
 
 // ingestDifficultyChange validates and stores a Header Chain with a difficulty change
-func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.Hash256Digest, headers []types.BitcoinHeader) sdk.Error {
+func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.Hash256Digest, headers []types.BitcoinHeader) *sdkerrors.Error {
 	// Find the anchor in our store
 	prevEpochStart, err := k.GetHeader(ctx, prevEpochStartLE)
 	if err != nil {
@@ -248,11 +249,11 @@ func (k Keeper) ingestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.H
 }
 
 // IngestHeaderChain ingests a chain of headers
-func (k Keeper) IngestHeaderChain(ctx sdk.Context, headers []types.BitcoinHeader) sdk.Error {
+func (k Keeper) IngestHeaderChain(ctx sdk.Context, headers []types.BitcoinHeader) *sdkerrors.Error {
 	return k.ingestHeaders(ctx, headers, false)
 }
 
 // IngestDifficultyChange ingests a chain of headers
-func (k Keeper) IngestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.Hash256Digest, headers []types.BitcoinHeader) sdk.Error {
+func (k Keeper) IngestDifficultyChange(ctx sdk.Context, prevEpochStartLE types.Hash256Digest, headers []types.BitcoinHeader) *sdkerrors.Error {
 	return k.ingestDifficultyChange(ctx, prevEpochStartLE, headers)
 }

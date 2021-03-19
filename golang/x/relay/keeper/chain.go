@@ -1,9 +1,12 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/summa-tx/relays/golang/x/relay/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
@@ -15,7 +18,7 @@ func (k Keeper) emitReorg(ctx sdk.Context, prev, new, lca types.Hash256Digest) {
 	ctx.EventManager().EmitEvent(types.NewReorgEvent(prev, new, lca))
 }
 
-func (k Keeper) getDigestByStoreKey(ctx sdk.Context, key string) (types.Hash256Digest, sdk.Error) {
+func (k Keeper) getDigestByStoreKey(ctx sdk.Context, key string) (types.Hash256Digest, *sdkerrors.Error) {
 	store := k.getChainStore(ctx)
 	result := store.Get([]byte(key))
 
@@ -37,7 +40,7 @@ func (k Keeper) setBestKnownDigest(ctx sdk.Context, bestKnown types.Hash256Diges
 }
 
 // GetBestKnownDigest returns the best known digest in the relay
-func (k Keeper) GetBestKnownDigest(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
+func (k Keeper) GetBestKnownDigest(ctx sdk.Context) (types.Hash256Digest, *sdkerrors.Error) {
 	return k.getDigestByStoreKey(ctx, types.BestKnownDigestStorage)
 }
 
@@ -47,7 +50,7 @@ func (k Keeper) setLastReorgLCA(ctx sdk.Context, lca types.Hash256Digest) {
 }
 
 // GetLastReorgLCA returns the best known digest in the relay
-func (k Keeper) GetLastReorgLCA(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
+func (k Keeper) GetLastReorgLCA(ctx sdk.Context) (types.Hash256Digest, *sdkerrors.Error) {
 	return k.getDigestByStoreKey(ctx, types.LastReorgLCAStorage)
 }
 
@@ -89,7 +92,7 @@ func (k Keeper) IsMostRecentCommonAncestor(ctx sdk.Context, ancestor, left, righ
 }
 
 // HeaviestFromAncestor determines the heavier descendant of a common ancestor
-func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, newBest types.Hash256Digest, limit uint32) (types.Hash256Digest, sdk.Error) {
+func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, newBest types.Hash256Digest, limit uint32) (types.Hash256Digest, *sdkerrors.Error) {
 	ancestorBlock, err := k.GetHeader(ctx, ancestor)
 	if err != nil {
 		return types.Hash256Digest{}, types.ErrUnknownBlock(types.DefaultCodespace, "ancestor", ancestor)
@@ -149,12 +152,12 @@ func (k Keeper) HeaviestFromAncestor(ctx sdk.Context, ancestor, currentBest, new
 }
 
 // MarkNewHeaviest updates the best known digest and LCA
-func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, currentBest, newBest types.RawHeader, limit uint32) sdk.Error {
+func (k Keeper) MarkNewHeaviest(ctx sdk.Context, ancestor types.Hash256Digest, currentBest, newBest types.RawHeader, limit uint32) *sdkerrors.Error {
 	newBestDigest := btcspv.Hash256(newBest[:])
 	currentBestDigest := btcspv.Hash256(currentBest[:])
 
 	if limit > 2016 {
-		return types.ErrLimitTooHigh(types.DefaultCodespace, limit)
+		return types.ErrLimitTooHigh(types.DefaultCodespace, fmt.Sprintf("%d", limit))
 	}
 
 	if !k.HasHeader(ctx, newBestDigest) {

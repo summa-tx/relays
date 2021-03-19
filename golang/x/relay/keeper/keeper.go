@@ -4,6 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 
 	"github.com/summa-tx/relays/golang/x/relay/types"
@@ -12,13 +13,13 @@ import (
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
 	storeKey     sdk.StoreKey // Unexposed key to access store from sdk.Context
-	cdc          *codec.Codec // The wire codec for binary encoding/decoding.
+	cdc          *codec.LegacyAmino // The wire codec for binary encoding/decoding.
 	IsMainNet    bool
 	ProofHandler types.ProofHandler
 }
 
 // NewKeeper instantiates a new keeper
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, mainnet bool, handler types.ProofHandler) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.LegacyAmino, mainnet bool, handler types.ProofHandler) Keeper {
 	return Keeper{
 		storeKey:     storeKey,
 		cdc:          cdc,
@@ -42,12 +43,12 @@ func (k Keeper) setRelayGenesis(ctx sdk.Context, relayGenesis types.Hash256Diges
 }
 
 // GetRelayGenesis returns the first digest in the relay
-func (k Keeper) GetRelayGenesis(ctx sdk.Context) (types.Hash256Digest, sdk.Error) {
+func (k Keeper) GetRelayGenesis(ctx sdk.Context) (types.Hash256Digest, *sdkerrors.Error) {
 	return k.getDigestByStoreKey(ctx, types.RelayGenesisStorage)
 }
 
 // SetGenesisState sets the genesis state
-func (k Keeper) SetGenesisState(ctx sdk.Context, genesis, epochStart btcspv.BitcoinHeader) sdk.Error {
+func (k Keeper) SetGenesisState(ctx sdk.Context, genesis, epochStart btcspv.BitcoinHeader) *sdkerrors.Error {
 	if k.hasRelayGenesis(ctx) {
 		return types.ErrAlreadyInit(types.DefaultCodespace)
 	}

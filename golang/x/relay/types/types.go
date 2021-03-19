@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 	"github.com/summa-tx/relays/proto"
@@ -15,8 +16,14 @@ type ProofHandler interface {
 	HandleValidProof(ctx sdk.Context, filled FilledRequests, requests []ProofRequest)
 }
 
+// Hash256Digest 32-byte double-sha2 digest
+type Hash256Digest = btcspv.Hash256Digest
+
 // Hash160Digest is a 20-byte ripemd160+sha2 hash
 type Hash160Digest = btcspv.Hash160Digest
+
+// RawHeader is an 80-byte raw header
+type RawHeader = btcspv.RawHeader
 
 // HexBytes is a type alias to make JSON hex ser/deser easier
 type HexBytes = btcspv.HexBytes
@@ -38,7 +45,22 @@ const (
 )
 
 // Hash256DigestFromHex converts a hex into a Hash256Digest
-func Hash256DigestFromHex(hexStr string) (btcspv.Hash256Digest, sdk.Error) {
+func BytesFromHex(hexStr string) ([]byte, *sdkerrors.Error) {
+	data := hexStr
+	if data[:2] == "0x" {
+		data = data[2:]
+	}
+
+	bytes, decodeErr := hex.DecodeString(data)
+	if decodeErr != nil {
+		return []byte{}, ErrBadHex(DefaultCodespace, hexStr)
+	}
+
+	return bytes, nil
+}
+
+// Hash256DigestFromHex converts a hex into a Hash256Digest
+func Hash256DigestFromHex(hexStr string) (btcspv.Hash256Digest, *sdkerrors.Error) {
 	data := hexStr
 	if data[:2] == "0x" {
 		data = data[2:]
@@ -48,6 +70,7 @@ func Hash256DigestFromHex(hexStr string) (btcspv.Hash256Digest, sdk.Error) {
 	if decodeErr != nil {
 		return btcspv.Hash256Digest{}, ErrBadHex(DefaultCodespace, hexStr)
 	}
+
 	digest, newDigestErr := btcspv.NewHash256Digest(bytes)
 	if newDigestErr != nil {
 		return btcspv.Hash256Digest{}, FromBTCSPVError(DefaultCodespace, newDigestErr)
@@ -67,9 +90,10 @@ func NewNullHandler() NullHandler {
 	return NullHandler{}
 }
 
-func stringToError(str string) (sdk.Error) {
+func stringToError(str string) (*sdkerrors.Error) {
 	// TODO: How to handle CodeType?
-	return sdk.NewError(DefaultCodespace, ExternalError, str)
+	err := sdkerrors.New(DefaultCodespace, ExternalError, str)
+	return err
 }
 
 func bufToH256(buf []byte) (btcspv.Hash256Digest, error) {
@@ -131,7 +155,17 @@ func headerFromProto(m *proto.BitcoinHeader) (btcspv.BitcoinHeader, error) {
 	header.MerkleRoot = root
 
 	return header, nil
+}
 
+func headerToProto(m *btcspv.BitcoinHeader) (proto.BitcoinHeader) {
+	var header proto.BitcoinHeader
+
+	header.Raw = []byte{m.Raw}
+	header.Hash = []byte{m.Hash}
+	header.Height = m.Height
+	header.MerkleRoot = []byte{m.Root}
+
+	return header
 }
 
 func headerSliceFromProto(m []*proto.BitcoinHeader) ([]btcspv.BitcoinHeader, error) {
@@ -147,51 +181,88 @@ func headerSliceFromProto(m []*proto.BitcoinHeader) ([]btcspv.BitcoinHeader, err
 	return headers, nil
 }
 
-func spvProofFromProto(q *proto.SPVProof) (btcspv.SPVProof, error) {
+func headerSliceToProto(m []*btcspv.BitcoinHeader) ([]proto.BitcoinHeader) {
+	headers := make([]proto.BitcoinHeader, len(m))
+	for i, h := range m {
+		header := headerToProto(h)
+		headers[i] = header
+	}
+
+	return headers
+}
+
+func spvProofFromProto(m *proto.SPVProof) (btcspv.SPVProof, error) {
 	var spvProof btcspv.SPVProof
 
-	txID, err := bufToH256(q.TxID)
+	txID, err := bufToH256(m.TxID)
 	if err != nil {
 		return spvProof, err
 	}
 
-	header, err := headerFromProto(q.ConfirmingHeader)
+	header, err := headerFromProto(m.ConfirmingHeader)
 	if err != nil {
 		return spvProof, err
 	}
 
-	spvProof.Version = HexBytes(q.Version)
-	spvProof.Vin = HexBytes(q.Vin)
-	spvProof.Vout = HexBytes(q.Vout)
-	spvProof.Locktime = HexBytes(q.Locktime)
+	spvProof.Version = HexBytes(m.Version)
+	spvProof.Vin = HexBytes(m.Vin)
+	spvProof.Vout = HexBytes(m.Vout)
+	spvProof.Locktime = HexBytes(m.Locktime)
 	spvProof.TxID = txID
-	spvProof.Index = q.Index
+	spvProof.Index = m.Index
 	spvProof.ConfirmingHeader = header
-	spvProof.IntermediateNodes = HexBytes(q.IntermediateNodes)
+	spvProof.IntermediateNodes = HexBytes(m.IntermediateNodes)
 
 	return spvProof, nil
 }
 
-func proofRequestFromProto(q *proto.ProofRequest) (ProofRequest, error) {
+func spvProofToProto(m *btcspv.SPVProof) (proto.SPVProof) {
+	spvProof.Version = []byte{m.Version}
+	spvProof.Vin = []byte{m.Vin}
+	spvProof.Vout = []byte{m.Vout}
+	spvProof.Locktime = []byte{m.Locktime}
+	spvProof.TxID = []byte{m.TxID}
+	spvProof.Index = m.Index
+	spvProof.ConfirmingHeader = headerToProto(m.header)
+	spvProof.IntermediateNodes = []byte{m.IntermediateNodes}
+
+	return spvProof
+}
+
+func proofRequestFromProto(m *proto.ProofRequest) (ProofRequest, error) {
 	var proofRequest ProofRequest
 
-	spends, err := bufToH256(q.Spends)
+	spends, err := bufToH256(m.Spends)
 	if err != nil {
 		return proofRequest, err
 	}
 
-	pays, err := bufToH256(q.Pays)
+	pays, err := bufToH256(m.Pays)
 	if err != nil {
 		return proofRequest, err
 	}
 
 	proofRequest.Spends = spends
 	proofRequest.Pays = pays
-	proofRequest.PaysValue = q.PaysValue
-	proofRequest.ActiveState = q.ActiveState
-	proofRequest.NumConfs = uint8(q.NumConfs)
-	proofRequest.Origin = Origin(q.Origin)
-	proofRequest.Action = btcspv.HexBytes(q.Action)
+	proofRequest.PaysValue = m.PaysValue
+	proofRequest.ActiveState = m.ActiveState
+	proofRequest.NumConfs = uint8(m.NumConfs)
+	proofRequest.Origin = Origin(m.Origin)
+	proofRequest.Action = btcspv.HexBytes(m.Action)
 
 	return proofRequest, nil
+}
+
+func proofRequestToProto(m *ProofRequest) (proto.ProofRequest) {
+	var proofRequest proto.ProofRequest
+
+	proofRequest.Spends = []byte{m.Spends}
+	proofRequest.Pays = []byte{m.Pays}
+	proofRequest.PaysValue = m.PaysValue
+	proofRequest.ActiveState = m.ActiveState
+	proofRequest.NumConfs = uint32(m.NumConfs)
+	proofRequest.Origin = []byte{m.Origin}
+	proofRequest.Action = []byte{m.Action}
+
+	return proofRequest
 }
