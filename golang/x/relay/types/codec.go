@@ -1,5 +1,6 @@
 package types
 
+// TODO: clean up file
 // import (
 // 	"github.com/cosmos/cosmos-sdk/codec"
 // 	"github.com/cosmos/cosmos-sdk/codec/types"

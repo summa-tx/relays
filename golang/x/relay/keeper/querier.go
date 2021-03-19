@@ -54,7 +54,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 }
 
 func queryIsAncestor(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) (res []byte, err *sdkerrors.Error) {
-	// TODO: Do we still unmarshal from json here?
+	// TODO: Do we have to unmarshal to proto then to relay types?
 	var proto proto.QueryParamsIsAncestor
 	unmarshallErr := types.ModuleCdc.UnmarshalJSON(req.Data, &proto)
 	if unmarshallErr != nil {
