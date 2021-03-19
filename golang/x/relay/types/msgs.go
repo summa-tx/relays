@@ -1,6 +1,7 @@
 package types
 
 import (
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/summa-tx/bitcoin-spv/golang/btcspv"
 
@@ -39,14 +40,14 @@ func (msg *MsgIngestHeaderChain) FromProto(m *proto.MsgIngestHeaderChain) (error
 	return nil
 }
 
-// MsgIngestHeaderChainToProto populates a protobuf MsgIngestHeaderChain from a MsgIngestHeaderChain
-func MsgIngestHeaderChainToProto(m MsgIngestHeaderChain) (proto.MsgIngestHeaderChain) {
-	var msg proto.MsgIngestHeaderChain
+// // MsgIngestHeaderChainToProto populates a protobuf MsgIngestHeaderChain from a MsgIngestHeaderChain
+// func MsgIngestHeaderChainToProto(m MsgIngestHeaderChain) (proto.MsgIngestHeaderChain) {
+// 	var msg proto.MsgIngestHeaderChain
 
-	msg.Signer = m.Signer
-	msg.Headers = []byte{m.Headers}
-	return msg
-}
+// 	msg.Signer = string(m.Signer)
+// 	msg.Headers = headerSliceToProto(m.Headers)
+// 	return msg
+// }
 
 // NewMsgIngestHeaderChain instantiates a MsgIngestHeaderChain
 func NewMsgIngestHeaderChain(address sdk.AccAddress, headers []BitcoinHeader) MsgIngestHeaderChain {
@@ -65,7 +66,7 @@ func (msg MsgIngestHeaderChain) GetSigners() []sdk.AccAddress {
 func (msg MsgIngestHeaderChain) Type() string { return "ingest_header_chain" }
 
 // ValidateBasic runs stateless validation
-func (msg MsgIngestHeaderChain) ValidateBasic() sdk.Error {
+func (msg MsgIngestHeaderChain) ValidateBasic() sdkerrors.Error {
 	for i := range msg.Headers {
 		valid, err := msg.Headers[i].Validate()
 		if !valid || err != nil {
@@ -77,9 +78,13 @@ func (msg MsgIngestHeaderChain) ValidateBasic() sdk.Error {
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgIngestHeaderChain) GetSignBytes() []byte {
-	proto := MsgIngestHeaderChainToProto(msg)
+	// proto := MsgIngestHeaderChainToProto(msg)
+	msgs := []sdk.Msg{NewMsgIngestHeaderChain(
+		msg.Signer,
+		msg.Headers,
+	)}
 
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(proto))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msgs...))
 }
 
 // Route returns the route key
@@ -119,15 +124,15 @@ func (msg *MsgIngestDifficultyChange) FromProto(m *proto.MsgIngestDifficultyChan
 	return nil
 }
 
-// MsgIngestDifficultyChangeToProto populates a protobuf MsgIngestDifficultyChange from a MsgIngestDifficultyChange
-func MsgIngestDifficultyChangeToProto(m MsgIngestDifficultyChange) (proto.MsgIngestDifficultyChange) {
-	var msg proto.MsgIngestDifficultyChange
+// // MsgIngestDifficultyChangeToProto populates a protobuf MsgIngestDifficultyChange from a MsgIngestDifficultyChange
+// func MsgIngestDifficultyChangeToProto(m MsgIngestDifficultyChange) (proto.MsgIngestDifficultyChange) {
+// 	var msg proto.MsgIngestDifficultyChange
 
-	msg.Signer = m.Signer
-	msg.Start = []byte{m.Start}
-	msg.Headers = []byte{m.Headers}
-	return msg
-}
+// 	msg.Signer = string(m.Signer)
+// 	msg.Start = []byte{m.Start}
+// 	msg.Headers = headerSliceToProto(m.Headers)
+// 	return msg
+// }
 
 // NewMsgIngestDifficultyChange instantiates a MsgIngestDifficultyChange
 func NewMsgIngestDifficultyChange(address sdk.AccAddress, start Hash256Digest, headers []BitcoinHeader) MsgIngestDifficultyChange {
@@ -147,7 +152,7 @@ func (msg MsgIngestDifficultyChange) GetSigners() []sdk.AccAddress {
 func (msg MsgIngestDifficultyChange) Type() string { return "ingest_difficulty_change" }
 
 // ValidateBasic runs stateless validation
-func (msg MsgIngestDifficultyChange) ValidateBasic() sdk.Error {
+func (msg MsgIngestDifficultyChange) ValidateBasic() sdkerrors.Error {
 	for i := range msg.Headers {
 		valid, err := msg.Headers[i].Validate()
 		if !valid || err != nil {
@@ -159,9 +164,14 @@ func (msg MsgIngestDifficultyChange) ValidateBasic() sdk.Error {
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgIngestDifficultyChange) GetSignBytes() []byte {
-	proto := MsgIngestDifficultyChangeToProto(msg)
+	// proto := MsgIngestDifficultyChangeToProto(msg)
+	msgs := []sdk.Msg{NewMsgIngestDifficultyChange(
+		msg.Signer,
+		msg.Start,
+		msg.Headers,
+	)}
 
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(proto))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msgs...))
 }
 
 // Route returns the route key
@@ -209,17 +219,17 @@ func (msg *MsgMarkNewHeaviest) FromProto(m *proto.MsgMarkNewHeaviest) (error) {
 	return nil
 }
 
-// MsgMarkNewHeaviestToProto populates a protobuf MsgMarkNewHeaviest from a MsgMarkNewHeaviest
-func MsgMarkNewHeaviestToProto(m MsgMarkNewHeaviest) (proto.MsgMarkNewHeaviest) {
-	var msg proto.MsgMarkNewHeaviest
+// // MsgMarkNewHeaviestToProto populates a protobuf MsgMarkNewHeaviest from a MsgMarkNewHeaviest
+// func MsgMarkNewHeaviestToProto(m MsgMarkNewHeaviest) (proto.MsgMarkNewHeaviest) {
+// 	var msg proto.MsgMarkNewHeaviest
 
-	msg.Signer = m.Signer
-	msg.Ancestor = []byte{m.Ancestor}
-	msg.CurrentBest = []byte{m.CurrentBest}
-	msg.NewBest = []byte{m.NewBest}
-	msg.Limit = m.Limit
-	return msg
-}
+// 	msg.Signer = string(m.Signer)
+// 	msg.Ancestor = []byte{m.Ancestor}
+// 	msg.CurrentBest = []byte{m.CurrentBest}
+// 	msg.NewBest = []byte{m.NewBest}
+// 	msg.Limit = m.Limit
+// 	return msg
+// }
 
 // NewMsgMarkNewHeaviest instantiates a MsgMarkNewHeaviest
 func NewMsgMarkNewHeaviest(address sdk.AccAddress, ancestor Hash256Digest, currentBest RawHeader, newBest RawHeader, limit uint32) MsgMarkNewHeaviest {
@@ -245,7 +255,7 @@ func (msg MsgMarkNewHeaviest) GetSigners() []sdk.AccAddress {
 func (msg MsgMarkNewHeaviest) Type() string { return "mark_new_heaviest" }
 
 // ValidateBasic runs stateless validation
-func (msg MsgMarkNewHeaviest) ValidateBasic() sdk.Error {
+func (msg MsgMarkNewHeaviest) ValidateBasic() sdkerrors.Error {
 	if len(msg.CurrentBest) != 80 {
 		return ErrBadHeaderLength(DefaultCodespace, "currentBest", msg.CurrentBest, len(msg.CurrentBest))
 	}
@@ -259,9 +269,16 @@ func (msg MsgMarkNewHeaviest) ValidateBasic() sdk.Error {
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgMarkNewHeaviest) GetSignBytes() []byte {
-	proto := MsgMarkNewHeaviestToProto(msg)
+	// proto := MsgMarkNewHeaviestToProto(msg)
+	msgs := []sdk.Msg{NewMsgIngestDifficultyChange(
+		msg.Signer,
+		msg.Ancestor,
+		msg.CurrentBest,
+		msg.NewBest,
+		msg.Limit,
+	)}
 
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(proto))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msgs...))
 }
 
 // Route returns the route key
@@ -299,19 +316,19 @@ func (msg *MsgNewRequest) FromProto(m *proto.MsgNewRequest) (error) {
 	return nil
 }
 
-// MsgNewRequestToProto populates a protobuf MsgNewRequest from a MsgNewRequest
-func MsgNewRequestToProto(m MsgNewRequest) (proto.MsgNewRequest) {
-	var msg proto.MsgNewRequest
+// // MsgNewRequestToProto populates a protobuf MsgNewRequest from a MsgNewRequest
+// func MsgNewRequestToProto(m MsgNewRequest) (proto.MsgNewRequest) {
+// 	var msg proto.MsgNewRequest
 
-	msg.Signer = m.Signer
-	msg.Spends = []byte{m.Spends}
-	msg.Pays = []byte{m.Pays}
-	msg.PaysValue = m.PaysValue
-	msg.NumConfs = uint32(m.NumConfs)
-	msg.Origin = uint32(m.Origin)
-	msg.Action = []byte{m.Action}
-	return msg
-}
+// 	msg.Signer = string(m.Signer)
+// 	msg.Spends = []byte{m.Spends}
+// 	msg.Pays = []byte{m.Pays}
+// 	msg.PaysValue = m.PaysValue
+// 	msg.NumConfs = uint32(m.NumConfs)
+// 	msg.Origin = uint32(m.Origin)
+// 	msg.Action = []byte{m.Action}
+// 	return msg
+// }
 
 // GetSigners gets signers
 func (msg MsgNewRequest) GetSigners() []sdk.AccAddress {
@@ -322,7 +339,7 @@ func (msg MsgNewRequest) GetSigners() []sdk.AccAddress {
 func (msg MsgNewRequest) Type() string { return "new_request" }
 
 // ValidateBasic runs stateless validation
-func (msg MsgNewRequest) ValidateBasic() sdk.Error {
+func (msg MsgNewRequest) ValidateBasic() sdkerrors.Error {
 	// TODO: validate output types
 	if len(msg.Spends) != 36 && len(msg.Spends) != 0 {
 		return ErrSpendsLength(DefaultCodespace)
@@ -338,9 +355,18 @@ func (msg MsgNewRequest) ValidateBasic() sdk.Error {
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgNewRequest) GetSignBytes() []byte {
-	proto := MsgNewRequestToProto(msg)
+	// proto := MsgNewRequestToProto(msg)
+	msgs := []sdk.Msg{NewMsgNewRequest(
+		msg.Signer,
+		msg.Spends,
+		msg.Pays,
+		msg.PaysValue,
+		msg.NumConfs,
+		msg.Origin,
+		msg.Action,
+	)}
 
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(proto))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msgs...))
 }
 
 // Route returns the route key
@@ -373,14 +399,14 @@ func (msg *MsgProvideProof) FromProto(m *proto.MsgProvideProof) (error) {
 	return nil
 }
 
-// MsgProvideProofToProto populates a protobuf MsgProvideProof from a MsgProvideProof
-func MsgProvideProofToProto(m MsgProvideProof) (proto.MsgProvideProof) {
-	var msg proto.MsgProvideProof
+// // MsgProvideProofToProto populates a protobuf MsgProvideProof from a MsgProvideProof
+// func MsgProvideProofToProto(m MsgProvideProof) (proto.MsgProvideProof) {
+// 	var msg proto.MsgProvideProof
 
-	msg.Signer = m.Signer
-	msg.Filled = filledRequestsToProto(m.Filled)
-	return msg
-}
+// 	msg.Signer = string(m.Signer)
+// 	msg.Filled = filledRequestsToProto(m.Filled)
+// 	return msg
+// }
 
 // NewMsgProvideProof instantiates a MsgProvideProof
 func NewMsgProvideProof(address sdk.AccAddress, filledRequests FilledRequests) MsgProvideProof {
@@ -396,7 +422,7 @@ func (msg MsgProvideProof) GetSigners() []sdk.AccAddress {
 }
 
 // ValidateBasic runs stateless validation
-func (msg MsgProvideProof) ValidateBasic() sdk.Error {
+func (msg MsgProvideProof) ValidateBasic() sdkerrors.Error {
 	valid, err := msg.Filled.Proof.Validate()
 	if !valid || err != nil {
 		return FromBTCSPVError(DefaultCodespace, err)
@@ -410,9 +436,13 @@ func (msg MsgProvideProof) Type() string { return "provide_proof" }
 
 // GetSignBytes returns the sighash for the message
 func (msg MsgProvideProof) GetSignBytes() []byte {
-	proto := MsgProvideProofToProto(msg)
+	// proto := MsgProvideProofToProto(msg)
+	msgs := []sdk.Msg{NewMsgProvideProof(
+		msg.Signer,
+		msg.Filled,
+	)}
 
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(proto))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msgs...))
 }
 
 // Route returns the route key

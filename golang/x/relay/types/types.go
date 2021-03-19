@@ -181,7 +181,7 @@ func headerSliceFromProto(m []*proto.BitcoinHeader) ([]btcspv.BitcoinHeader, err
 	return headers, nil
 }
 
-func headersSliceToProto(m []*btcspv.BitcoinHeader) ([]proto.BitcoinHeader) {
+func headerSliceToProto(m []*btcspv.BitcoinHeader) ([]proto.BitcoinHeader) {
 	headers := make([]proto.BitcoinHeader, len(m))
 	for i, h := range m {
 		header := headerToProto(h)
