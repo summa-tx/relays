@@ -417,7 +417,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 			queryClient := proto.NewQueryClient(clientCtx)
 
 			var proof proto.SPVProof
-			var requests &[]proto.FilledRequestInfo
+			var requests []proto.FilledRequestInfo
 			if viper.GetBool("inputfile") {
 				jsonFileProof, err := readJSONFromFile(args[0])
 				if err != nil {

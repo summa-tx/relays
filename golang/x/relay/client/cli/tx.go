@@ -68,6 +68,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 				}
 			}
 
+			// TODO: what is MsgWithdrawDelegatorReward?
 			msgs := []sdk.Msg{types.NewMsgWithdrawDelegatorReward(cliCtx.GetFromAddress(), headers)}
 
 			// err := msg.ValidateBasic()
@@ -222,7 +223,7 @@ Use flag --inputfile to submit a json filename as input from scripts/seed_data d
 			}
 
 			filledRequests := types.FilledRequests{
-				Proot: proof,
+				Proof: proof,
 				Filled: requests,
 			}
 
